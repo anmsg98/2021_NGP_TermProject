@@ -19,6 +19,7 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 	m_hInstance = hInstance;
 	m_hWnd = hWnd;
 	m_hDC = GetDC(m_hWnd);
+
 	m_Timer->Start();
 }
 
@@ -29,17 +30,37 @@ void CFramework::OnDestroy()
 
 void CFramework::ProcessKeyboardMessage(const HWND& hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
+	switch (message)
+	{
+	case WM_KEYUP:
+		switch (wParam)
+		{
+		case VK_ESCAPE:
+			PostQuitMessage(0);
+			break;
+		}
+	default:
+		break;
+	}
 }
 
 void CFramework::ProcessMouseMessage(const HWND& hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
+	switch (message)
+	{
+	case WM_SIZE:
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_MOUSEMOVE:
+		break;
+	}
 }
 
 void CFramework::ProcessInput()
 {
-	float Speed{ 100 * m_Timer->GetDeltaTime() };
+	float Speed{ 100.0f * m_Timer->GetDeltaTime() };
 
 	if (GetAsyncKeyState(VK_UP) & 0x8000)
 	{
@@ -81,26 +102,22 @@ void CFramework::Animate()
 
 void CFramework::Render()
 {
-	m_hBackDC = BeginPaint(m_hWnd, &m_Ps);
-	GetClientRect(m_hWnd, &m_Crt);
+	RECT ClientFloatRect{};
+
+	GetClientRect(m_hWnd, &ClientFloatRect);
+
 	m_hBackDC = CreateCompatibleDC(m_hDC);
-	m_hBmp = CreateCompatibleBitmap(m_hDC, m_Crt.right, m_Crt.bottom);
-	m_hOldbmp = (HBITMAP)SelectObject(m_hBackDC, m_hBmp);
+	m_hBitmap = CreateCompatibleBitmap(m_hDC, ClientFloatRect.right, ClientFloatRect.bottom);
+	m_hOldBitmap = (HBITMAP)SelectObject(m_hBackDC, m_hBitmap);
 
 	// ±×¸®±â
-	DrawObject(m_hBackDC, m_hBmp, m_hOldbmp, m_Crt);
-
-	GetClientRect(m_hWnd, &m_Crt);
-	BitBlt(m_hDC, 0, 0, m_Crt.right, m_Crt.bottom, m_hBackDC, 0, 0, SRCCOPY);
-	SelectObject(m_hBackDC, m_hOldbmp);
-	DeleteObject(m_hBmp);
+	PatBlt(m_hBackDC, 0, 0, ClientFloatRect.right, ClientFloatRect.bottom, WHITENESS);
+	Rectangle(m_hBackDC, m_PlayerRect.Left, m_PlayerRect.Top, m_PlayerRect.Right, m_PlayerRect.Bottom);
+	
+	BitBlt(m_hDC, 0, 0, ClientFloatRect.right, ClientFloatRect.bottom, m_hBackDC, 0, 0, SRCCOPY);
+	SelectObject(m_hBackDC, m_hOldBitmap);
+	DeleteObject(m_hBitmap);
 	DeleteDC(m_hBackDC);
-	EndPaint(m_hWnd, &m_Ps);
-	InvalidateRect(m_hWnd, &m_Crt, false);
+	InvalidateRect(m_hWnd, &ClientFloatRect, false);
 }
 
-void CFramework::DrawObject(HDC hDCBuff, HBITMAP hBMPBuff, HBITMAP hBMPBuffOld, RECT Crt)
-{
-	PatBlt(hDCBuff, 0, 0, Crt.right, Crt.bottom, WHITENESS);
-	Rectangle(hDCBuff, m_PlayerRect.Left, m_PlayerRect.Top, m_PlayerRect.Right, m_PlayerRect.Bottom);
-}

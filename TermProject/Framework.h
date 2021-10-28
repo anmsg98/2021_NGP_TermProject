@@ -6,22 +6,19 @@ class CFramework
 private:
 	bool						m_IsActive{};
 
-	HINSTANCE					m_hInstance{};
-	HWND						m_hWnd{};
-	HDC							m_hDC{};
-
-
-	PAINTSTRUCT                 m_Ps;
-	RECT                        m_Crt;
-	HDC							m_hBackDC{};
-	HBITMAP                     m_hBmp{};
-	HBITMAP                     m_hOldbmp{};
-
-
 	int							m_ClientWidth{ CLIENT_WIDTH };
 	int							m_ClientHeight{ CLIENT_HEIGHT };
 
-	CTimer* m_Timer{};
+	HINSTANCE					m_hInstance{};
+	HWND						m_hWnd{};
+
+	HDC							m_hDC{};
+	HDC							m_hBackDC{};
+
+	HBITMAP                     m_hBitmap{};
+	HBITMAP                     m_hOldBitmap{};
+
+	CTimer*						m_Timer{};
 
 	// test
 	Rect						m_PlayerRect{ 50, 50, 100, 100 };
@@ -40,5 +37,4 @@ public:
 	void Update();
 	void Animate();
 	void Render();
-	void DrawObject(HDC hDCBuff, HBITMAP hBMPBuff, HBITMAP hBMPBuffOld, RECT Crt);
 };
