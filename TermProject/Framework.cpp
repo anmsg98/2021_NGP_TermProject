@@ -66,20 +66,41 @@ void CFramework::ProcessInput()
 	}
 }
 
+
 void CFramework::Update()
 {
 	m_Timer->Update();
-
 	ProcessInput();
 	Render();
 }
 
 void CFramework::Animate()
 {
-	
+
 }
 
 void CFramework::Render()
 {
-	Rectangle(m_hDC, m_PlayerRect.Left, m_PlayerRect.Top, m_PlayerRect.Right, m_PlayerRect.Bottom);
+	m_hBackDC = BeginPaint(m_hWnd, &m_Ps);
+	GetClientRect(m_hWnd, &m_Crt);
+	m_hBackDC = CreateCompatibleDC(m_hDC);
+	m_hBmp = CreateCompatibleBitmap(m_hDC, m_Crt.right, m_Crt.bottom);
+	m_hOldbmp = (HBITMAP)SelectObject(m_hBackDC, m_hBmp);
+
+	// ±×¸®±â
+	DrawObject(m_hBackDC, m_hBmp, m_hOldbmp, m_Crt);
+
+	GetClientRect(m_hWnd, &m_Crt);
+	BitBlt(m_hDC, 0, 0, m_Crt.right, m_Crt.bottom, m_hBackDC, 0, 0, SRCCOPY);
+	SelectObject(m_hBackDC, m_hOldbmp);
+	DeleteObject(m_hBmp);
+	DeleteDC(m_hBackDC);
+	EndPaint(m_hWnd, &m_Ps);
+	InvalidateRect(m_hWnd, &m_Crt, false);
+}
+
+void CFramework::DrawObject(HDC hDCBuff, HBITMAP hBMPBuff, HBITMAP hBMPBuffOld, RECT Crt)
+{
+	PatBlt(hDCBuff, 0, 0, Crt.right, Crt.bottom, WHITENESS);
+	Rectangle(hDCBuff, m_PlayerRect.Left, m_PlayerRect.Top, m_PlayerRect.Right, m_PlayerRect.Bottom);
 }
