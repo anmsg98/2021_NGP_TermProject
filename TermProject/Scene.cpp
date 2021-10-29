@@ -29,7 +29,7 @@ void CGameScene::OnDestroy()
 
 void CGameScene::BuildObject()
 {
-	RECT MapRect{ 0.0f, 0.0f, 2000.0f, 1000.0f };
+	RECT MapRect{ 0, 0, 2000, 1000 };
 
 	// 맵을 생성한다.
 	m_Map = new CMap();
@@ -132,8 +132,7 @@ void CGameScene::Render(const HDC& hDC, const HDC& hMemDC)
 	// 그리기
 	PatBlt(hMemDC, MapRect.left, MapRect.top, MapRect.right, MapRect.bottom, WHITENESS);
 
-	// 맵 사각형
-	Rectangle(hMemDC, MapRect.left, MapRect.top, MapRect.right, MapRect.bottom);
+	// 맵을 그리는 위치
 
 	// 주인공 사각형
 	DrawRectangle(hMemDC, m_Player->GetPosition(), m_Player->GetWidth(), m_Player->GetHeight());
@@ -142,16 +141,15 @@ void CGameScene::Render(const HDC& hDC, const HDC& hMemDC)
 	Ellipse(hMemDC, 975, 275, 1025, 325);
 	Ellipse(hMemDC, 1275, 275, 1325, 325);
 	Ellipse(hMemDC, 1575, 275, 1625, 325);
-
-	Ellipse(hMemDC, 375, 475, 425, 525);
+	Ellipse(hMemDC, 375, 675, 425, 725);
 	Ellipse(hMemDC, 675, 675, 725, 725);
-	Ellipse(hMemDC, 975, 875, 1025, 925);
-	Ellipse(hMemDC, 1275, 1075, 1325, 1175);
-	Ellipse(hMemDC, 1575, 1275, 1625, 1375);
+	Ellipse(hMemDC, 975, 675, 1025, 725);
+	Ellipse(hMemDC, 1275, 675, 1325, 725);
+	Ellipse(hMemDC, 1575, 675, 1625, 725);
 
-	POSITION PlayerCameraPos{ m_Player->GetCameraStartPosition() };
+	POINT PlayerCameraPos{ m_Player->GetCameraStartPosition() };
 
-	BitBlt(hDC, 0, 0, m_ClientRect.right, m_ClientRect.bottom, hMemDC, PlayerCameraPos.m_X, PlayerCameraPos.m_Y, SRCCOPY);
+	BitBlt(hDC, 0, 0, m_ClientRect.right, m_ClientRect.bottom, hMemDC, PlayerCameraPos.x, PlayerCameraPos.y, SRCCOPY);
 	SelectObject(hMemDC, m_hOldBitmap);
 	DeleteObject(m_hBitmap);
 }
