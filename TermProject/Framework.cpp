@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Framework.h"
+#include "Scene.h"
 
 CFramework::CFramework()
 {
@@ -20,6 +21,13 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 	m_hWnd = hWnd;
 	m_hDC = GetDC(m_hWnd);
 
+	GetClientRect(hWnd, &m_ClientRect);
+
+	// 씬을 생성한다.
+	CGameScene* Scene{ new CGameScene() };
+
+	Scene->OnCreate(hInstance, hWnd);
+	m_Scenes.push(Scene);
 	m_Timer->Start();
 }
 
@@ -54,44 +62,21 @@ void CFramework::ProcessMouseMessage(const HWND& hWnd, UINT message, WPARAM wPar
 	case WM_RBUTTONDOWN:
 	case WM_RBUTTONUP:
 	case WM_MOUSEMOVE:
+		m_Scenes.top()->ProcessMouseMessage(hWnd, message, wParam, lParam);
 		break;
 	}
 }
 
 void CFramework::ProcessInput()
 {
-	float Speed{ 100.0f * m_Timer->GetDeltaTime() };
-
-	if (GetAsyncKeyState(VK_UP) & 0x8000)
-	{
-		m_PlayerRect.Top -= Speed;
-		m_PlayerRect.Bottom -= Speed;
-	}
-
-	if (GetAsyncKeyState(VK_DOWN) & 0x8000)
-	{
-		m_PlayerRect.Top += Speed;
-		m_PlayerRect.Bottom += Speed;
-	}
-
-	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
-	{
-		m_PlayerRect.Left -= Speed;
-		m_PlayerRect.Right -= Speed;
-	}
-
-	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
-	{
-		m_PlayerRect.Left += Speed;
-		m_PlayerRect.Right += Speed;
-	}
+	m_Scenes.top()->ProcessInput(m_Timer->GetDeltaTime());
 }
-
 
 void CFramework::Update()
 {
 	m_Timer->Update();
 	ProcessInput();
+	m_Scenes.top()->Update();
 	Render();
 }
 
@@ -102,22 +87,9 @@ void CFramework::Animate()
 
 void CFramework::Render()
 {
-	RECT ClientFloatRect{};
+	m_hMemDC = CreateCompatibleDC(m_hDC);
+	m_Scenes.top()->Render(m_hDC, m_hMemDC);
 
-	GetClientRect(m_hWnd, &ClientFloatRect);
-
-	m_hBackDC = CreateCompatibleDC(m_hDC);
-	m_hBitmap = CreateCompatibleBitmap(m_hDC, ClientFloatRect.right, ClientFloatRect.bottom);
-	m_hOldBitmap = (HBITMAP)SelectObject(m_hBackDC, m_hBitmap);
-
-	// 그리기
-	PatBlt(m_hBackDC, 0, 0, ClientFloatRect.right, ClientFloatRect.bottom, WHITENESS);
-	Rectangle(m_hBackDC, m_PlayerRect.Left, m_PlayerRect.Top, m_PlayerRect.Right, m_PlayerRect.Bottom);
-	
-	BitBlt(m_hDC, 0, 0, ClientFloatRect.right, ClientFloatRect.bottom, m_hBackDC, 0, 0, SRCCOPY);
-	SelectObject(m_hBackDC, m_hOldBitmap);
-	DeleteObject(m_hBitmap);
-	DeleteDC(m_hBackDC);
-	InvalidateRect(m_hWnd, &ClientFloatRect, false);
+	DeleteDC(m_hMemDC);
+	InvalidateRect(m_hWnd, &m_ClientRect, false);
 }
-

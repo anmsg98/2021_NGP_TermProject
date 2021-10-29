@@ -1,27 +1,24 @@
 #pragma once
 #include "Timer.h"
 
+class CScene;
+
 class CFramework
 {
 private:
 	bool						m_IsActive{};
 
-	int							m_ClientWidth{ CLIENT_WIDTH };
-	int							m_ClientHeight{ CLIENT_HEIGHT };
+	RECT						m_ClientRect{};
 
 	HINSTANCE					m_hInstance{};
 	HWND						m_hWnd{};
 
 	HDC							m_hDC{};
-	HDC							m_hBackDC{};
-
-	HBITMAP                     m_hBitmap{};
-	HBITMAP                     m_hOldBitmap{};
+	HDC							m_hMemDC{};
 
 	CTimer*						m_Timer{};
 
-	// test
-	Rect						m_PlayerRect{ 50, 50, 100, 100 };
+	stack<CScene*>				m_Scenes{};
 
 public:
 	CFramework();
