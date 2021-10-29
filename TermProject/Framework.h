@@ -8,6 +8,8 @@ class CFramework
 private:
 	bool						m_IsActive{};
 
+	PAINTSTRUCT					ps;
+
 	RECT						m_ClientRect{};
 
 	HINSTANCE					m_hInstance{};
@@ -15,6 +17,7 @@ private:
 
 	HDC							m_hDC{};
 	HDC							m_hMemDC{};
+	HDC							m_MemDC{};
 
 	CTimer*						m_Timer{};
 

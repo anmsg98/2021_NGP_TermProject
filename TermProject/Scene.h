@@ -11,7 +11,8 @@ protected:
 	// 더블버퍼링용 비트맵
 	HBITMAP				m_hBitmap{};
 	HBITMAP				m_hOldBitmap{};
-
+	HBITMAP				m_Player_Bitmap{};
+	HBITMAP				m_Bg_Bitmap{};
 public:
 	CScene() = default;
 	virtual ~CScene() = default;
@@ -27,7 +28,7 @@ public:
 
 	virtual void Update() = 0;
 	virtual void Animate(float DeltaTime) = 0;
-	virtual void Render(const HDC& hDC, const HDC& hBackDC) = 0;
+	virtual void Render(const HDC& hDC, const HDC& hMemDC, const HDC& MemDC) = 0;
 };
 
 class CGameScene : public CScene
@@ -51,5 +52,5 @@ public:
 
 	virtual void Update();
 	virtual void Animate(float DeltaTime);
-	virtual void Render(const HDC& hDC, const HDC& hBackDC);
+	virtual void Render(const HDC& hDC, const HDC& hMemDC, const HDC& MemDC);
 };

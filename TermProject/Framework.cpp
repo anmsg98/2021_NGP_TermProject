@@ -19,7 +19,7 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 {
 	m_hInstance = hInstance;
 	m_hWnd = hWnd;
-	m_hDC = GetDC(m_hWnd);
+	
 
 	GetClientRect(hWnd, &m_ClientRect);
 
@@ -87,9 +87,14 @@ void CFramework::Animate()
 
 void CFramework::Render()
 {
+	m_hDC = BeginPaint(m_hWnd, &ps);
 	m_hMemDC = CreateCompatibleDC(m_hDC);
-	m_Scenes.top()->Render(m_hDC, m_hMemDC);
+	m_MemDC = CreateCompatibleDC(m_hMemDC);
+
+	m_Scenes.top()->Render(m_hDC, m_hMemDC, m_MemDC);
 
 	DeleteDC(m_hMemDC);
+	DeleteDC(m_MemDC);	
+	EndPaint(m_hWnd, &ps);
 	InvalidateRect(m_hWnd, &m_ClientRect, false);
 }

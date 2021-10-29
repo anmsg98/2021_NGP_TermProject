@@ -166,6 +166,8 @@
     <ResourceCompile Include="TermProject.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Image\Background.bmp" />
+    <Image Include="Image\SpriteSheet1.bmp" />
     <Image Include="small.ico" />
     <Image Include="TermProject.ico" />
   </ItemGroup>

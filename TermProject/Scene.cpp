@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "Map.h"
 #include "Player.h"
+#include "Resource.h"
+#pragma comment (lib, "Msimg32.lib")
 
 CGameScene::~CGameScene()
 {
@@ -18,6 +20,8 @@ CGameScene::~CGameScene()
 
 void CGameScene::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 {
+	m_Bg_Bitmap = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_BG));
+	m_Player_Bitmap = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject();
 }
@@ -122,21 +126,23 @@ void CGameScene::Animate(float DeltaTime)
 
 }
 
-void CGameScene::Render(const HDC& hDC, const HDC& hMemDC)
+void CGameScene::Render(const HDC& hDC, const HDC& hMemDC, const HDC& MemDC)
 {
 	RECT MapRect{ m_Map->GetRect() };
 
 	m_hBitmap = CreateCompatibleBitmap(hDC, MapRect.right, MapRect.bottom);
 	m_hOldBitmap = (HBITMAP)SelectObject(hMemDC, m_hBitmap);
 
-	// 그리기
-	PatBlt(hMemDC, MapRect.left, MapRect.top, MapRect.right, MapRect.bottom, WHITENESS);
-
+	// 배경
+	SelectObject(MemDC, m_Bg_Bitmap);
+	StretchBlt(hMemDC, 0,0, 2400, 1500, MemDC, 0, 0, 2400, 1500, SRCCOPY);
+	
 	// 맵을 그리는 위치
 
-	// 주인공 사각형
-	DrawRectangle(hMemDC, m_Player->GetPosition(), m_Player->GetWidth(), m_Player->GetHeight());
-	Ellipse(hMemDC, 375, 275, 425, 325);
+	// 주인공 
+	SelectObject(MemDC, m_Player_Bitmap);
+	TransparentBlt(hMemDC, m_Player->GetPosition().m_X, m_Player->GetPosition().m_Y, 125, 180, MemDC, 0, 0, 125, 180, RGB(255, 174, 201));
+	/*Ellipse(hMemDC, 375, 275, 425, 325);
 	Ellipse(hMemDC, 675, 275, 725, 325);
 	Ellipse(hMemDC, 975, 275, 1025, 325);
 	Ellipse(hMemDC, 1275, 275, 1325, 325);
@@ -145,11 +151,11 @@ void CGameScene::Render(const HDC& hDC, const HDC& hMemDC)
 	Ellipse(hMemDC, 675, 675, 725, 725);
 	Ellipse(hMemDC, 975, 675, 1025, 725);
 	Ellipse(hMemDC, 1275, 675, 1325, 725);
-	Ellipse(hMemDC, 1575, 675, 1625, 725);
+	Ellipse(hMemDC, 1575, 675, 1625, 725);*/
 
 	POINT PlayerCameraPos{ m_Player->GetCameraStartPosition() };
 
 	BitBlt(hDC, 0, 0, m_ClientRect.right, m_ClientRect.bottom, hMemDC, PlayerCameraPos.x, PlayerCameraPos.y, SRCCOPY);
-	SelectObject(hMemDC, m_hOldBitmap);
+	SelectObject(hMemDC, m_hBitmap);
 	DeleteObject(m_hBitmap);
 }
