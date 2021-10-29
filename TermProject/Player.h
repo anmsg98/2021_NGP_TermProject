@@ -4,13 +4,13 @@
 class CPlayer : public CGameObject
 {
 private:
-	POSITION			m_CameraStartPosition{};
+	POINT			m_CameraStartPosition{};
 
 public:
 	CPlayer() = default;
 	~CPlayer() = default;
 
-	const POSITION& GetCameraStartPosition() const;
+	const POINT& GetCameraStartPosition() const;
 
 	void Update(const RECT& ClientRect, const RECT& MapRect);
 };
