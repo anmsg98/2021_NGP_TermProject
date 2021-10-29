@@ -16,13 +16,25 @@
 #include <memory.h>
 #include <tchar.h>
 
+// C++ 런타임 헤더 파일입니다.
+#include <stack>
+
+using namespace std;
+
 #define CLIENT_WIDTH	 800
 #define CLIENT_HEIGHT	 600
 
-struct Rect
+struct POSITION
 {
-	float Left;
-	float Top;
-	float Right;
-	float Bottom;
+	float m_X;
+	float m_Y;
+
+	POSITION() = default;
+	POSITION(float X, float Y) :
+		m_X{ X }, m_Y{ Y }
+	{
+
+	}
 };
+
+void DrawRectangle(const HDC& hDC, const POSITION& Position, float Width, float Height);
