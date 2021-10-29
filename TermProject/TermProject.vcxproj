@@ -140,6 +140,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Framework.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Map.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Resource.h" />
@@ -149,7 +152,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Framework.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Map.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
