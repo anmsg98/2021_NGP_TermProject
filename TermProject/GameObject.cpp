@@ -45,3 +45,23 @@ float CGameObject::GetHeight() const
 {
 	return m_Height;
 }
+
+CBulletObject::CBulletObject()
+{
+
+}
+
+CBulletObject::~CBulletObject()
+{
+
+
+}
+
+void CBulletObject::Update() {
+	if (m_bActive) {
+		m_Position.m_X += 1;
+		if (m_Position.m_X > 1900) {
+			SetActive(false);
+		}
+	}
+}

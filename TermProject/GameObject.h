@@ -21,3 +21,17 @@ public:
 	void SetHeight(float Height);
 	float GetHeight() const;
 };
+
+class CBulletObject : public CGameObject
+{
+public:
+	CBulletObject();
+	~CBulletObject();
+
+public:
+	bool  m_bActive = true;
+	float m_Direction{};
+	virtual void Update();
+	void SetActive(bool bActive) { m_bActive = bActive; }
+
+};

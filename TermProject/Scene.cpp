@@ -109,6 +109,10 @@ void CGameScene::ProcessInput(float DeltaTime)
 			PlayerPos.m_X += Speed;
 		}
 	}
+	if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
+	{
+		m_Player->FireBullet();
+	}
 
 	m_Player->SetPosition(PlayerPos);
 }
@@ -118,7 +122,11 @@ void CGameScene::Update()
 	if (m_Player)
 	{
 		m_Player->Update(m_ClientRect, m_Map->GetRect());
+		for (int i = 0; i < 30; i++) {
+			m_Player->m_ppBullets[i]->Update();
+		}
 	}
+	
 }
 
 void CGameScene::Animate(float DeltaTime)
@@ -142,16 +150,12 @@ void CGameScene::Render(const HDC& hDC, const HDC& hMemDC, const HDC& MemDC)
 	// ÁÖÀÎ°ø 
 	SelectObject(MemDC, m_Player_Bitmap);
 	TransparentBlt(hMemDC, m_Player->GetPosition().m_X, m_Player->GetPosition().m_Y, 125, 180, MemDC, 0, 0, 125, 180, RGB(255, 174, 201));
-	/*Ellipse(hMemDC, 375, 275, 425, 325);
-	Ellipse(hMemDC, 675, 275, 725, 325);
-	Ellipse(hMemDC, 975, 275, 1025, 325);
-	Ellipse(hMemDC, 1275, 275, 1325, 325);
-	Ellipse(hMemDC, 1575, 275, 1625, 325);
-	Ellipse(hMemDC, 375, 675, 425, 725);
-	Ellipse(hMemDC, 675, 675, 725, 725);
-	Ellipse(hMemDC, 975, 675, 1025, 725);
-	Ellipse(hMemDC, 1275, 675, 1325, 725);
-	Ellipse(hMemDC, 1575, 675, 1625, 725);*/
+	
+	for (int i = 0; i < 30; i++) {
+		if (m_Player->m_ppBullets[i]->m_bActive) {
+			TransparentBlt(hMemDC, m_Player->m_ppBullets[i]->GetPosition().m_X, m_Player->m_ppBullets[i]->GetPosition().m_Y, 20, 15, MemDC, 800, 80, 40, 30, RGB(255, 174, 201));
+		}
+	}
 
 	POINT PlayerCameraPos{ m_Player->GetCameraStartPosition() };
 

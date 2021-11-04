@@ -7,10 +7,11 @@ private:
 	POINT			m_CameraStartPosition{};
 
 public:
-	CPlayer() = default;
-	~CPlayer() = default;
+	CPlayer();
+	~CPlayer();
+	CBulletObject* m_ppBullets[30];
 
 	const POINT& GetCameraStartPosition() const;
-
+	void FireBullet();
 	void Update(const RECT& ClientRect, const RECT& MapRect);
 };
