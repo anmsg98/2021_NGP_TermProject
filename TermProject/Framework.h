@@ -8,16 +8,15 @@ class CFramework
 private:
 	bool						m_IsActive{};
 
-	PAINTSTRUCT					ps;
-
 	RECT						m_ClientRect{};
 
 	HINSTANCE					m_hInstance{};
 	HWND						m_hWnd{};
+	PAINTSTRUCT					m_PaintStruct{};
 
 	HDC							m_hDC{};
 	HDC							m_hMemDC{};
-	HDC							m_MemDC{};
+	HDC							m_hMemDC2{};
 
 	CTimer*						m_Timer{};
 
@@ -32,9 +31,10 @@ public:
 
 	void ProcessKeyboardMessage(const HWND& hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void ProcessMouseMessage(const HWND& hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	
 	void ProcessInput();
-
-	void Update();
 	void Animate();
 	void Render();
+
+	void Update();
 };

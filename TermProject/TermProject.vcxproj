@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FileManager.h" />
     <ClInclude Include="Framework.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Scene.h" />
@@ -151,6 +152,7 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Scene.cpp" />

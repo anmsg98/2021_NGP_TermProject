@@ -19,12 +19,11 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 {
 	m_hInstance = hInstance;
 	m_hWnd = hWnd;
-	
 
 	GetClientRect(hWnd, &m_ClientRect);
 
 	// 씬을 생성한다.
-	CGameScene* Scene{ new CGameScene() };
+	CGameScene* Scene{ new CGameScene{} };
 
 	Scene->OnCreate(hInstance, hWnd);
 	m_Scenes.push(Scene);
@@ -72,29 +71,30 @@ void CFramework::ProcessInput()
 	m_Scenes.top()->ProcessInput(m_Timer->GetDeltaTime());
 }
 
-void CFramework::Update()
-{
-	m_Timer->Update();
-	ProcessInput();
-	m_Scenes.top()->Update();
-	Render();
-}
-
 void CFramework::Animate()
 {
-
+	m_Scenes.top()->Animate(m_Timer->GetDeltaTime());
 }
 
 void CFramework::Render()
 {
-	m_hDC = BeginPaint(m_hWnd, &ps);
+	m_hDC = BeginPaint(m_hWnd, &m_PaintStruct);
 	m_hMemDC = CreateCompatibleDC(m_hDC);
-	m_MemDC = CreateCompatibleDC(m_hMemDC);
+	m_hMemDC2 = CreateCompatibleDC(m_hMemDC);
 
-	m_Scenes.top()->Render(m_hDC, m_hMemDC, m_MemDC);
+	m_Scenes.top()->Render(m_hDC, m_hMemDC, m_hMemDC2);
 
 	DeleteDC(m_hMemDC);
-	DeleteDC(m_MemDC);	
-	EndPaint(m_hWnd, &ps);
+	DeleteDC(m_hMemDC2);	
+	EndPaint(m_hWnd, &m_PaintStruct);
 	InvalidateRect(m_hWnd, &m_ClientRect, false);
+}
+
+void CFramework::Update()
+{
+	m_Timer->Update();
+
+	ProcessInput();
+	Animate();
+	Render();
 }
