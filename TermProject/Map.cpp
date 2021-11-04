@@ -10,3 +10,8 @@ const RECT& CMap::GetRect() const
 {
 	return m_Rect;
 }
+
+void CMap::Render(HDC hMemDC, HDC hMemDC2)
+{
+
+}

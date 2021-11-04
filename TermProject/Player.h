@@ -1,17 +1,38 @@
 #pragma once
 #include "GameObject.h"
 
+#define MAX_BULLET 10
+
+// ============================================== CBullet ==============================================
+
+class CBullet : public CGameObject
+{
+public:
+	CBullet() = default;
+	~CBullet() = default;
+
+	virtual void Update(float DeltaTime);
+};
+
+// ============================================== CPlayer ============================================== 
+
 class CPlayer : public CGameObject
 {
 private:
-	POINT			m_CameraStartPosition{};
+	POINT				m_CameraStartPosition{};
+
+	CBullet* 			m_Bullets;
+	int					m_BulletIndex{};
 
 public:
 	CPlayer();
 	~CPlayer();
-	CBulletObject* m_ppBullets[30];
 
 	const POINT& GetCameraStartPosition() const;
+	CBullet* GetBullets();
+
 	void FireBullet();
-	void Update(const RECT& ClientRect, const RECT& MapRect);
+
+	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
+	virtual void Animate(float DeltaTime);
 };

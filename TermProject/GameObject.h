@@ -3,13 +3,18 @@
 class CGameObject
 {
 protected:
+	bool				m_IsActive{};
+
 	POSITION			m_Position{};
 	float				m_Width{};
 	float				m_Height{};
 
 public:
-	CGameObject();
-	virtual ~CGameObject();
+	CGameObject() = default;
+	virtual ~CGameObject() = default;
+
+	void SetActive(bool IsActive);
+	bool IsActive() const;
 
 	void SetPosition(const POSITION& Position);
 	void SetPosition(float Xpos, float Ypos);
@@ -20,18 +25,7 @@ public:
 
 	void SetHeight(float Height);
 	float GetHeight() const;
-};
 
-class CBulletObject : public CGameObject
-{
-public:
-	CBulletObject();
-	~CBulletObject();
-
-public:
-	bool  m_bActive = true;
-	float m_Direction{};
-	virtual void Update();
-	void SetActive(bool bActive) { m_bActive = bActive; }
-
+	virtual void Animate(float DeltaTime);
+	virtual void Render(HDC hMemDC, HDC hMemDC2);
 };

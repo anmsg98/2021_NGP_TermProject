@@ -1,14 +1,14 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
-CGameObject::CGameObject()
+void CGameObject::SetActive(bool IsActive)
 {
-
+	m_IsActive = IsActive;
 }
 
-CGameObject::~CGameObject()
+bool CGameObject::IsActive() const
 {
-
+	return m_IsActive;
 }
 
 void CGameObject::SetPosition(const POSITION& Position)
@@ -46,22 +46,12 @@ float CGameObject::GetHeight() const
 	return m_Height;
 }
 
-CBulletObject::CBulletObject()
+void CGameObject::Animate(float DeltaTime)
 {
 
 }
 
-CBulletObject::~CBulletObject()
+void CGameObject::Render(HDC hMemDC, HDC hMemDC2)
 {
 
-
-}
-
-void CBulletObject::Update() {
-	if (m_bActive) {
-		m_Position.m_X += 1;
-		if (m_Position.m_X > 1900) {
-			SetActive(false);
-		}
-	}
 }

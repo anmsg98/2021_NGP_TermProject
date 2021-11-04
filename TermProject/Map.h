@@ -7,8 +7,10 @@ private:
 
 public:
 	CMap() = default;
-	virtual ~CMap() = default;
+	~CMap() = default;
 
 	void SetRect(const RECT& Rect);
 	const RECT& GetRect() const;
+
+	void Render(HDC hMemDC, HDC hMemDC2);
 };
