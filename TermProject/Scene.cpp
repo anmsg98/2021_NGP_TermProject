@@ -47,9 +47,11 @@ void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPA
 	{
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
+		mx = LOWORD(lParam);
+		my = HIWORD(lParam);
 		if (m_Player)
 		{
-			m_Player->FireBullet();
+			m_Player->FireBullet(mx, my);
 		}
 		break;
 	case WM_LBUTTONUP:

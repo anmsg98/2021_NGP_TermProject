@@ -37,6 +37,8 @@ public:
 
 	virtual void Animate(float DeltaTime) = 0;
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2) = 0;
+public:
+	int mx, my; // 마우스 좌표
 };
 
 class CGameScene : public CScene
