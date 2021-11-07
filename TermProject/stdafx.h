@@ -25,6 +25,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <ctime>
 
 using namespace std;
 
@@ -33,20 +34,21 @@ using namespace std;
 
 struct POSITION
 {
-	float m_X;
-	float m_Y;
+	float m_X{};
+	float m_Y{};
 
 	POSITION() = default;
 	POSITION(float X, float Y) : m_X{ X }, m_Y{ Y } {}
 };
 
-struct LTWH
+struct USER_RECT
 {
-	int m_Left;
-	int m_Top;
-	int m_Width;
-	int m_Height;
+	int m_Left{};
+	int m_Top{};
+	int m_Width{};
+	int m_Height{};
 };
 
-float RandF2(float fMin, float fMax);
-void DrawRectangle(const HDC& hDC, const POSITION& Position, float Width, float Height);
+float RandF(float Min, float Max);
+
+void DrawRect(HDC hMemDC, const POSITION& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);

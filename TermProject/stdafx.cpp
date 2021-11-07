@@ -1,19 +1,15 @@
 #include "stdafx.h"
 
-void DrawRectangle(const HDC& hDC, const POSITION& Position, float Width, float Height)
+float RandF(float Min, float Max)
 {
-	RECT Rect{};
-
-	Rect.left = Position.m_X - 0.5f * Width;
-	Rect.top = Position.m_Y - 0.5f * Height;
-	Rect.right = Rect.left + Width;
-	Rect.bottom = Rect.top + Height;
-
-	Rectangle(hDC, Rect.left, Rect.top, Rect.right, Rect.bottom);
+	return Min + ((float)rand() / (float)RAND_MAX) * (Max - Min);
 }
 
-
-float RandF2(float fMin, float fMax)
+void DrawRect(HDC hMemDC, const POSITION& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor)
 {
-	return(fMin + ((float)rand() / (float)RAND_MAX) * (fMax - fMin));
+	int OriginX{ (int)(Position.m_X - 0.5f * Width) };
+	int OriginY{ (int)(Position.m_Y - 0.5f * Height) };
+
+	TransparentBlt(hMemDC, OriginX, OriginY, (int)Width, (int)Height,
+				  hMemDC2, (int)Rect.m_Left, (int)Rect.m_Top, (int)Rect.m_Width, (int)Rect.m_Height, TransparentColor);
 }
