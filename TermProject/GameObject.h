@@ -1,4 +1,5 @@
 #pragma once
+#include "FileManager.h"
 
 class CGameObject
 {
@@ -13,6 +14,9 @@ public:
 	CGameObject() = default;
 	virtual ~CGameObject() = default;
 
+	virtual void Animate(float DeltaTime);
+	virtual void Render(HDC hMemDC, HDC hMemDC2);
+
 	void SetActive(bool IsActive);
 	bool IsActive() const;
 
@@ -25,7 +29,4 @@ public:
 
 	void SetHeight(float Height);
 	float GetHeight() const;
-
-	virtual void Animate(float DeltaTime);
-	virtual void Render(HDC hMemDC, HDC hMemDC2);
 };

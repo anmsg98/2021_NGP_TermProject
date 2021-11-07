@@ -12,7 +12,7 @@
 #define IDI_SMALL                       108
 #define IDC_TERMPROJECT                 109
 #define IDR_MAINFRAME                   128
-#define IDB_BITMAP_PLAYER               129
+#define IDB_BITMAP_SPRITE               129
 #define IDB_BITMAP1                     130
 #define IDB_BITMAP_BG                   130
 #define IDC_STATIC                      -1

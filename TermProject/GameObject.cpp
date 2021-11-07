@@ -1,6 +1,16 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
+void CGameObject::Animate(float DeltaTime)
+{
+
+}
+
+void CGameObject::Render(HDC hMemDC, HDC hMemDC2)
+{
+
+}
+
 void CGameObject::SetActive(bool IsActive)
 {
 	m_IsActive = IsActive;
@@ -44,14 +54,4 @@ void CGameObject::SetHeight(float Height)
 float CGameObject::GetHeight() const
 {
 	return m_Height;
-}
-
-void CGameObject::Animate(float DeltaTime)
-{
-
-}
-
-void CGameObject::Render(HDC hMemDC, HDC hMemDC2)
-{
-
 }

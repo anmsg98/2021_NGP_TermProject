@@ -3,8 +3,7 @@
 #include "Map.h"
 #include "Player.h"
 #include "Monster.h"
-
-CFileManager* CScene::m_FileManager;
+#include "FileManager.h"
 
 CGameScene::~CGameScene()
 {
@@ -26,17 +25,6 @@ CGameScene::~CGameScene()
 	}
 }
 
-CFileManager* CScene::GetFileManager()
-{
-	if (!m_FileManager)
-	{
-		m_FileManager = new CFileManager{};
-		m_FileManager->SetImageRectFromFile("Image/SpriteCoord.txt");
-	}
-
-	return m_FileManager;
-}
-
 void CGameScene::ProcessKeyboardMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
@@ -55,11 +43,12 @@ void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPA
 	{
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
-		mx = LOWORD(lParam);
-		my = HIWORD(lParam);
+		m_CursorPos.x = LOWORD(lParam);
+		m_CursorPos.y = HIWORD(lParam);
+
 		if (m_Player)
 		{
-			m_Player->FireBullet(mx, my);
+			m_Player->FireBullet(m_CursorPos);
 		}
 		break;
 	case WM_LBUTTONUP:
@@ -113,9 +102,9 @@ void CGameScene::ProcessInput(float DeltaTime)
 
 void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd)
 {
-	m_BgBitmap = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_BG));
-	m_PlayerBitmap = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
-	
+	CFileManager::GetInstance()->LoadBitmaps(hInstance);
+	CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
+
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject();
 }
@@ -140,8 +129,6 @@ void CGameScene::BuildObject()
 	m_Player->SetHeight(90.0f);
 }
 
-
-
 void CGameScene::Animate(float DeltaTime)
 {
 	if (m_Player)
@@ -149,7 +136,9 @@ void CGameScene::Animate(float DeltaTime)
 		m_Player->Animate(DeltaTime);
 		m_Player->UpdateCamera(m_ClientRect, m_Map->GetRect());
 	}
-	for (int i = 0; i < m_Monsters.size(); i++) {
+
+	for (int i = 0; i < m_Monsters.size(); i++)
+	{
 		if (m_Monsters[i])
 		{
 			if (m_Monsters[i]->IsActive())
@@ -160,14 +149,14 @@ void CGameScene::Animate(float DeltaTime)
 	}
 
 	CreateMonster(DeltaTime);
-	CheckMonsterByBulletCollisions();
+	CheckMonsterByBulletCollision();
 }
-
 
 void CGameScene::CreateMonster(float DeltaTime)
 {
-	CreateMonsterTimeElapsed += DeltaTime;
-	if (CreateMonsterTimeElapsed > CreateMonsterCycle)
+	m_CurrentGenTime += DeltaTime;
+
+	if (m_CurrentGenTime >= m_MonsterGenTime)
 	{
 		CMonster* Monster = new CMonster();
 
@@ -176,40 +165,41 @@ void CGameScene::CreateMonster(float DeltaTime)
 		Monster->SetHeight(76.0f);
 
 		// 타입결정
-		int random = rand() % 3 + 1;
-		Monster->SetType(random);
+		int Random{ rand() % 3 + 1 };
 
-		//생성지점 결정
-		random = rand() % 4;
-		if (random == 0)
-		{
-			Monster->SetPosition(m_Map->GetRect().left, RandF2(m_Map->GetRect().top, m_Map->GetRect().bottom));
-		}
-		else if (random == 1)
-		{
-			Monster->SetPosition(m_Map->GetRect().right, RandF2(m_Map->GetRect().top, m_Map->GetRect().bottom));
-		}
-		else if (random == 2)
-		{
-			Monster->SetPosition(RandF2(m_Map->GetRect().left, m_Map->GetRect().right), m_Map->GetRect().top);
-		}
-		else if (random == 3)
-		{
-			Monster->SetPosition(RandF2(m_Map->GetRect().left, m_Map->GetRect().right), m_Map->GetRect().bottom);
-		}
+		Monster->SetType(Random);
 
-		//맵의 중앙을 도착점으로 지정
+		// 생성지점 결정
+		Random = rand() % 4;
+
+		switch (Random)
+		{
+		case 0:
+			Monster->SetPosition((float)m_Map->GetRect().left, RandF((float)m_Map->GetRect().top, (float)m_Map->GetRect().bottom));
+			break;
+		case 1:
+			Monster->SetPosition((float)m_Map->GetRect().right, RandF((float)m_Map->GetRect().top, (float)m_Map->GetRect().bottom));
+			break;
+		case 2:
+			Monster->SetPosition(RandF((float)m_Map->GetRect().left, (float)m_Map->GetRect().right), (float)m_Map->GetRect().top);
+			break;
+		case 3:
+			Monster->SetPosition(RandF((float)m_Map->GetRect().left, (float)m_Map->GetRect().right), (float)m_Map->GetRect().bottom);
+			break;
+		}
+		
+		// 맵의 중앙을 도착점으로 지정
 		RECT MapRect{ m_Map->GetRect() };
 
-		Monster->SetDirect(MapRect.right * 0.5f - Monster->GetPosition().m_X, MapRect.bottom * 0.5f - Monster->GetPosition().m_Y);
-		Monster->SetLength(sqrt(pow(Monster->GetDirect().x, 2) + pow(Monster->GetDirect().y, 2)));
+		Monster->SetDirect((float)MapRect.right * 0.5f - Monster->GetPosition().m_X, (float)MapRect.bottom * 0.5f - Monster->GetPosition().m_Y);
+		Monster->SetLength(sqrtf(powf((float)Monster->GetDirect().x, 2) + powf((float)Monster->GetDirect().y, 2)));
 
 		m_Monsters.push_back(Monster);
-		CreateMonsterTimeElapsed = 0.0f;
+		m_CurrentGenTime = 0.0f;
 	}
 }
 
-void CGameScene::CheckMonsterByBulletCollisions()
+void CGameScene::CheckMonsterByBulletCollision()
 {
 	CBullet* Bullets{ m_Player->GetBullets() };
 
@@ -217,15 +207,15 @@ void CGameScene::CheckMonsterByBulletCollisions()
 	{
 		for (int j = 0; j < m_Monsters.size(); ++j)
 		{
-
 			if (Bullets[i].IsActive() && m_Monsters[j]->IsActive())
 			{
-				RECT tmp{};
-				RECT Bullet{ Bullets[i].GetPosition().m_X - 0.5f * Bullets[i].GetWidth(), Bullets[i].GetPosition().m_Y - 0.5f * Bullets[i].GetHeight(),
-				             Bullets[i].GetPosition().m_X + 0.5f * Bullets[i].GetWidth(), Bullets[i].GetPosition().m_Y + 0.5f * Bullets[i].GetHeight()};
-				RECT Monster{ m_Monsters[j]->GetPosition().m_X - 0.5f * m_Monsters[j]->GetWidth(), m_Monsters[j]->GetPosition().m_Y - 0.5f * m_Monsters[j]->GetHeight(),
-							  m_Monsters[j]->GetPosition().m_X + 0.5f * m_Monsters[j]->GetWidth(), m_Monsters[j]->GetPosition().m_Y + 0.5f * m_Monsters[j]->GetHeight() };
-				if (IntersectRect(&tmp, &Bullet, &Monster))
+				RECT CollidedRect{};
+				RECT BulletRect{ (int)(Bullets[i].GetPosition().m_X - 0.5f * Bullets[i].GetWidth()), (int)(Bullets[i].GetPosition().m_Y - 0.5f * Bullets[i].GetHeight()),
+								 (int)(Bullets[i].GetPosition().m_X + 0.5f * Bullets[i].GetWidth()), (int)(Bullets[i].GetPosition().m_Y + 0.5f * Bullets[i].GetHeight()) };
+				RECT MonsterRect{ (int)(m_Monsters[j]->GetPosition().m_X - 0.5f * m_Monsters[j]->GetWidth()), (int)(m_Monsters[j]->GetPosition().m_Y - 0.5f * m_Monsters[j]->GetHeight()),
+								  (int)(m_Monsters[j]->GetPosition().m_X + 0.5f * m_Monsters[j]->GetWidth()), (int)(m_Monsters[j]->GetPosition().m_Y + 0.5f * m_Monsters[j]->GetHeight()) };
+
+				if (IntersectRect(&CollidedRect, &BulletRect, &MonsterRect))
 				{
 					Bullets[i].SetActive(false);
 					m_Monsters[j]->SetActive(false);
@@ -237,65 +227,19 @@ void CGameScene::CheckMonsterByBulletCollisions()
 
 void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 {
-	RECT MapRect{ m_Map->GetRect() };
-
-	m_hBitmap = CreateCompatibleBitmap(hDC, MapRect.right, MapRect.bottom);
+	m_hBitmap = CreateCompatibleBitmap(hDC, m_Map->GetRect().right, m_Map->GetRect().bottom);
 	m_hOldBitmap = (HBITMAP)SelectObject(hMemDC, m_hBitmap);
 
-	// 배경
-	LTWH ltwh{ GetFileManager()->GetImageRect("Background") };
+	SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("Background"));
+	m_Map->Render(hMemDC, hMemDC2);
 
-	SelectObject(hMemDC2, m_BgBitmap);
-	BitBlt(hMemDC, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, hMemDC2, 0, 0, SRCCOPY);
-	
-	// 플레이어 
-	ltwh = GetFileManager()->GetImageRect("Player_1");
+	SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SpriteSheet"));
+	m_Player->Render(hMemDC, hMemDC2);
 
-	SelectObject(hMemDC2, m_PlayerBitmap);
-	TransparentBlt(hMemDC, m_Player->GetPosition().m_X - 0.5f * m_Player->GetWidth(), m_Player->GetPosition().m_Y - 0.5f * m_Player->GetHeight(), m_Player->GetWidth(), m_Player->GetHeight(),
-				   hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
-	
-	// 총알
-	ltwh = GetFileManager()->GetImageRect("Bullet_1");
-
-	CBullet* Bullets{ m_Player->GetBullets() };
-
-	for (int i = 0; i < MAX_BULLET; ++i)
+	for (const auto& Monster : m_Monsters)
 	{
-		if (Bullets[i].IsActive())
-		{
-			TransparentBlt(hMemDC, Bullets[i].GetPosition().m_X - 0.5f * Bullets[i].GetWidth(), Bullets[i].GetPosition().m_Y - 0.5f * Bullets[i].GetHeight(), Bullets[i].GetWidth(), Bullets[i].GetHeight(),
-						   hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
-		}
+		Monster->Render(hMemDC, hMemDC2);
 	}
-
-	//몬스터	
-
-	for (int i = 0; i < m_Monsters.size(); ++i) {
-		if (m_Monsters[i]->IsActive())
-		{
-			int Type = m_Monsters[i]->GetType();
-			if(Type == 1)
-			{
-				ltwh = GetFileManager()->GetImageRect("Monster_1_1");
-				TransparentBlt(hMemDC, m_Monsters[i]->GetPosition().m_X - 0.5f * m_Monsters[i]->GetWidth(), m_Monsters[i]->GetPosition().m_Y - 0.5f * m_Monsters[i]->GetHeight(), m_Monsters[i]->GetWidth(), m_Monsters[i]->GetHeight(),
-					hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
-			}
-			else if (Type == 2)
-			{
-				ltwh = GetFileManager()->GetImageRect("Monster_2_1");
-				TransparentBlt(hMemDC, m_Monsters[i]->GetPosition().m_X - 0.5f * m_Monsters[i]->GetWidth(), m_Monsters[i]->GetPosition().m_Y - 0.5f * m_Monsters[i]->GetHeight(), m_Monsters[i]->GetWidth(), m_Monsters[i]->GetHeight(),
-					hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
-			}
-			else if (Type == 3)
-			{
-				ltwh = GetFileManager()->GetImageRect("Monster_3_1");
-				TransparentBlt(hMemDC, m_Monsters[i]->GetPosition().m_X - 0.5f * m_Monsters[i]->GetWidth(), m_Monsters[i]->GetPosition().m_Y - 0.5f * m_Monsters[i]->GetHeight(), m_Monsters[i]->GetWidth(), m_Monsters[i]->GetHeight(),
-					hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
-			}
-		}
-	}
-
 
 	POINT PlayerCameraPos{ m_Player->GetCameraStartPosition() };
 

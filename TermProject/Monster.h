@@ -4,25 +4,24 @@
 class CMonster : public CGameObject
 {
 private:
-	int m_Type{};
-	float m_LineLength{};
-	POINT m_Dir{};
+	int				m_Type{};
+
+	float			m_Length{};
+	POINT			m_Direction{};
 
 public:
 	CMonster() = default;
 	~CMonster() = default;
 
+	virtual void Animate(float DeltaTime);
+	virtual void Render(HDC hMemDC, HDC hMemDC2);
+
 	void SetType(int Type);
 	int  GetType() const;
 
-	void SetLength(float length) { m_LineLength = length; }
-	float GetLength() { return m_LineLength; }
+	void SetLength(float Length);
+	float GetLength() const;
 
-	void SetDirect(float dirx, float diry) { m_Dir.x = dirx, m_Dir.y = diry; }
-	POINT GetDirect() { return m_Dir; }
-
-	virtual void Animate(float DeltaTime);
-	//virtual void Render();
-
+	void SetDirect(float DirX, float DirY);
+	POINT GetDirect() const;
 };
-

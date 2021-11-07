@@ -8,16 +8,21 @@
 class CBullet : public CGameObject
 {
 private:
-	float m_LineLength{};
-	POINT m_Dir{};
+	float			m_Length{};
+	POINT			m_Direction{};
+
 public:
 	CBullet() = default;
 	~CBullet() = default;
-	virtual void Update(float DeltaTime);
-	void SetLength(float length) { m_LineLength = length; }
-	float GetLength() { return m_LineLength; }
-	void SetDirect(float dirx, float diry) { m_Dir.x = dirx, m_Dir.y = diry; }
-	POINT GetDirect() { return m_Dir; }
+
+	virtual void Animate(float DeltaTime);
+	virtual void Render(HDC hMemDC, HDC hMemDC2);
+
+	void SetLength(float Length);
+	float GetLength() const;
+
+	void SetDirect(float DirX, float DirY);
+	POINT GetDirect() const;
 }; 
 
 // ============================================== CPlayer ============================================== 
@@ -33,12 +38,14 @@ private:
 public:
 	CPlayer();
 	~CPlayer();
+	
+	virtual void Animate(float DeltaTime);
+	virtual void Render(HDC hMemDC, HDC hMemDC2);
 
 	const POINT& GetCameraStartPosition() const;
 	CBullet* GetBullets();
 
-	void FireBullet(int mx, int my);
+	void FireBullet(const POINT& CursorPos);
 
 	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
-	virtual void Animate(float DeltaTime);
 };

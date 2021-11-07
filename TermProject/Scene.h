@@ -1,5 +1,4 @@
 #pragma once
-#include "FileManager.h"
 
 class CMap;
 class CPlayer;
@@ -7,25 +6,15 @@ class CMonster;
 
 class CScene
 {
-private:
-	static CFileManager*			m_FileManager;
-
 protected:
 	RECT							m_ClientRect{};
 
-	// ´õºí¹öÆÛ¸µ¿ë ºñÆ®¸Ê
 	HBITMAP							m_hBitmap{};
 	HBITMAP							m_hOldBitmap{};
 	
-	// °´Ã¼ ºñÆ®¸Ê
-	HBITMAP							m_BgBitmap{};
-	HBITMAP							m_PlayerBitmap{};
-
 public:
 	CScene() = default;
 	virtual ~CScene() = default;
-
-	CFileManager* GetFileManager();
 
 	virtual void ProcessKeyboardMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = 0;
 	virtual void ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = 0;
@@ -38,18 +27,20 @@ public:
 
 	virtual void Animate(float DeltaTime) = 0;
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2) = 0;
-public:
-	int mx, my; // ¸¶¿ì½º ÁÂÇ¥
 };
 
 class CGameScene : public CScene
 {
 private:
+	POINT				m_CursorPos{};
+
+	float               m_MonsterGenTime{ 3.0f };
+	float               m_CurrentGenTime{};
+
 	CMap*				m_Map{};
 	CPlayer*			m_Player{};
 	vector<CMonster*>	m_Monsters{};
-
-
+	
 public:
 	CGameScene() = default;
 	virtual ~CGameScene();
@@ -66,9 +57,6 @@ public:
 	virtual void Animate(float DeltaTime);
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2);
 
-	virtual void CreateMonster(float DeltaTime);
-	virtual void CheckMonsterByBulletCollisions();
-
-	float               CreateMonsterCycle = 3.0f;
-	float               CreateMonsterTimeElapsed = 0.0f;
+	void CreateMonster(float DeltaTime);
+	void CheckMonsterByBulletCollision();
 };
