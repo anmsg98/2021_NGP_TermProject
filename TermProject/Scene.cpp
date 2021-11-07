@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "Map.h"
 #include "Player.h"
+#include "Monster.h"
 
 CFileManager* CScene::m_FileManager;
 
@@ -15,6 +16,13 @@ CGameScene::~CGameScene()
 	if (m_Player)
 	{
 		delete m_Player;
+	}
+
+	for (int i = 0; i < m_Monsters.size(); ++i) {
+		if (m_Monsters[i])
+		{
+			delete m_Monsters[i];
+		}
 	}
 }
 
@@ -132,12 +140,98 @@ void CGameScene::BuildObject()
 	m_Player->SetHeight(90.0f);
 }
 
+
+
 void CGameScene::Animate(float DeltaTime)
 {
 	if (m_Player)
 	{
 		m_Player->Animate(DeltaTime);
 		m_Player->UpdateCamera(m_ClientRect, m_Map->GetRect());
+	}
+	for (int i = 0; i < m_Monsters.size(); i++) {
+		if (m_Monsters[i])
+		{
+			if (m_Monsters[i]->IsActive())
+			{
+				m_Monsters[i]->Animate(DeltaTime);
+			}
+		}
+	}
+
+	CreateMonster(DeltaTime);
+	CheckMonsterByBulletCollisions();
+}
+
+
+void CGameScene::CreateMonster(float DeltaTime)
+{
+	CreateMonsterTimeElapsed += DeltaTime;
+	if (CreateMonsterTimeElapsed > CreateMonsterCycle)
+	{
+		CMonster* Monster = new CMonster();
+
+		Monster->SetActive(true);
+		Monster->SetWidth(73.5f);
+		Monster->SetHeight(76.0f);
+
+		// 타입결정
+		int random = rand() % 3 + 1;
+		Monster->SetType(random);
+
+		//생성지점 결정
+		random = rand() % 4;
+		if (random == 0)
+		{
+			Monster->SetPosition(m_Map->GetRect().left, RandF2(m_Map->GetRect().top, m_Map->GetRect().bottom));
+		}
+		else if (random == 1)
+		{
+			Monster->SetPosition(m_Map->GetRect().right, RandF2(m_Map->GetRect().top, m_Map->GetRect().bottom));
+		}
+		else if (random == 2)
+		{
+			Monster->SetPosition(RandF2(m_Map->GetRect().left, m_Map->GetRect().right), m_Map->GetRect().top);
+		}
+		else if (random == 3)
+		{
+			Monster->SetPosition(RandF2(m_Map->GetRect().left, m_Map->GetRect().right), m_Map->GetRect().bottom);
+		}
+
+		//맵의 중앙을 도착점으로 지정
+		RECT MapRect{ m_Map->GetRect() };
+
+		Monster->SetDirect(MapRect.right * 0.5f - Monster->GetPosition().m_X, MapRect.bottom * 0.5f - Monster->GetPosition().m_Y);
+		Monster->SetLength(sqrt(pow(Monster->GetDirect().x, 2) + pow(Monster->GetDirect().y, 2)));
+
+		m_Monsters.push_back(Monster);
+		CreateMonsterTimeElapsed = 0.0f;
+	}
+}
+
+void CGameScene::CheckMonsterByBulletCollisions()
+{
+	CBullet* Bullets{ m_Player->GetBullets() };
+
+	for (int i = 0; i < MAX_BULLET; ++i)
+	{
+		for (int j = 0; j < m_Monsters.size(); ++j)
+		{
+
+			if (Bullets[i].IsActive() && m_Monsters[j]->IsActive())
+			{
+				RECT tmp{};
+				RECT Bullet{ Bullets[i].GetPosition().m_X - 0.5f * Bullets[i].GetWidth(), Bullets[i].GetPosition().m_Y - 0.5f * Bullets[i].GetHeight(),
+				             Bullets[i].GetPosition().m_X + 0.5f * Bullets[i].GetWidth(), Bullets[i].GetPosition().m_Y + 0.5f * Bullets[i].GetHeight()};
+				RECT Monster{ m_Monsters[j]->GetPosition().m_X - 0.5f * m_Monsters[j]->GetWidth(), m_Monsters[j]->GetPosition().m_Y - 0.5f * m_Monsters[j]->GetHeight(),
+							  m_Monsters[j]->GetPosition().m_X + 0.5f * m_Monsters[j]->GetWidth(), m_Monsters[j]->GetPosition().m_Y + 0.5f * m_Monsters[j]->GetHeight() };
+				if (IntersectRect(&tmp, &Bullet, &Monster))
+				{
+					Bullets[i].SetActive(false);
+					m_Monsters[j]->SetActive(false);
+				}
+			}
+		}
 	}
 }
 
@@ -174,6 +268,34 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 						   hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
 		}
 	}
+
+	//몬스터	
+
+	for (int i = 0; i < m_Monsters.size(); ++i) {
+		if (m_Monsters[i]->IsActive())
+		{
+			int Type = m_Monsters[i]->GetType();
+			if(Type == 1)
+			{
+				ltwh = GetFileManager()->GetImageRect("Monster_1_1");
+				TransparentBlt(hMemDC, m_Monsters[i]->GetPosition().m_X - 0.5f * m_Monsters[i]->GetWidth(), m_Monsters[i]->GetPosition().m_Y - 0.5f * m_Monsters[i]->GetHeight(), m_Monsters[i]->GetWidth(), m_Monsters[i]->GetHeight(),
+					hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
+			}
+			else if (Type == 2)
+			{
+				ltwh = GetFileManager()->GetImageRect("Monster_2_1");
+				TransparentBlt(hMemDC, m_Monsters[i]->GetPosition().m_X - 0.5f * m_Monsters[i]->GetWidth(), m_Monsters[i]->GetPosition().m_Y - 0.5f * m_Monsters[i]->GetHeight(), m_Monsters[i]->GetWidth(), m_Monsters[i]->GetHeight(),
+					hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
+			}
+			else if (Type == 3)
+			{
+				ltwh = GetFileManager()->GetImageRect("Monster_3_1");
+				TransparentBlt(hMemDC, m_Monsters[i]->GetPosition().m_X - 0.5f * m_Monsters[i]->GetWidth(), m_Monsters[i]->GetPosition().m_Y - 0.5f * m_Monsters[i]->GetHeight(), m_Monsters[i]->GetWidth(), m_Monsters[i]->GetHeight(),
+					hMemDC2, ltwh.m_Left, ltwh.m_Top, ltwh.m_Width, ltwh.m_Height, GetFileManager()->GetTransColor());
+			}
+		}
+	}
+
 
 	POINT PlayerCameraPos{ m_Player->GetCameraStartPosition() };
 

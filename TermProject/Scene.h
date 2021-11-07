@@ -3,6 +3,7 @@
 
 class CMap;
 class CPlayer;
+class CMonster;
 
 class CScene
 {
@@ -46,6 +47,8 @@ class CGameScene : public CScene
 private:
 	CMap*				m_Map{};
 	CPlayer*			m_Player{};
+	vector<CMonster*>	m_Monsters{};
+
 
 public:
 	CGameScene() = default;
@@ -62,4 +65,10 @@ public:
 
 	virtual void Animate(float DeltaTime);
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2);
+
+	virtual void CreateMonster(float DeltaTime);
+	virtual void CheckMonsterByBulletCollisions();
+
+	float               CreateMonsterCycle = 3.0f;
+	float               CreateMonsterTimeElapsed = 0.0f;
 };
