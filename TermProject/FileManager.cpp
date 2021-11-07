@@ -1,16 +1,29 @@
 #include "stdafx.h"
 #include "FileManager.h"
 
-const COLORREF& CFileManager::GetTransColor() const
+CFileManager* CFileManager::GetInstance()
 {
-	return m_TransColor;
+	static CFileManager m_Instance{};
+
+	return &m_Instance;
 }
 
-void CFileManager::SetImageRectFromFile(const char* FileName)
+COLORREF CFileManager::GetTransparentColor() const
+{
+	return m_TransparentColor;
+}
+
+void CFileManager::LoadBitmaps(HINSTANCE hInstance)
+{
+	m_Bitmaps.insert(make_pair("Background", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_BG))));
+	m_Bitmaps.insert(make_pair("SpriteSheet", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_SPRITE))));
+}
+
+void CFileManager::LoadRectFromFile(const char* FileName)
 {
 	ifstream InFile{ FileName };
 	string Str{}, Name{};
-	LTWH ltwh{};
+	USER_RECT rect{};
 
 	while (InFile >> Str)
 	{
@@ -20,14 +33,19 @@ void CFileManager::SetImageRectFromFile(const char* FileName)
 		}
 		else if (Str == "<LTWH>:")
 		{
-			InFile >> ltwh.m_Left >> ltwh.m_Top >> ltwh.m_Width >> ltwh.m_Height;
+			InFile >> rect.m_Left >> rect.m_Top >> rect.m_Width >> rect.m_Height;
 
-			m_ImageRect.insert(make_pair(Name, ltwh));
+			m_Rects.insert(make_pair(Name, rect));
 		}
 	}
 }
 
-LTWH CFileManager::GetImageRect(const string& Name)
+USER_RECT CFileManager::GetRect(const string& Name)
 {
-	return m_ImageRect[Name];
+	return m_Rects[Name];
+}
+
+HBITMAP CFileManager::GetBitmap(const string& Name)
+{
+	return m_Bitmaps[Name];
 }
