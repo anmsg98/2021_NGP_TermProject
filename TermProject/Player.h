@@ -8,8 +8,8 @@
 class CBullet : public CGameObject
 {
 private:
-	float m_LineLength;
-	POINT m_Dir;
+	float m_LineLength{};
+	POINT m_Dir{};
 public:
 	CBullet() = default;
 	~CBullet() = default;

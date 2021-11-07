@@ -5,15 +5,12 @@
 
 void CBullet::Update(float DeltaTime)
 {
-	if (m_IsActive)
-	{
-		m_Position.m_X += (GetDirect().x / GetLength()) * DeltaTime * 1000.f;
-		m_Position.m_Y += (GetDirect().y / GetLength()) * DeltaTime * 1000.f;
+	m_Position.m_X += (GetDirect().x / GetLength()) * DeltaTime * 1000.f;
+	m_Position.m_Y += (GetDirect().y / GetLength()) * DeltaTime * 1000.f;
 
-		if (m_Position.m_X >= 2000 || m_Position.m_X < 0 || m_Position.m_Y >= 1000 || m_Position.m_Y < 0)
-		{
-			SetActive(false);
-		}
+	if (m_Position.m_X >= 2000 || m_Position.m_X < 0 || m_Position.m_Y >= 1000 || m_Position.m_Y < 0)
+	{
+		SetActive(false);
 	}
 }
 
@@ -65,7 +62,10 @@ void CPlayer::Animate(float DeltaTime)
 	printf("%.2f, %.2f\r", GetPosition().m_X, GetPosition().m_Y);
 	for (int i = 0; i < MAX_BULLET; ++i)
 	{
-		m_Bullets[i].Update(DeltaTime);
+		if (m_Bullets[i].IsActive())
+		{
+			m_Bullets[i].Update(DeltaTime);
+		}
 	}
 }
 
