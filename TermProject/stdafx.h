@@ -22,6 +22,7 @@
 #include <fstream>
 #include <stack>
 #include <unordered_map>
+#include <vector>
 #include <string>
 #include <cmath>
 
@@ -47,4 +48,5 @@ struct LTWH
 	int m_Height;
 };
 
+float RandF2(float fMin, float fMax);
 void DrawRectangle(const HDC& hDC, const POSITION& Position, float Width, float Height);

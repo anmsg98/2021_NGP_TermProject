@@ -11,3 +11,9 @@ void DrawRectangle(const HDC& hDC, const POSITION& Position, float Width, float 
 
 	Rectangle(hDC, Rect.left, Rect.top, Rect.right, Rect.bottom);
 }
+
+
+float RandF2(float fMin, float fMax)
+{
+	return(fMin + ((float)rand() / (float)RAND_MAX) * (fMax - fMin));
+}
