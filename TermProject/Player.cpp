@@ -21,10 +21,30 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Bullet_1") };
+		USER_RECT Rect{}; 
+		
+		// 플레이어가 아이템을 획득하여 총알이 강화된 경우와 분리한다.
+		if (m_AttackPower == 10)
+		{
+			Rect = CFileManager::GetInstance()->GetRect("Bullet_1");
+		}
+		else if (m_AttackPower == 30)
+		{
+			Rect = CFileManager::GetInstance()->GetRect("Bullet_2");
+		}
 
 		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
 	}
+}
+
+void CBullet::SetAttackPower(int AttackPower)
+{
+	m_AttackPower = AttackPower;
+}
+
+int CBullet::GetAttackPower() const
+{
+	return m_AttackPower;
 }
 
 void CBullet::SetLength(float Length)
@@ -75,12 +95,26 @@ void CPlayer::Animate(float DeltaTime)
 	{
 		printf("%.02f, %.02f\r", GetPosition().m_X, GetPosition().m_Y);
 
+		if (m_IsReinforced)
+		{
+			m_ItemDuration += DeltaTime;
+
+			// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
+			if (m_ItemDuration >= 8.0f)
+			{
+				m_IsReinforced = false;
+				m_ItemDuration = 0.0f;
+
+				for (int i = 0; i < MAX_BULLET; ++i)
+				{
+					m_Bullets[i].SetAttackPower(10.0f);
+				}
+			}
+		}
+
 		for (int i = 0; i < MAX_BULLET; ++i)
 		{
-			if (m_Bullets[i].IsActive())
-			{
-				m_Bullets[i].Animate(DeltaTime);
-			}
+			m_Bullets[i].Animate(DeltaTime);
 		}
 	}
 }
@@ -115,6 +149,22 @@ const POINT& CPlayer::GetCameraStartPosition() const
 CBullet* CPlayer::GetBullets()
 {
 	return m_Bullets;
+}
+
+void CPlayer::ReinforceBullet()
+{
+	m_IsReinforced = true;
+	m_ItemDuration = 0.0f;
+
+	for (int i = 0; i < MAX_BULLET; ++i)
+	{
+		m_Bullets[i].SetAttackPower(30.0f);
+	}
+}
+
+bool CPlayer::IsReinforced() const
+{
+	return m_IsReinforced;
 }
 
 void CPlayer::FireBullet(const POINT& CursorPos)
