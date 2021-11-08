@@ -1,6 +1,7 @@
 #pragma once
 
 class CMap;
+class CTower;
 class CPlayer;
 class CMonster;
 
@@ -34,10 +35,11 @@ class CGameScene : public CScene
 private:
 	POINT				m_CursorPos{};
 
-	float               m_MonsterGenTime{ 3.0f };
+	float               m_MonsterGenTime{ 2.0f };
 	float               m_CurrentGenTime{};
 
 	CMap*				m_Map{};
+	CTower*				m_Tower{};
 	CPlayer*			m_Player{};
 	vector<CMonster*>	m_Monsters{};
 	
@@ -58,5 +60,7 @@ public:
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2);
 
 	void CreateMonster(float DeltaTime);
-	void CheckMonsterByBulletCollision();
+
+	void CheckTowerByMonsterCollision();
+	void CheckBulletByMonsterCollision();
 };

@@ -32,6 +32,9 @@ using namespace std;
 #define CLIENT_WIDTH	 800
 #define CLIENT_HEIGHT	 600
 
+// 텍스트로 현재 HP 출력
+#define DEBUG_HP
+
 struct POSITION
 {
 	float m_X{};
