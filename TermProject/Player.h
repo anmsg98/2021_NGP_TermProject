@@ -8,6 +8,8 @@
 class CBullet : public CGameObject
 {
 private:
+	int				m_AttackPower{ 10 };
+
 	float			m_Length{};
 	POINT			m_Direction{};
 
@@ -17,6 +19,9 @@ public:
 
 	virtual void Animate(float DeltaTime);
 	virtual void Render(HDC hMemDC, HDC hMemDC2);
+
+	void SetAttackPower(int AttackPower);
+	int GetAttackPower() const;
 
 	void SetLength(float Length);
 	float GetLength() const;
@@ -32,6 +37,9 @@ class CPlayer : public CGameObject
 private:
 	POINT				m_CameraStartPosition{};
 
+	bool				m_IsReinforced{};
+	float				m_ItemDuration{};
+
 	CBullet* 			m_Bullets;
 	int					m_BulletIndex{};
 
@@ -44,6 +52,9 @@ public:
 
 	const POINT& GetCameraStartPosition() const;
 	CBullet* GetBullets();
+
+	void ReinforceBullet();
+	bool IsReinforced() const;
 
 	void FireBullet(const POINT& CursorPos);
 
