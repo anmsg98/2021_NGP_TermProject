@@ -4,6 +4,7 @@ class CMap;
 class CTower;
 class CPlayer;
 class CMonster;
+class CItem;
 
 class CScene
 {
@@ -35,13 +36,17 @@ class CGameScene : public CScene
 private:
 	POINT				m_CursorPos{};
 
-	float               m_MonsterGenTime{ 2.0f };
-	float               m_CurrentGenTime{};
+	const float         m_MonsterGenTime{ 2.0f };
+	const float			m_ItemGenTime{ 5.0f };
+
+	float               m_CurrentMonsterGenTime{};
+	float				m_CurrentItemGenTime{};
 
 	CMap*				m_Map{};
 	CTower*				m_Tower{};
 	CPlayer*			m_Player{};
 	vector<CMonster*>	m_Monsters{};
+	vector<CItem*>		m_Items{};
 	
 public:
 	CGameScene() = default;
@@ -60,7 +65,9 @@ public:
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2);
 
 	void CreateMonster(float DeltaTime);
+	void CreateItem(float DeltaTime);
 
+	void CheckPlayerByItemCollision();
 	void CheckTowerByMonsterCollision();
 	void CheckBulletByMonsterCollision();
 };

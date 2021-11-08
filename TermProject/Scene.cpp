@@ -4,6 +4,7 @@
 #include "Tower.h"
 #include "Player.h"
 #include "Monster.h"
+#include "Item.h"
 #include "FileManager.h"
 
 CGameScene::~CGameScene()
@@ -182,6 +183,26 @@ void CGameScene::BuildObject()
 
 		m_Monsters.push_back(Monster);
 	}
+
+	// 아이템을 생성한다.
+	const int ItemCount{ 5 };
+
+	for (int i = 0; i < ItemCount; ++i)
+	{
+		CItem* Item{ new CItem{} };
+
+		Item->SetActive(false);
+		Item->SetWidth(34.0f);
+		Item->SetHeight(40.0f);
+
+		// 아이템의 종류 설정
+		int Type{ rand() % 2 + 1 };
+
+		Item->SetType(Type);
+		Item->SetHp(120);
+
+		m_Items.push_back(Item);
+	}
 }
 
 void CGameScene::Animate(float DeltaTime)
@@ -206,7 +227,9 @@ void CGameScene::Animate(float DeltaTime)
 	}
 
 	CreateMonster(DeltaTime);
+	CreateItem(DeltaTime);
 
+	CheckPlayerByItemCollision();
 	CheckTowerByMonsterCollision();
 	CheckBulletByMonsterCollision();
 }
@@ -223,6 +246,11 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 	m_Tower->Render(hMemDC, hMemDC2);
 	m_Player->Render(hMemDC, hMemDC2);
 
+	for (const auto& Item : m_Items)
+	{
+		Item->Render(hMemDC, hMemDC2);
+	}
+
 	for (const auto& Monster : m_Monsters)
 	{
 		Monster->Render(hMemDC, hMemDC2);
@@ -237,9 +265,9 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 
 void CGameScene::CreateMonster(float DeltaTime)
 {
-	m_CurrentGenTime += DeltaTime;
+	m_CurrentMonsterGenTime += DeltaTime;
 
-	if (m_CurrentGenTime >= m_MonsterGenTime)
+	if (m_CurrentMonsterGenTime >= m_MonsterGenTime)
 	{
 		for (const auto& Monster : m_Monsters)
 		{
@@ -266,11 +294,72 @@ void CGameScene::CreateMonster(float DeltaTime)
 				Monster->SetDirect((float)m_Map->GetRect().right * 0.5f - Monster->GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - Monster->GetPosition().m_Y);
 				Monster->SetLength(sqrtf(powf((float)Monster->GetDirect().x, 2) + powf((float)Monster->GetDirect().y, 2)));
 
-				printf("(%.03f, %.03f)에 몬스터 생성됨!\n", Monster->GetPosition().m_X, Monster->GetPosition().m_Y);
+				printf("[안내] 몬스터 생성됨(%.02f, %.02f)\n", Monster->GetPosition().m_X, Monster->GetPosition().m_Y);
 				break;
 			}
 		}
-		m_CurrentGenTime = 0.0f;
+		m_CurrentMonsterGenTime = 0.0f;
+	}
+}
+
+void CGameScene::CreateItem(float DeltaTime)
+{
+	m_CurrentItemGenTime += DeltaTime;
+
+	if (m_CurrentItemGenTime >= m_ItemGenTime)
+	{
+		for (const auto& Item : m_Items)
+		{
+			if (!Item->IsActive())
+			{
+				Item->SetActive(true);
+				Item->SetHp(120);
+				Item->SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f),
+								  RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
+
+
+				printf("[안내] 아이템 생성됨(%.02f, %.02f)\n", Item->GetPosition().m_X, Item->GetPosition().m_Y);
+				break;
+			}
+		}
+		m_CurrentItemGenTime = 0.0f;
+	}
+}
+
+void CGameScene::CheckPlayerByItemCollision()
+{
+	if (m_Player->IsActive())
+	{
+		RECT CollidedRect{};
+		RECT PlayerRect{ (int)(m_Player->GetPosition().m_X - 0.5f * m_Player->GetWidth()),
+						 (int)(m_Player->GetPosition().m_Y - 0.5f * m_Player->GetHeight()),
+					 	 (int)(m_Player->GetPosition().m_X + 0.5f * m_Player->GetWidth()),
+				  		 (int)(m_Player->GetPosition().m_Y + 0.5f * m_Player->GetHeight()) };
+
+		for (const auto& Item : m_Items)
+		{
+			if (Item->IsActive())
+			{
+				RECT ItemRect{ (int)(Item->GetPosition().m_X - 0.5f * Item->GetWidth()),
+							   (int)(Item->GetPosition().m_Y - 0.5f * Item->GetHeight()),
+							   (int)(Item->GetPosition().m_X + 0.5f * Item->GetWidth()),
+							   (int)(Item->GetPosition().m_Y + 0.5f * Item->GetHeight()) };
+
+				if (IntersectRect(&CollidedRect, &PlayerRect, &ItemRect))
+				{
+					if (Item->GetType() == CItem::ATTACK_POWER_UP)
+					{
+						m_Player->ReinforceBullet();
+					}
+					else if (Item->GetType() == CItem::HP_UP)
+					{
+						m_Player->SetHp(m_Player->GetHp() + 30);
+					}
+
+					Item->SetActive(false);
+				}
+			}
+		}
 	}
 }
 
@@ -289,9 +378,9 @@ void CGameScene::CheckTowerByMonsterCollision()
 			if (Monster->IsActive())
 			{
 				RECT MonsterRect{ (int)(Monster->GetPosition().m_X - 0.5f * Monster->GetWidth()),
-								 (int)(Monster->GetPosition().m_Y - 0.5f * Monster->GetHeight()),
-								 (int)(Monster->GetPosition().m_X + 0.5f * Monster->GetWidth()),
-								 (int)(Monster->GetPosition().m_Y + 0.5f * Monster->GetHeight()) };
+								  (int)(Monster->GetPosition().m_Y - 0.5f * Monster->GetHeight()),
+								  (int)(Monster->GetPosition().m_X + 0.5f * Monster->GetWidth()),
+								  (int)(Monster->GetPosition().m_Y + 0.5f * Monster->GetHeight()) };
 
 				if (IntersectRect(&CollidedRect, &TowerRect, &MonsterRect))
 				{
@@ -328,7 +417,7 @@ void CGameScene::CheckBulletByMonsterCollision()
 					if (IntersectRect(&CollidedRect, &BulletRect, &MonsterRect))
 					{
 						Bullets[i].SetActive(false);
-						m_Monsters[j]->SetHp(m_Monsters[j]->GetHp() - 10);
+						m_Monsters[j]->SetHp(m_Monsters[j]->GetHp() - Bullets[i].GetAttackPower());
 					}
 				}
 			}

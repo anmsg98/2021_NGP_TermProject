@@ -142,6 +142,7 @@
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="Framework.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Item.h" />
     <ClInclude Include="Monster.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Map.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Item.cpp" />
     <ClCompile Include="Monster.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Main.cpp" />
