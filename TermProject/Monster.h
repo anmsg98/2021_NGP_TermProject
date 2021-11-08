@@ -3,6 +3,9 @@
 
 class CMonster : public CGameObject
 {
+public:
+	enum { LOWER = 1, MIDDLE, UPPER };
+
 private:
 	int				m_Type{};
 

@@ -32,15 +32,15 @@ void CMonster::Render(HDC hMemDC, HDC hMemDC2)
 		USER_RECT Rect{};
 		int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
 
-		if (m_Type == 1)
+		if (m_Type == LOWER)
 		{
 			Rect = CFileManager::GetInstance()->GetRect("Monster_1_1");
 		}
-		else if (m_Type == 2)
+		else if (m_Type == MIDDLE)
 		{
 			Rect = CFileManager::GetInstance()->GetRect("Monster_2_1");
 		}
-		else if (m_Type == 3)
+		else if (m_Type == UPPER)
 		{
 			Rect = CFileManager::GetInstance()->GetRect("Monster_3_1");
 		}
