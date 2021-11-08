@@ -21,6 +21,21 @@ bool CGameObject::IsActive() const
 	return m_IsActive;
 }
 
+void CGameObject::SetHp(int Hp)
+{
+	m_Hp = Hp;
+
+	if (m_Hp <= 0)
+	{
+		m_Hp = 0;
+	}
+}
+
+int CGameObject::GetHp() const
+{
+	return m_Hp;
+}
+
 void CGameObject::SetPosition(const POSITION& Position)
 {
 	m_Position = Position;

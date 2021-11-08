@@ -23,7 +23,7 @@ void CFileManager::LoadRectFromFile(const char* FileName)
 {
 	ifstream InFile{ FileName };
 	string Str{}, Name{};
-	USER_RECT rect{};
+	USER_RECT Rect{};
 
 	while (InFile >> Str)
 	{
@@ -33,9 +33,9 @@ void CFileManager::LoadRectFromFile(const char* FileName)
 		}
 		else if (Str == "<LTWH>:")
 		{
-			InFile >> rect.m_Left >> rect.m_Top >> rect.m_Width >> rect.m_Height;
+			InFile >> Rect.m_Left >> Rect.m_Top >> Rect.m_Width >> Rect.m_Height;
 
-			m_Rects.insert(make_pair(Name, rect));
+			m_Rects.insert(make_pair(Name, Rect));
 		}
 	}
 }

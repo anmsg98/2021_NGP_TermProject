@@ -5,20 +5,26 @@
 
 void CBullet::Animate(float DeltaTime)
 {
-	m_Position.m_X += (GetDirect().x / GetLength()) * DeltaTime * 1000.f;
-	m_Position.m_Y += (GetDirect().y / GetLength()) * DeltaTime * 1000.f;
-
-	if (m_Position.m_X < 0.0f || m_Position.m_X >= 2000.0f || m_Position.m_Y < 0.0f || m_Position.m_Y >= 1000.0f)
+	if (m_IsActive)
 	{
-		SetActive(false);
+		m_Position.m_X += (GetDirect().x / GetLength()) * DeltaTime * 1000.f;
+		m_Position.m_Y += (GetDirect().y / GetLength()) * DeltaTime * 1000.f;
+
+		if (m_Position.m_X <= 0.0f || m_Position.m_X >= 2400.0f || m_Position.m_Y <= 0.0f || m_Position.m_Y >= 1500.0f)
+		{
+			m_IsActive = true;
+		}
 	}
 }
 
 void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 {
-	USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Bullet_1") };
+	if (m_IsActive)
+	{
+		USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Bullet_1") };
 
-	DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
+		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
+	}
 }
 
 void CBullet::SetLength(float Length)
@@ -65,26 +71,36 @@ CPlayer::~CPlayer()
 
 void CPlayer::Animate(float DeltaTime)
 {
-	printf("%.02f, %.02f\r", GetPosition().m_X, GetPosition().m_Y);
-
-	for (int i = 0; i < MAX_BULLET; ++i)
+	if (m_IsActive)
 	{
-		if (m_Bullets[i].IsActive())
+		printf("%.02f, %.02f\r", GetPosition().m_X, GetPosition().m_Y);
+
+		for (int i = 0; i < MAX_BULLET; ++i)
 		{
-			m_Bullets[i].Animate(DeltaTime);
+			if (m_Bullets[i].IsActive())
+			{
+				m_Bullets[i].Animate(DeltaTime);
+			}
 		}
 	}
 }
 
 void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 {
-	USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Player_1") };
-
-	DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
-
-	for (int i = 0; i < MAX_BULLET; ++i)
+	if (m_IsActive)
 	{
-		if (m_Bullets[i].IsActive())
+		USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Player_1") };
+
+		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
+
+#ifdef DEBUG_HP
+		TCHAR HpText[64]{};
+
+		wsprintf(HpText, _T("%d"), m_Hp);
+		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Height), HpText, lstrlen(HpText));
+#endif
+
+		for (int i = 0; i < MAX_BULLET; ++i)
 		{
 			m_Bullets[i].Render(hMemDC, hMemDC2);
 		}
@@ -116,25 +132,28 @@ void CPlayer::FireBullet(const POINT& CursorPos)
 
 void CPlayer::UpdateCamera(const RECT& ClientRect, const RECT& MapRect)
 {
-	// 맵의 구석으로 가면 더이상 움직이지 않는다.
-	m_CameraStartPosition.x = (int)(m_Position.m_X - (0.5f * ClientRect.right));
-	m_CameraStartPosition.y = (int)(m_Position.m_Y - (0.5f * ClientRect.bottom));
+	if (m_IsActive)
+	{
+		// 맵의 구석으로 가면 더이상 움직이지 않는다.
+		m_CameraStartPosition.x = (int)(m_Position.m_X - (0.5f * ClientRect.right));
+		m_CameraStartPosition.y = (int)(m_Position.m_Y - (0.5f * ClientRect.bottom));
 
-	if (m_CameraStartPosition.x < 0)
-	{
-		m_CameraStartPosition.x = 0;
-	}
-	else if (m_CameraStartPosition.x > MapRect.right - ClientRect.right)
-	{
-		m_CameraStartPosition.x = MapRect.right - ClientRect.right;
-	}
+		if (m_CameraStartPosition.x < 0)
+		{
+			m_CameraStartPosition.x = 0;
+		}
+		else if (m_CameraStartPosition.x > MapRect.right - ClientRect.right)
+		{
+			m_CameraStartPosition.x = MapRect.right - ClientRect.right;
+		}
 
-	if (m_CameraStartPosition.y < 0)
-	{
-		m_CameraStartPosition.y = 0;
-	}
-	else if (m_CameraStartPosition.y > MapRect.bottom - ClientRect.bottom)
-	{
-		m_CameraStartPosition.y = MapRect.bottom - ClientRect.bottom;
+		if (m_CameraStartPosition.y < 0)
+		{
+			m_CameraStartPosition.y = 0;
+		}
+		else if (m_CameraStartPosition.y > MapRect.bottom - ClientRect.bottom)
+		{
+			m_CameraStartPosition.y = MapRect.bottom - ClientRect.bottom;
+		}
 	}
 }
