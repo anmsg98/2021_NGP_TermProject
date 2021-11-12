@@ -108,9 +108,6 @@
     <Image Include="TermProject.ico">
       <Filter>리소스 파일</Filter>
     </Image>
-    <Image Include="Image\SpriteSheet1.bmp">
-      <Filter>리소스 파일</Filter>
-    </Image>
     <Image Include="Image\Background.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
