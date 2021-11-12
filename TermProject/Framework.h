@@ -34,6 +34,7 @@ public:
 	
 	void ProcessInput();
 	void Animate();
+	void PrepareRender();
 	void Render();
 
 	void Update();

@@ -76,6 +76,12 @@ void CFramework::Animate()
 	m_Scenes.top()->Animate(m_Timer->GetDeltaTime());
 }
 
+void CFramework::PrepareRender()
+{
+	InvalidateRect(m_hWnd, &m_ClientRect, false);
+	UpdateWindow(m_hWnd);
+}
+
 void CFramework::Render()
 {
 	m_hDC = BeginPaint(m_hWnd, &m_PaintStruct);
@@ -87,7 +93,6 @@ void CFramework::Render()
 	DeleteDC(m_hMemDC);
 	DeleteDC(m_hMemDC2);	
 	EndPaint(m_hWnd, &m_PaintStruct);
-	InvalidateRect(m_hWnd, &m_ClientRect, false);
 }
 
 void CFramework::Update()
@@ -96,5 +101,5 @@ void CFramework::Update()
 
 	ProcessInput();
 	Animate();
-	Render();
+	PrepareRender();
 }
