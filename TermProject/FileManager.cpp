@@ -17,6 +17,7 @@ void CFileManager::LoadBitmaps(HINSTANCE hInstance)
 {
 	m_Bitmaps.insert(make_pair("Background", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_BG))));
 	m_Bitmaps.insert(make_pair("SpriteSheet", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_SPRITE))));
+	m_Bitmaps.insert(make_pair("SpriteSheet2", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_SPRITE))));
 }
 
 void CFileManager::LoadRectFromFile(const char* FileName)
