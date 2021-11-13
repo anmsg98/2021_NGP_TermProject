@@ -1,10 +1,21 @@
 #pragma once
+#include "Timer.h"
+#include "Player.h"
+#include "Tower.h"
+#include "Monster.h"
+#include "Item.h"
 
 class CMap;
-class CTower;
-class CPlayer;
-class CMonster;
-class CItem;
+
+struct GameData
+{
+	float							m_DeltaTime{};
+
+	CPlayer							m_Players[MAX_PLAYER]{};
+	CTower							m_Tower{};
+	CMonster						m_Monsters[MAX_MONSTER]{};
+	CItem							m_Items[MAX_ITEM]{};
+};
 
 class CScene
 {
@@ -20,14 +31,13 @@ public:
 
 	virtual void ProcessKeyboardMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = 0;
 	virtual void ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = 0;
-	virtual void ProcessInput(float DeltaTime) = 0;
+	virtual void ProcessInput() = 0;
 
-	virtual void OnCreate(HINSTANCE hInstance, HWND hWnd) = 0;
+	virtual void OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data) = 0;
 	virtual void OnDestroy() = 0;
  
-	virtual void BuildObject() = 0;
+	virtual void BuildObject(int ID, GameData* Data) = 0;
 
-	virtual void Animate(float DeltaTime) = 0;
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2) = 0;
 };
 
@@ -36,17 +46,9 @@ class CGameScene : public CScene
 private:
 	POINT				m_CursorPos{};
 
-	const float         m_MonsterGenTime{ 2.0f };
-	const float			m_ItemGenTime{ 5.0f };
-
-	float               m_CurrentMonsterGenTime{};
-	float				m_CurrentItemGenTime{};
-
+	int					m_ID{};
 	CMap*				m_Map{};
-	CTower*				m_Tower{};
-	CPlayer*			m_Player{};
-	vector<CMonster*>	m_Monsters{};
-	vector<CItem*>		m_Items{};
+	GameData*			m_GameData{};
 	
 public:
 	CGameScene() = default;
@@ -54,20 +56,12 @@ public:
 
 	virtual void ProcessKeyboardMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	virtual void ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	virtual void ProcessInput(float DeltaTime);
+	virtual void ProcessInput();
 
-	virtual void OnCreate(HINSTANCE hInstance, HWND hWnd);
+	virtual void OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data);
 	virtual void OnDestroy();
 
-	virtual void BuildObject();
+	virtual void BuildObject(int ID, GameData* Data);
 
-	virtual void Animate(float DeltaTime);
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2);
-
-	void CreateMonster(float DeltaTime);
-	void CreateItem(float DeltaTime);
-
-	void CheckPlayerByItemCollision();
-	void CheckTowerByMonsterCollision();
-	void CheckBulletByMonsterCollision();
 };

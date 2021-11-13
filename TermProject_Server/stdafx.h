@@ -1,24 +1,22 @@
-ï»¿#pragma once
-#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+#pragma once
 #pragma comment (lib, "Msimg32.lib")
 #pragma comment(lib, "ws2_32")
 
 #include "targetver.h"
-#include "Resource.h"
 
-// ê±°ì˜ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ë‚´ìš©ì„ Windows í—¤ë”ì—ì„œ ì œì™¸í•©ë‹ˆë‹¤.
+// °ÅÀÇ »ç¿ëµÇÁö ¾Ê´Â ³»¿ëÀ» Windows Çì´õ¿¡¼­ Á¦¿ÜÇÕ´Ï´Ù.
 #define WIN32_LEAN_AND_MEAN      
 
-// Windows í—¤ë” íŒŒì¼
+// Windows Çì´õ ÆÄÀÏ
 #include <winsock2.h>
 
-// C ëŸ°íƒ€ì„ í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
+// C ·±Å¸ÀÓ Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
 
-// C++ ëŸ°íƒ€ì„ í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
+// C++ ·±Å¸ÀÓ Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
 #include <iostream>
 #include <fstream>
 #include <stack>
@@ -35,7 +33,7 @@ using namespace std;
 
 #define PI 3.141592654
 
-// í…ìŠ¤íŠ¸ë¡œ í˜„ì¬ HP ì¶œë ¥
+// ÅØ½ºÆ®·Î ÇöÀç HP Ãâ·Â
 #define DEBUG_HP
 
 struct POSITION

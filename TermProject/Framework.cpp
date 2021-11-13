@@ -4,15 +4,18 @@
 
 CFramework::CFramework()
 {
-	m_Timer = new CTimer{};
+	m_GameData = new GameData{};
 }
 
 CFramework::~CFramework()
 {
-	if (m_Timer)
+	if (m_GameData)
 	{
-		delete m_Timer;
+		delete m_GameData;
 	}
+
+	closesocket(m_Socket);
+	WSACleanup();
 }
 
 void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
@@ -21,18 +24,122 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 	m_hWnd = hWnd;
 
 	GetClientRect(hWnd, &m_ClientRect);
+	ConnectServer();
 
 	// 씬을 생성한다.
 	CGameScene* Scene{ new CGameScene{} };
 
-	Scene->OnCreate(hInstance, hWnd);
+	Scene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
 	m_Scenes.push(Scene);
-	m_Timer->Start();
 }
 
 void CFramework::OnDestroy()
 {
 
+}
+
+void CFramework::err_quit(const char* Msg)
+{
+	LPVOID MsgBuffer{};
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&MsgBuffer, 0, NULL);
+	MessageBox(NULL, (LPCWSTR)MsgBuffer, (LPCWSTR)Msg, MB_ICONERROR);
+
+	LocalFree(MsgBuffer);
+	exit(1);
+}
+
+void CFramework::err_display(const char* Msg)
+{
+	LPVOID MsgBuffer{};
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&MsgBuffer, 0, NULL);
+
+	cout << "[" << Msg << "] " << (char*)MsgBuffer << endl;
+
+	LocalFree(MsgBuffer);
+}
+
+int CFramework::recvn(SOCKET Socket, char* Buffer, int Length, int Flags)
+{
+	int Received{};
+	int Left{ Length };
+	char* Ptr{ Buffer };
+
+	while (Left > 0)
+	{
+		Received = recv(Socket, Ptr, Left, Flags);
+
+		if (Received == SOCKET_ERROR)
+		{
+			return SOCKET_ERROR;
+		}
+		else if (Received == 0)
+		{
+			break;
+		}
+
+		Left -= Received;
+		Ptr += Received;
+	}
+
+	return (Length - Left);
+}
+
+void CFramework::ConnectServer()
+{
+	WSADATA Wsa{};
+
+	if (WSAStartup(MAKEWORD(2, 2), &Wsa))
+	{
+		cout << "윈속을 초기화하지 못했습니다." << endl;
+		exit(1);
+	}
+
+	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (m_Socket == INVALID_SOCKET)
+	{
+		err_quit("socket()");
+	}
+
+	m_SocketAddress.sin_family = AF_INET;
+	m_SocketAddress.sin_addr.s_addr = inet_addr(SERVER_IP);
+	m_SocketAddress.sin_port = htons(SERVER_PORT);
+
+	int ReturnValue{ connect(m_Socket, (SOCKADDR*)&m_SocketAddress, sizeof(m_SocketAddress)) };
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		err_quit("connect()");
+	}
+
+	if (!GetPlayerID())
+	{
+		cout << "플레이어 아이디를 수신하지 못했습니다." << endl;
+	}
+}
+
+bool CFramework::GetPlayerID()
+{
+	int ReturnValue{ recvn(m_Socket, (char*)&m_ID, sizeof(int), 0) };
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		err_display("recv()");
+
+		return false;
+	}
+
+	return true;
 }
 
 void CFramework::ProcessKeyboardMessage(const HWND& hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -68,12 +175,23 @@ void CFramework::ProcessMouseMessage(const HWND& hWnd, UINT message, WPARAM wPar
 
 void CFramework::ProcessInput()
 {
-	m_Scenes.top()->ProcessInput(m_Timer->GetDeltaTime());
-}
+	int ReturnValue{};
+	
+	ReturnValue = recvn(m_Socket, (char*)m_GameData, sizeof(GameData), 0);
 
-void CFramework::Animate()
-{
-	m_Scenes.top()->Animate(m_Timer->GetDeltaTime());
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		err_display("recv()");
+	}
+
+	m_Scenes.top()->ProcessInput();
+
+	ReturnValue = send(m_Socket, (char*)m_GameData, sizeof(GameData), 0);
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		err_display("send()");
+	}
 }
 
 void CFramework::PrepareRender()
@@ -97,9 +215,7 @@ void CFramework::Render()
 
 void CFramework::Update()
 {
-	m_Timer->Update();
 
 	ProcessInput();
-	Animate();
 	PrepareRender();
 }

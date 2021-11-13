@@ -19,22 +19,7 @@ void CBullet::Animate(float DeltaTime)
 
 void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 {
-	if (m_IsActive)
-	{
-		USER_RECT Rect{};
 
-		// 플레이어가 아이템을 획득하여 총알이 강화된 경우와 분리한다.
-		if (m_AttackPower == 10)
-		{
-			Rect = CFileManager::GetInstance()->GetRect("Bullet_1");
-		}
-		else if (m_AttackPower == 30)
-		{
-			Rect = CFileManager::GetInstance()->GetRect("Bullet_2");
-		}
-
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
-	}
 }
 
 void CBullet::SetAttackPower(int AttackPower)
@@ -79,6 +64,36 @@ CPlayer::CPlayer()
 	}
 }
 
+void CPlayer::SetID(int ID)
+{
+	m_ID = ID;
+}
+
+int CPlayer::GetID() const
+{
+	return m_ID;
+}
+
+void CPlayer::SetSocket(SOCKET Socket)
+{
+	m_Socket = Socket;
+}
+
+SOCKET CPlayer::GetSocket() const
+{
+	return m_Socket;
+}
+
+void CPlayer::SetSocketAddress(const SOCKADDR_IN& SocketAddress)
+{
+	m_SocketAddress = SocketAddress;
+}
+
+const SOCKADDR_IN& CPlayer::GetSocketAddress() const
+{
+	return m_SocketAddress;
+}
+
 void CPlayer::Animate(float DeltaTime)
 {
 	if (m_IsActive)
@@ -111,28 +126,7 @@ void CPlayer::Animate(float DeltaTime)
 
 void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 {
-	if (m_IsActive)
-	{
-		USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Player_1") };
-		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SpriteSheet") };
-		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, 0, 0, Rect.m_Width, Rect.m_Height, atan2(m_Direction.y, m_Direction.x) * 180 / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
-		
-		SelectObject(hMemDC2, hRotateBitmap);
-		DrawRect(hMemDC, GetPosition(), 2 * GetWidth(), 2 * GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
-		SelectObject(hMemDC2, hSourceBitmap);
-
-#ifdef DEBUG_HP
-		TCHAR HpText[64]{};
-
-		wsprintf(HpText, _T("%d"), m_Hp);
-		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Height), HpText, lstrlen(HpText));
-#endif
-
-		for (int i = 0; i < MAX_BULLET; ++i)
-		{
-			m_Bullets[i].Render(hMemDC, hMemDC2);
-		}
-	}
+	
 }
 
 const POINT& CPlayer::GetCameraStartPosition() const
@@ -180,7 +174,7 @@ void CPlayer::FireBullet(const POINT& CursorPos)
 		m_Bullets[m_BulletIndex].SetDirect(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
 		m_Bullets[m_BulletIndex].SetLength(sqrtf(powf((float)m_Bullets[m_BulletIndex].GetDirect().x, 2) + powf((float)m_Bullets[m_BulletIndex].GetDirect().y, 2)));
 		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirect().x / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
-			                                 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirect().y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
+											 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirect().y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
 	}
 
 	m_BulletIndex = (m_BulletIndex + 1) % MAX_BULLET;
