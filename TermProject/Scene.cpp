@@ -42,13 +42,16 @@ void CGameScene::ProcessKeyboardMessage(HWND hWnd, UINT message, WPARAM wParam, 
 
 void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	m_CursorPos.x = LOWORD(lParam);
+	m_CursorPos.y = HIWORD(lParam);
+
+	m_Player->SetDirect(m_CursorPos.x + m_Player->GetCameraStartPosition().x - m_Player->GetPosition().m_X,
+		                m_CursorPos.y + m_Player->GetCameraStartPosition().y - m_Player->GetPosition().m_Y);
+
 	switch (message)
 	{
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
-		m_CursorPos.x = LOWORD(lParam);
-		m_CursorPos.y = HIWORD(lParam);
-
 		if (m_Player)
 		{
 			m_Player->FireBullet(m_CursorPos);
@@ -246,6 +249,7 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 	m_Tower->Render(hMemDC, hMemDC2);
 	m_Player->Render(hMemDC, hMemDC2);
 
+
 	for (const auto& Item : m_Items)
 	{
 		Item->Render(hMemDC, hMemDC2);
@@ -315,7 +319,7 @@ void CGameScene::CreateItem(float DeltaTime)
 				Item->SetActive(true);
 				Item->SetHp(120);
 				Item->SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f),
-								  RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
+					RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
 
 
 				printf("[안내] 아이템 생성됨(%.02f, %.02f)\n", Item->GetPosition().m_X, Item->GetPosition().m_Y);
@@ -333,8 +337,8 @@ void CGameScene::CheckPlayerByItemCollision()
 		RECT CollidedRect{};
 		RECT PlayerRect{ (int)(m_Player->GetPosition().m_X - 0.5f * m_Player->GetWidth()),
 						 (int)(m_Player->GetPosition().m_Y - 0.5f * m_Player->GetHeight()),
-					 	 (int)(m_Player->GetPosition().m_X + 0.5f * m_Player->GetWidth()),
-				  		 (int)(m_Player->GetPosition().m_Y + 0.5f * m_Player->GetHeight()) };
+						 (int)(m_Player->GetPosition().m_X + 0.5f * m_Player->GetWidth()),
+						 (int)(m_Player->GetPosition().m_Y + 0.5f * m_Player->GetHeight()) };
 
 		for (const auto& Item : m_Items)
 		{
