@@ -242,28 +242,32 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 	m_hBitmap = CreateCompatibleBitmap(hDC, m_Map->GetRect().right, m_Map->GetRect().bottom);
 	m_hOldBitmap = (HBITMAP)SelectObject(hMemDC, m_hBitmap);
 
-	SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("Background"));
+	HBITMAP hOldBitmap{};
+
+	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("Background"));
 	m_Map->Render(hMemDC, hMemDC2);
+	SelectObject(hMemDC2, hOldBitmap);
 
-	SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SpriteSheet"));
+	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SpriteSheet"));
 	m_Tower->Render(hMemDC, hMemDC2);
-	m_Player->Render(hMemDC, hMemDC2);
-
-
-	for (const auto& Item : m_Items)
-	{
-		Item->Render(hMemDC, hMemDC2);
-	}
 
 	for (const auto& Monster : m_Monsters)
 	{
 		Monster->Render(hMemDC, hMemDC2);
 	}
 
+	for (const auto& Item : m_Items)
+	{
+		Item->Render(hMemDC, hMemDC2);
+	}
+
+	SelectObject(hMemDC2, hOldBitmap);
+	m_Player->Render(hMemDC, hMemDC2);
+
 	POINT PlayerCameraPos{ m_Player->GetCameraStartPosition() };
 
 	BitBlt(hDC, 0, 0, m_ClientRect.right, m_ClientRect.bottom, hMemDC, PlayerCameraPos.x, PlayerCameraPos.y, SRCCOPY);
-	SelectObject(hMemDC, m_hBitmap);
+	SelectObject(hMemDC, m_hOldBitmap);
 	DeleteObject(m_hBitmap);
 }
 

@@ -42,7 +42,7 @@ private:
 	bool				m_IsReinforced{};
 	float				m_ItemDuration{};
 
-	CBullet* m_Bullets;
+	CBullet*			m_Bullets;
 	int					m_BulletIndex{};
 
 public:
@@ -55,13 +55,13 @@ public:
 	const POINT& GetCameraStartPosition() const;
 	CBullet* GetBullets();
 
+	void SetDirect(float DirX, float DirY);
+	POINT GetDirect() const;
+
 	void ReinforceBullet();
 	bool IsReinforced() const;
 
 	void FireBullet(const POINT& CursorPos);
 
 	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
-
-	void SetDirect(float DirX, float DirY);
-	POINT GetDirect() const;
 };

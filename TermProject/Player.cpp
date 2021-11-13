@@ -107,7 +107,7 @@ void CPlayer::Animate(float DeltaTime)
 
 				for (int i = 0; i < MAX_BULLET; ++i)
 				{
-					m_Bullets[i].SetAttackPower(10.0f);
+					m_Bullets[i].SetAttackPower(10);
 				}
 			}
 		}
@@ -124,18 +124,12 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 	if (m_IsActive)
 	{
 		USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Player_1") };
-
-
-		printf("%d, %d,  %f   ", m_Direction.y, m_Direction.x, atan2(m_Direction.y, m_Direction.x) * 180 / PI + 90.0f);
-
-		HBITMAP SourceBitmap = CFileManager::GetInstance()->GetBitmap("SpriteSheet2");
-		HBITMAP RotateBitmap = GetRotatedBitmap(hMemDC, SourceBitmap, 0, 0, Rect.m_Width, Rect.m_Height,
-                     		                    atan2(m_Direction.y, m_Direction.x) * 180 / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor());
-		SelectObject(hMemDC2, RotateBitmap);
-		USER_RECT Rect2{ 0, 0, Rect.m_Width, Rect.m_Height };
-
-		DrawRect(hMemDC, GetPosition(), GetWidth() * 2, GetHeight() * 2, hMemDC2, Rect2, CFileManager::GetInstance()->GetTransparentColor());
-
+		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SpriteSheet") };
+		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, 0, 0, Rect.m_Width, Rect.m_Height, atan2(m_Direction.y, m_Direction.x) * 180 / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
+		
+		SelectObject(hMemDC2, hRotateBitmap);
+		DrawRect(hMemDC, GetPosition(), 2 * GetWidth(), 2 * GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
+		SelectObject(hMemDC2, hSourceBitmap);
 
 #ifdef DEBUG_HP
 		TCHAR HpText[64]{};
@@ -144,15 +138,12 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Height), HpText, lstrlen(HpText));
 #endif
 
-		SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SpriteSheet"));
 		for (int i = 0; i < MAX_BULLET; ++i)
 		{
 			m_Bullets[i].Render(hMemDC, hMemDC2);
 		}
 	}
 }
-
-
 
 const POINT& CPlayer::GetCameraStartPosition() const
 {
@@ -164,6 +155,17 @@ CBullet* CPlayer::GetBullets()
 	return m_Bullets;
 }
 
+void CPlayer::SetDirect(float DirX, float DirY)
+{
+	m_Direction.x = (int)DirX;
+	m_Direction.y = (int)DirY;
+}
+
+POINT CPlayer::GetDirect() const
+{
+	return m_Direction;
+}
+
 void CPlayer::ReinforceBullet()
 {
 	m_IsReinforced = true;
@@ -171,7 +173,7 @@ void CPlayer::ReinforceBullet()
 
 	for (int i = 0; i < MAX_BULLET; ++i)
 	{
-		m_Bullets[i].SetAttackPower(30.0f);
+		m_Bullets[i].SetAttackPower(30);
 	}
 }
 
@@ -187,9 +189,8 @@ void CPlayer::FireBullet(const POINT& CursorPos)
 		m_Bullets[m_BulletIndex].SetActive(true);
 		m_Bullets[m_BulletIndex].SetDirect(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
 		m_Bullets[m_BulletIndex].SetLength(sqrtf(powf((float)m_Bullets[m_BulletIndex].GetDirect().x, 2) + powf((float)m_Bullets[m_BulletIndex].GetDirect().y, 2)));
-
-		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirect().x / m_Bullets[m_BulletIndex].GetLength()) * GetWidth() *0.5f,
-			                                 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirect().y / m_Bullets[m_BulletIndex].GetLength()) * GetHeight() * 0.5f);
+		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirect().x / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
+			                                 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirect().y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
 	}
 
 	m_BulletIndex = (m_BulletIndex + 1) % MAX_BULLET;
@@ -222,16 +223,3 @@ void CPlayer::UpdateCamera(const RECT& ClientRect, const RECT& MapRect)
 		}
 	}
 }
-
-
-void CPlayer::SetDirect(float DirX, float DirY)
-{
-	m_Direction.x = (int)DirX;
-	m_Direction.y = (int)DirY;
-}
-
-POINT CPlayer::GetDirect() const
-{
-	return m_Direction;
-}
-
