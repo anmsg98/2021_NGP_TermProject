@@ -28,7 +28,7 @@ public:
 
 	void SetDirect(float DirX, float DirY);
 	POINT GetDirect() const;
-}; 
+};
 
 // ============================================== CPlayer ============================================== 
 
@@ -37,16 +37,18 @@ class CPlayer : public CGameObject
 private:
 	POINT				m_CameraStartPosition{};
 
+	POINT			    m_Direction{};
+
 	bool				m_IsReinforced{};
 	float				m_ItemDuration{};
 
-	CBullet* 			m_Bullets;
+	CBullet* m_Bullets;
 	int					m_BulletIndex{};
 
 public:
 	CPlayer();
 	~CPlayer();
-	
+
 	virtual void Animate(float DeltaTime);
 	virtual void Render(HDC hMemDC, HDC hMemDC2);
 
@@ -59,4 +61,7 @@ public:
 	void FireBullet(const POINT& CursorPos);
 
 	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
+
+	void SetDirect(float DirX, float DirY);
+	POINT GetDirect() const;
 };
