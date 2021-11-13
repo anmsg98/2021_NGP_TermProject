@@ -32,6 +32,8 @@ using namespace std;
 #define CLIENT_WIDTH	 800
 #define CLIENT_HEIGHT	 600
 
+#define PI 3.141592654
+
 // 텍스트로 현재 HP 출력
 #define DEBUG_HP
 
@@ -55,3 +57,8 @@ struct USER_RECT
 float RandF(float Min, float Max);
 
 void DrawRect(HDC hMemDC, const POSITION& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);
+
+
+HBITMAP GetRotatedBitmap(HDC hdc, HBITMAP hBitmap, int source_x, int source_y,
+	int dest_width, int dest_height, float angle, COLORREF bkColor);
+
