@@ -82,6 +82,7 @@ void CGameScene::ProcessInput()
 	}
 
 	m_GameData->m_Players[m_ID].SetPosition(PlayerPos);
+	m_GameData->m_Players[m_ID].UpdateCamera(m_ClientRect, MapRect);
 }
 
 void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data)
@@ -122,23 +123,23 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 	SelectObject(hMemDC2, hOldBitmap);
 
 	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SpriteSheet"));
-	m_GameData->m_Tower.Render(hMemDC, hMemDC2);
+	//m_GameData->m_Tower.Render(hMemDC, hMemDC2);
 
 	for (int i = 0 ; i < MAX_MONSTER; ++i)
 	{
-		m_GameData->m_Monsters[i].Render(hMemDC, hMemDC2);
+		//m_GameData->m_Monsters[i].Render(hMemDC, hMemDC2);
 	}
 
 	for (int i = 0 ; i < MAX_ITEM ; ++i)
 	{
-		m_GameData->m_Items[i].Render(hMemDC, hMemDC2);
+		//m_GameData->m_Items[i].Render(hMemDC, hMemDC2);
 	}
 
 	SelectObject(hMemDC2, hOldBitmap);
 
 	for (int i = 0; i < MAX_PLAYER; ++i)
 	{
-		m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
+		//m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
 	}
 
 	POINT PlayerCameraPos{ m_GameData->m_Players[m_ID].GetCameraStartPosition() };
