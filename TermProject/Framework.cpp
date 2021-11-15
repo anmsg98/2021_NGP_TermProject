@@ -27,7 +27,7 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 	ConnectServer();
 
 	// 씬을 생성한다.
-	CGameScene* Scene{ new CGameScene{} };
+	CScene* Scene{ new CGameScene{} };
 
 	Scene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
 	m_Scenes.push(Scene);
@@ -47,7 +47,7 @@ void CFramework::err_quit(const char* Msg)
 		NULL, WSAGetLastError(),
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPTSTR)&MsgBuffer, 0, NULL);
-	MessageBox(NULL, (LPCWSTR)MsgBuffer, (LPCWSTR)Msg, MB_ICONERROR);
+	MessageBox(NULL, (LPCSTR)MsgBuffer, (LPCSTR)Msg, MB_ICONERROR);
 
 	LocalFree(MsgBuffer);
 	exit(1);
@@ -215,7 +215,6 @@ void CFramework::Render()
 
 void CFramework::Update()
 {
-
 	ProcessInput();
 	PrepareRender();
 }

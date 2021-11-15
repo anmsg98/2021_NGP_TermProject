@@ -135,6 +135,36 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 	}
 }
 
+void CPlayer::SetID(int ID)
+{
+	m_ID = ID;
+}
+
+int CPlayer::GetID() const
+{
+	return m_ID;
+}
+
+void CPlayer::SetSocket(SOCKET Socket)
+{
+	m_Socket = Socket;
+}
+
+SOCKET CPlayer::GetSocket() const
+{
+	return m_Socket;
+}
+
+void CPlayer::SetSocketAddress(const SOCKADDR_IN& SocketAddress)
+{
+	m_SocketAddress = SocketAddress;
+}
+
+const SOCKADDR_IN& CPlayer::GetSocketAddress() const
+{
+	return m_SocketAddress;
+}
+
 const POINT& CPlayer::GetCameraStartPosition() const
 {
 	return m_CameraStartPosition;

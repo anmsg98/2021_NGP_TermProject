@@ -69,7 +69,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
         {
             break;
         }
-
+        
         Server->m_Timer->Update();
         Server->m_GameData->m_DeltaTime = Server->m_Timer->GetDeltaTime();
 
