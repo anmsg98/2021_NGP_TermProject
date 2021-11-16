@@ -381,8 +381,7 @@ void CServer::BuildObject()
 
         // 맵의 중앙을 도착점으로 지정
         m_GameData->m_Monsters[i].SetDirection((float)m_Map->GetRect().right * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_Y);
-        m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirection().x, 2) + powf((float)m_GameData->m_Monsters[i].GetDirection().y, 2)));
-        m_GameData->m_Monsters[i].SetMapPosition(m_Map->GetRect().right * 0.5f, m_Map->GetRect().bottom * 0.5f);
+        m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirection().m_X, 2) + powf((float)m_GameData->m_Monsters[i].GetDirection().m_Y, 2)));
     }
 
     // 아이템을 초기화한다.
@@ -479,37 +478,38 @@ void CServer::CheckBulletByMonsterCollision()
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
         // 서버와 연결 중이고 생존 한 플레이어에 대해서만 충돌을 검사한다.
-        CBullet* Bullets{ m_GameData->m_Players[i].GetBullets() };
-        RECT CollidedRect{};
         if (m_GameData->m_Players[i].GetSocket() && m_GameData->m_Players[i].IsActive())
         {
-            for (int i = 0; i < MAX_BULLET; ++i) 
-            {
-                if (Bullets[i].IsActive())
-                {
-                    RECT BulletRect{ (int)(Bullets[i].GetPosition().m_X - 0.5f * Bullets[i].GetWidth()),
-                                     (int)(Bullets[i].GetPosition().m_Y - 0.5f * Bullets[i].GetHeight()),
-                                     (int)(Bullets[i].GetPosition().m_X + 0.5f * Bullets[i].GetWidth()),
-                                     (int)(Bullets[i].GetPosition().m_Y + 0.5f * Bullets[i].GetHeight()) };
-                for (int j = 0; j < MAX_MONSTER; ++j)
-                {
-                        if (m_GameData->m_Monsters[j].IsActive())
-                        {
-                            RECT MonsterRect{ (int)(m_GameData->m_Monsters[j].GetPosition().m_X - 0.5f * m_GameData->m_Monsters[j].GetWidth()),
-                                              (int)(m_GameData->m_Monsters[j].GetPosition().m_Y - 0.5f * m_GameData->m_Monsters[j].GetHeight()),
-                                              (int)(m_GameData->m_Monsters[j].GetPosition().m_X + 0.5f * m_GameData->m_Monsters[j].GetWidth()),
-                                              (int)(m_GameData->m_Monsters[j].GetPosition().m_Y + 0.5f * m_GameData->m_Monsters[j].GetHeight()) };
+            CBullet* Bullets{ m_GameData->m_Players[i].GetBullets() };
 
-                            // CPlayer::CheckBulletByMonsterCollision() 함수는 총알과 몬스터가 충돌했을 경우, 총알의 데미지를 반환한다.
-                            // 이때, 충돌이 일어나지 않은 경우에는 0을 반환하여 체력을 닳지 않게 한다.
+            for (int j = 0; j < MAX_BULLET; ++j)
+            {
+                if (Bullets[j].IsActive())
+                {
+                    RECT BulletRect{ (int)(Bullets[j].GetPosition().m_X - 0.5f * Bullets[j].GetWidth()),
+                                     (int)(Bullets[j].GetPosition().m_Y - 0.5f * Bullets[j].GetHeight()),
+                                     (int)(Bullets[j].GetPosition().m_X + 0.5f * Bullets[j].GetWidth()),
+                                     (int)(Bullets[j].GetPosition().m_Y + 0.5f * Bullets[j].GetHeight()) };
+
+                    for (int k = 0; k < MAX_MONSTER; ++k)
+                    {
+                        if (m_GameData->m_Monsters[k].IsActive() && !m_GameData->m_Monsters[k].IsCollided())
+                        {
+                            RECT CollidedRect{};
+                            RECT MonsterRect{ (int)(m_GameData->m_Monsters[k].GetPosition().m_X - 0.5f * m_GameData->m_Monsters[k].GetWidth()),
+                                              (int)(m_GameData->m_Monsters[k].GetPosition().m_Y - 0.5f * m_GameData->m_Monsters[k].GetHeight()),
+                                              (int)(m_GameData->m_Monsters[k].GetPosition().m_X + 0.5f * m_GameData->m_Monsters[k].GetWidth()),
+                                              (int)(m_GameData->m_Monsters[k].GetPosition().m_Y + 0.5f * m_GameData->m_Monsters[k].GetHeight()) };
 
                             if (IntersectRect(&CollidedRect, &BulletRect, &MonsterRect))
                             {
-                                m_GameData->m_Monsters[j].SetBulletCollide();
-                                m_GameData->m_Monsters[j].SetDirection(Bullets[i].GetDirection().x, Bullets[i].GetDirection().y);
-                                m_GameData->m_Monsters[j].SetLength(Bullets[i].GetLength());
-                                Bullets[i].SetActive(false);
-                                m_GameData->m_Monsters[j].SetHp(m_GameData->m_Monsters[j].GetHp() - Bullets[i].GetAttackPower());
+                                Bullets[j].SetActive(false);
+
+                                m_GameData->m_Monsters[k].PrepareCollision();
+                                m_GameData->m_Monsters[k].SetHp(m_GameData->m_Monsters[k].GetHp() - Bullets[j].GetAttackPower());
+                                m_GameData->m_Monsters[k].SetPrevDirection(m_GameData->m_Monsters[k].GetDirection().m_X, m_GameData->m_Monsters[k].GetDirection().m_Y);
+                                m_GameData->m_Monsters[k].SetDirection(Bullets[j].GetDirection().m_X, Bullets[j].GetDirection().m_Y);
+                                m_GameData->m_Monsters[k].SetLength(Bullets[j].GetLength());
                             }
                         }
                     }
@@ -531,7 +531,7 @@ void CServer::CheckTowerByMonsterCollision()
 
         for (int i = 0; i < MAX_MONSTER; ++i)
         {
-            if (m_GameData->m_Monsters[i].IsActive())
+            if (m_GameData->m_Monsters[i].IsActive() && !m_GameData->m_Monsters[i].IsCollided())
             {
                 RECT MonsterRect{ (int)(m_GameData->m_Monsters[i].GetPosition().m_X - 0.5f * m_GameData->m_Monsters[i].GetWidth()),
                                   (int)(m_GameData->m_Monsters[i].GetPosition().m_Y - 0.5f * m_GameData->m_Monsters[i].GetHeight()),
@@ -540,8 +540,10 @@ void CServer::CheckTowerByMonsterCollision()
 
                 if (IntersectRect(&CollidedRect, &TowerRect, &MonsterRect))
                 {
-                    m_GameData->m_Monsters[i].SetTowerCollide();
                     m_GameData->m_Tower.SetHp(m_GameData->m_Tower.GetHp() - 10 * m_GameData->m_Monsters[i].GetType());
+                    m_GameData->m_Monsters[i].PrepareCollision();
+                    m_GameData->m_Monsters[i].SetPrevDirection(m_GameData->m_Monsters[i].GetDirection().m_X, m_GameData->m_Monsters[i].GetDirection().m_Y);
+                    m_GameData->m_Monsters[i].SetDirection(-m_GameData->m_Monsters[i].GetDirection().m_X, -m_GameData->m_Monsters[i].GetDirection().m_Y);
                 }
             }
         }

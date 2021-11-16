@@ -12,7 +12,7 @@ private:
 	float			m_AttackPower{ 10.0 };
 
 	float			m_Length{};
-	POINT			m_Direction{};
+	VECTOR2D		m_Direction{};
 
 public:
 	CBullet() = default;
@@ -27,8 +27,9 @@ public:
 	void SetLength(float Length);
 	float GetLength() const;
 
+	void SetDirection(const VECTOR2D& Direction);
 	void SetDirection(float DirX, float DirY);
-	POINT GetDirection() const;
+	VECTOR2D GetDirection() const;
 };
 
 // ============================================== CPlayer ============================================== 
@@ -43,7 +44,7 @@ private:
 
 	POINT				m_CameraStartPosition{};
 
-	POINT			    m_Direction{};
+	VECTOR2D			m_Direction{};
 
 	bool				m_IsGetItem{};
 	float				m_ItemDuration{};
@@ -60,7 +61,6 @@ public:
 
 	void SetID(int ID);
 	int GetID() const;
-	CBullet* GetBullets();
 
 	void SetSocket(SOCKET Socket);
 	SOCKET GetSocket() const;
@@ -70,14 +70,15 @@ public:
 
 	const POINT& GetCameraStartPosition() const;
 
+	void SetDirection(const VECTOR2D& Direction);
 	void SetDirection(float DirX, float DirY);
-	POINT GetDirection() const;
+	VECTOR2D GetDirection() const;
 
 	bool IsGetItem() const;
 	void ReinforceBullet();
 
+	CBullet* GetBullets();
 	void FireBullet(const POINT& CursorPos);
 
 	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
-
 };

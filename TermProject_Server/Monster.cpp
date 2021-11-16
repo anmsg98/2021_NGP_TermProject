@@ -7,41 +7,28 @@ void CMonster::Animate(float DeltaTime)
 	{
 		if (m_Hp != 0)
 		{
-			if (is_TowerCollide)
+			if (m_IsCollided)
 			{
-				m_TimeElapsed_T += DeltaTime;
-				if (m_TimeElapsed_T < 0.3f)
-				{
-					m_Position.m_X -= (GetDirection().x / GetLength()) * DeltaTime * 300.0f;
-					m_Position.m_Y -= (GetDirection().y / GetLength()) * DeltaTime * 300.0f;
-				}
-				else
-				{
-					m_TimeElapsed_T = 0.0f;
-					is_TowerCollide = false;
-				}
-			}
-			if (is_BulletCollide)
-			{
-				m_TimeElapsed_B += DeltaTime;
-				if (m_TimeElapsed_B < 0.3f)
-				{
-					m_Position.m_X += (GetDirection().x / GetLength()) * DeltaTime * 300.0f;
-					m_Position.m_Y += (GetDirection().y / GetLength()) * DeltaTime * 300.0f;
-				}
-				else
-				{
-					SetDirection(m_MapPosition.x - GetPosition().m_X, m_MapPosition.y - GetPosition().m_Y);
-					SetLength(sqrtf(powf((float)GetDirection().x, 2) + powf((float)GetDirection().y, 2)));
-					m_TimeElapsed_B = 0.0f;
-					is_BulletCollide = false;
-				}
-			}
+				m_CollisionDuration += DeltaTime;
 
+				if (m_CollisionDuration < 0.2f)
+				{
+					m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 300.0f;
+					m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 300.0f;
+				}
+				else
+				{
+					m_IsCollided = false;
+					m_CollisionDuration = 0.0f;
+
+					SetDirection(m_PrevDirection.m_X, m_PrevDirection.m_Y);
+					SetLength(sqrtf(powf((float)GetDirection().m_X, 2) + powf((float)GetDirection().m_Y, 2)));
+				}
+			}
 			else
 			{
-				m_Position.m_X += (GetDirection().x / GetLength()) * DeltaTime * 100.0f;
-				m_Position.m_Y += (GetDirection().y / GetLength()) * DeltaTime * 100.0f;
+				m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 100.0f;
+				m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 100.0f;
 			}
 		}
 		else
@@ -112,18 +99,43 @@ float CMonster::GetLength() const
 	return m_Length;
 }
 
-void CMonster::SetDirection(float DirX, float DirY)
+void CMonster::SetDirection(const VECTOR2D& Direction)
 {
-	m_Direction.x = (int)DirX;
-	m_Direction.y = (int)DirY;
+	m_Direction = Direction;
 }
 
-POINT CMonster::GetDirection() const
+void CMonster::SetDirection(float DirX, float DirY)
+{
+	SetDirection(VECTOR2D(DirX, DirY));
+}
+
+VECTOR2D CMonster::GetDirection() const
 {
 	return m_Direction;
 }
 
-POINT CMonster::GetMapPosition() const
+void CMonster::SetPrevDirection(const VECTOR2D& Direction)
 {
-	return m_MapPosition;
+	m_PrevDirection = Direction;
+}
+
+void CMonster::SetPrevDirection(float DirX, float DirY)
+{
+	SetPrevDirection(VECTOR2D(DirX, DirY));
+}
+
+VECTOR2D CMonster::GetPrevDirection() const
+{
+	return m_PrevDirection;
+}
+
+bool CMonster::IsCollided() const
+{
+	return m_IsCollided;
+}
+
+void CMonster::PrepareCollision()
+{
+	m_IsCollided = true;
+	m_CollisionDuration = 0.0f;
 }

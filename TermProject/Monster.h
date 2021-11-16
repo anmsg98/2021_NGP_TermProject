@@ -9,12 +9,6 @@ public:
 	enum { LOWER = 1, MIDDLE, UPPER };
 
 private:
-	float			m_TimeElapsed_T{};
-	float			m_TimeElapsed_B{};
-
-	bool			is_TowerCollide{};
-	bool			is_BulletCollide{};
-
 	int				m_Type{};
 
 	const int		m_AnimationFrame{ 5 };
@@ -22,8 +16,11 @@ private:
 
 	float			m_Length{};
 
-	POINT			m_Direction{};
-	POINT			m_MapPosition{};
+	VECTOR2D		m_Direction{};
+	VECTOR2D		m_PrevDirection{};
+
+	bool			m_IsCollided{};
+	float			m_CollisionDuration{};
 
 public:
 	CMonster() = default;
@@ -38,15 +35,14 @@ public:
 	void SetLength(float Length);
 	float GetLength() const;
 
-	void SetMapPosition(float MapPosx, float MapPosy) { m_MapPosition.x = MapPosx, m_MapPosition.y = MapPosy; }
-	POINT GetMapPosition() const;
-
-	void SetBulletCollide() { is_BulletCollide = true; }
-	void SetTowerCollide() { is_TowerCollide = true; }
-
-	bool GetBulletCollide() { return is_BulletCollide; }
-	bool GetTowerCollide() { return is_TowerCollide; }
-
+	void SetDirection(const VECTOR2D& Direction);
 	void SetDirection(float DirX, float DirY);
-	POINT GetDirection() const;
+	VECTOR2D GetDirection() const;
+
+	void SetPrevDirection(const VECTOR2D& PrevDirection);
+	void SetPrevDirection(float PrevDirX, float PrevDirY);
+	VECTOR2D GetPrevDirection() const;
+
+	bool IsCollided() const;
+	void PrepareCollision();
 };
