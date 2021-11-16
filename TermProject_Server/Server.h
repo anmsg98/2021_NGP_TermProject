@@ -87,7 +87,7 @@ public:
 	void RemoveItem();
 
 	// 게임 월드 내의 객체 간 충돌 검사
-	void CheckPlayerByItemCollision();
-	void CheckTowerByMonsterCollision();
 	void CheckBulletByMonsterCollision();
+	void CheckTowerByMonsterCollision();
+	void CheckPlayerByItemCollision();
 };

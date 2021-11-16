@@ -32,9 +32,9 @@ void CTower::Render(HDC hMemDC, HDC hMemDC2)
 		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
 
 #ifdef DEBUG_HP
-		TCHAR HpText[64]{};
+		TCHAR HpText[32]{};
 
-		wsprintf(HpText, _T("%d"), m_Hp);
+		sprintf(HpText, "%.f", m_Hp);
 		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Height), HpText, lstrlen(HpText));
 #endif
 	}

@@ -6,7 +6,7 @@ class CGameObject
 protected:
 	bool				m_IsActive{};
 
-	int					m_Hp{};
+	float				m_Hp{};
 
 	POSITION			m_Position{};
 	float				m_Width{};
@@ -22,8 +22,8 @@ public:
 	void SetActive(bool IsActive);
 	bool IsActive() const;
 
-	void SetHp(int Hp);
-	int GetHp() const;
+	void SetHp(float Hp);
+	float GetHp() const;
 
 	void SetPosition(const POSITION& Position);
 	void SetPosition(float Xpos, float Ypos);

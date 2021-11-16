@@ -24,11 +24,11 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 		USER_RECT Rect{};
 
 		// 플레이어가 아이템을 획득하여 총알이 강화된 경우와 분리한다.
-		if (m_AttackPower == 10)
+		if (m_AttackPower == 10.0f)
 		{
 			Rect = CFileManager::GetInstance()->GetRect("Bullet_1");
 		}
-		else if (m_AttackPower == 30)
+		else if (m_AttackPower == 30.0f)
 		{
 			Rect = CFileManager::GetInstance()->GetRect("Bullet_2");
 		}
@@ -37,12 +37,12 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 	}
 }
 
-void CBullet::SetAttackPower(int AttackPower)
+void CBullet::SetAttackPower(float AttackPower)
 {
 	m_AttackPower = AttackPower;
 }
 
-int CBullet::GetAttackPower() const
+float CBullet::GetAttackPower() const
 {
 	return m_AttackPower;
 }
@@ -83,8 +83,6 @@ void CPlayer::Animate(float DeltaTime)
 {
 	if (m_IsActive)
 	{
-		printf("%.02f, %.02f\r", GetPosition().m_X, GetPosition().m_Y);
-
 		if (m_IsGetItem)
 		{
 			m_ItemDuration += DeltaTime;
@@ -97,7 +95,7 @@ void CPlayer::Animate(float DeltaTime)
 
 				for (int i = 0; i < MAX_BULLET; ++i)
 				{
-					m_Bullets[i].SetAttackPower(10);
+					m_Bullets[i].SetAttackPower(10.0f);
 				}
 			}
 		}
@@ -122,9 +120,9 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 		SelectObject(hMemDC2, hSourceBitmap);
 
 #ifdef DEBUG_HP
-		TCHAR HpText[64]{};
+		TCHAR HpText[32]{};
 
-		wsprintf(HpText, _T("%d"), m_Hp);
+		sprintf(HpText, "%.f", m_Hp);
 		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Height), HpText, lstrlen(HpText));
 #endif
 
@@ -193,7 +191,7 @@ void CPlayer::ReinforceBullet()
 
 	for (int i = 0; i < MAX_BULLET; ++i)
 	{
-		m_Bullets[i].SetAttackPower(30);
+		m_Bullets[i].SetAttackPower(30.0f);
 	}
 }
 
@@ -205,7 +203,7 @@ void CPlayer::FireBullet(const POINT& CursorPos)
 		m_Bullets[m_BulletIndex].SetDirection(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
 		m_Bullets[m_BulletIndex].SetLength(sqrtf(powf((float)m_Bullets[m_BulletIndex].GetDirection().x, 2) + powf((float)m_Bullets[m_BulletIndex].GetDirection().y, 2)));
 		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirection().x / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
-											 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
+			GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
 	}
 
 	m_BulletIndex = (m_BulletIndex + 1) % MAX_BULLET;
@@ -237,4 +235,30 @@ void CPlayer::UpdateCamera(const RECT& ClientRect, const RECT& MapRect)
 			m_CameraStartPosition.y = MapRect.bottom - ClientRect.bottom;
 		}
 	}
+}
+
+float CPlayer::CheckBulletByMonsterCollision(const RECT& MonsterRect)
+{
+	for (int i = 0; i < MAX_BULLET; ++i)
+	{
+		if (m_Bullets[i].IsActive())
+		{
+			RECT CollidedRect{};
+			RECT BulletRect{ (int)(m_Bullets[i].GetPosition().m_X - 0.5f * m_Bullets[i].GetWidth()),
+							 (int)(m_Bullets[i].GetPosition().m_Y - 0.5f * m_Bullets[i].GetHeight()),
+							 (int)(m_Bullets[i].GetPosition().m_X + 0.5f * m_Bullets[i].GetWidth()),
+							 (int)(m_Bullets[i].GetPosition().m_Y + 0.5f * m_Bullets[i].GetHeight()) };
+
+			// 한 프레임에 한 객체 간의 충돌만을 검사하고 총알의 공격력을 반환한다.
+			if (IntersectRect(&CollidedRect, &BulletRect, &MonsterRect))
+			{
+				m_Bullets[i].SetActive(false);
+
+				return m_Bullets[i].GetAttackPower();
+			}
+		}
+	}
+
+	// 충돌이 일어나지 않았다면, 0을 반환한다.
+	return 0;
 }

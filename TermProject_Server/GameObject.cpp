@@ -21,17 +21,17 @@ bool CGameObject::IsActive() const
 	return m_IsActive;
 }
 
-void CGameObject::SetHp(int Hp)
+void CGameObject::SetHp(float Hp)
 {
 	m_Hp = Hp;
 
-	if (m_Hp <= 0)
+	if (m_Hp <= 0.0f)
 	{
-		m_Hp = 0;
+		m_Hp = 0.0f;
 	}
 }
 
-int CGameObject::GetHp() const
+float CGameObject::GetHp() const
 {
 	return m_Hp;
 }

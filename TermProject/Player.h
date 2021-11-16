@@ -9,7 +9,7 @@
 class CBullet : public CGameObject
 {
 private:
-	int				m_AttackPower{ 10 };
+	float			m_AttackPower{ 10.0 };
 
 	float			m_Length{};
 	POINT			m_Direction{};
@@ -21,8 +21,8 @@ public:
 	void Animate(float DeltaTime);
 	void Render(HDC hMemDC, HDC hMemDC2);
 
-	void SetAttackPower(int AttackPower);
-	int GetAttackPower() const;
+	void SetAttackPower(float AttackPower);
+	float GetAttackPower() const;
 
 	void SetLength(float Length);
 	float GetLength() const;
@@ -78,4 +78,6 @@ public:
 	void FireBullet(const POINT& CursorPos);
 
 	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
+
+	float CheckBulletByMonsterCollision(const RECT& MonsterRect);
 };

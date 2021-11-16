@@ -7,8 +7,6 @@ void CItem::Animate(float DeltaTime)
 	{
 		m_Hp -= DeltaTime;
 
-		cout << m_Hp << ", " << DeltaTime << endl;
-
 		if (m_Hp <= 0.0f)
 		{
 			m_IsActive = false;
