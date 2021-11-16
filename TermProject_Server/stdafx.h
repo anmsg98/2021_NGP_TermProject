@@ -53,6 +53,15 @@ struct USER_RECT
 	int m_Height{};
 };
 
+struct VECTOR2D
+{
+	float m_X{};
+	float m_Y{};
+
+	 VECTOR2D() = default;
+	 VECTOR2D(float X, float Y) : m_X{ X }, m_Y{ Y } {}
+};
+
 float RandF(float Min, float Max);
 
 void DrawRect(HDC hMemDC, const POSITION& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);
