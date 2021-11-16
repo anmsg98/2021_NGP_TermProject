@@ -18,8 +18,8 @@ public:
 	CBullet() = default;
 	~CBullet() = default;
 
-	virtual void Animate(float DeltaTime);
-	virtual void Render(HDC hMemDC, HDC hMemDC2);
+	void Animate(float DeltaTime);
+	void Render(HDC hMemDC, HDC hMemDC2);
 
 	void SetAttackPower(int AttackPower);
 	int GetAttackPower() const;
@@ -27,8 +27,8 @@ public:
 	void SetLength(float Length);
 	float GetLength() const;
 
-	void SetDirect(float DirX, float DirY);
-	POINT GetDirect() const;
+	void SetDirection(float DirX, float DirY);
+	POINT GetDirection() const;
 };
 
 // ============================================== CPlayer ============================================== 
@@ -45,7 +45,7 @@ private:
 
 	POINT			    m_Direction{};
 
-	bool				m_IsReinforced{};
+	bool				m_IsGetItem{};
 	float				m_ItemDuration{};
 
 	CBullet			    m_Bullets[MAX_BULLET]{};
@@ -55,8 +55,8 @@ public:
 	CPlayer();
 	~CPlayer() = default;
 
-	virtual void Animate(float DeltaTime);
-	virtual void Render(HDC hMemDC, HDC hMemDC2);
+	void Animate(float DeltaTime);
+	void Render(HDC hMemDC, HDC hMemDC2);
 
 	void SetID(int ID);
 	int GetID() const;
@@ -68,13 +68,12 @@ public:
 	const SOCKADDR_IN& GetSocketAddress() const;
 
 	const POINT& GetCameraStartPosition() const;
-	CBullet* GetBullets();
 
-	void SetDirect(float DirX, float DirY);
-	POINT GetDirect() const;
+	void SetDirection(float DirX, float DirY);
+	POINT GetDirection() const;
 
+	bool IsGetItem() const;
 	void ReinforceBullet();
-	bool IsReinforced() const;
 
 	void FireBullet(const POINT& CursorPos);
 

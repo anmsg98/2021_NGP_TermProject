@@ -38,6 +38,7 @@ public:
  
 	virtual void BuildObject(int ID, GameData* Data) = 0;
 
+	virtual void Animate() = 0;
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2) = 0;
 };
 
@@ -63,5 +64,6 @@ public:
 
 	virtual void BuildObject(int ID, GameData* Data);
 
+	virtual void Animate();
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2);
 };

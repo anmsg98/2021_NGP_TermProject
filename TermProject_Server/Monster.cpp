@@ -7,8 +7,8 @@ void CMonster::Animate(float DeltaTime)
 	{
 		if (m_Hp != 0)
 		{
-			m_Position.m_X += (GetDirect().x / GetLength()) * DeltaTime * 100.0f;
-			m_Position.m_Y += (GetDirect().y / GetLength()) * DeltaTime * 100.0f;
+			m_Position.m_X += (GetDirection().x / GetLength()) * DeltaTime * 100.0f;
+			m_Position.m_Y += (GetDirection().y / GetLength()) * DeltaTime * 100.0f;
 		}
 		else
 		{
@@ -78,13 +78,13 @@ float CMonster::GetLength() const
 	return m_Length;
 }
 
-void CMonster::SetDirect(float DirX, float DirY)
+void CMonster::SetDirection(float DirX, float DirY)
 {
 	m_Direction.x = (int)DirX;
 	m_Direction.y = (int)DirY;
 }
 
-POINT CMonster::GetDirect() const
+POINT CMonster::GetDirection() const
 {
 	return m_Direction;
 }

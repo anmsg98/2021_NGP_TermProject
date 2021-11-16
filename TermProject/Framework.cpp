@@ -47,7 +47,7 @@ void CFramework::err_quit(const char* Msg)
 		NULL, WSAGetLastError(),
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPTSTR)&MsgBuffer, 0, NULL);
-	MessageBox(NULL, (LPCSTR)MsgBuffer, (LPCSTR)Msg, MB_ICONERROR);
+	MessageBox(NULL, (LPCTSTR)MsgBuffer, (LPCTSTR)Msg, MB_ICONERROR);
 
 	LocalFree(MsgBuffer);
 	exit(1);
@@ -162,7 +162,6 @@ void CFramework::ProcessMouseMessage(const HWND& hWnd, UINT message, WPARAM wPar
 {
 	switch (message)
 	{
-	case WM_SIZE:
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONUP:
 	case WM_RBUTTONDOWN:
@@ -185,6 +184,7 @@ void CFramework::ProcessInput()
 	}
 
 	m_Scenes.top()->ProcessInput();
+	m_Scenes.top()->Animate();
 
 	ReturnValue = send(m_Socket, (char*)m_GameData, sizeof(GameData), 0);
 

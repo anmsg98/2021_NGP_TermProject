@@ -7,8 +7,8 @@ void CBullet::Animate(float DeltaTime)
 {
 	if (m_IsActive)
 	{
-		m_Position.m_X += (GetDirect().x / GetLength()) * DeltaTime * 1000.f;
-		m_Position.m_Y += (GetDirect().y / GetLength()) * DeltaTime * 1000.f;
+		m_Position.m_X += (GetDirection().x / GetLength()) * DeltaTime * 1000.f;
+		m_Position.m_Y += (GetDirection().y / GetLength()) * DeltaTime * 1000.f;
 
 		if (m_Position.m_X <= 0.0f || m_Position.m_X >= 2400.0f || m_Position.m_Y <= 0.0f || m_Position.m_Y >= 1500.0f)
 		{
@@ -57,13 +57,13 @@ float CBullet::GetLength() const
 	return m_Length;
 }
 
-void CBullet::SetDirect(float DirX, float DirY)
+void CBullet::SetDirection(float DirX, float DirY)
 {
 	m_Direction.x = (int)DirX;
 	m_Direction.y = (int)DirY;
 }
 
-POINT CBullet::GetDirect() const
+POINT CBullet::GetDirection() const
 {
 	return m_Direction;
 }
@@ -85,14 +85,14 @@ void CPlayer::Animate(float DeltaTime)
 	{
 		printf("%.02f, %.02f\r", GetPosition().m_X, GetPosition().m_Y);
 
-		if (m_IsReinforced)
+		if (m_IsGetItem)
 		{
 			m_ItemDuration += DeltaTime;
 
 			// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
 			if (m_ItemDuration >= 8.0f)
 			{
-				m_IsReinforced = false;
+				m_IsGetItem = false;
 				m_ItemDuration = 0.0f;
 
 				for (int i = 0; i < MAX_BULLET; ++i)
@@ -170,25 +170,25 @@ const POINT& CPlayer::GetCameraStartPosition() const
 	return m_CameraStartPosition;
 }
 
-CBullet* CPlayer::GetBullets()
-{
-	return m_Bullets;
-}
-
-void CPlayer::SetDirect(float DirX, float DirY)
+void CPlayer::SetDirection(float DirX, float DirY)
 {
 	m_Direction.x = (int)DirX;
 	m_Direction.y = (int)DirY;
 }
 
-POINT CPlayer::GetDirect() const
+POINT CPlayer::GetDirection() const
 {
 	return m_Direction;
 }
 
+bool CPlayer::IsGetItem() const
+{
+	return m_IsGetItem;
+}
+
 void CPlayer::ReinforceBullet()
 {
-	m_IsReinforced = true;
+	m_IsGetItem = true;
 	m_ItemDuration = 0.0f;
 
 	for (int i = 0; i < MAX_BULLET; ++i)
@@ -197,20 +197,15 @@ void CPlayer::ReinforceBullet()
 	}
 }
 
-bool CPlayer::IsReinforced() const
-{
-	return m_IsReinforced;
-}
-
 void CPlayer::FireBullet(const POINT& CursorPos)
 {
 	if (m_Bullets)
 	{
 		m_Bullets[m_BulletIndex].SetActive(true);
-		m_Bullets[m_BulletIndex].SetDirect(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
-		m_Bullets[m_BulletIndex].SetLength(sqrtf(powf((float)m_Bullets[m_BulletIndex].GetDirect().x, 2) + powf((float)m_Bullets[m_BulletIndex].GetDirect().y, 2)));
-		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirect().x / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
-											 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirect().y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
+		m_Bullets[m_BulletIndex].SetDirection(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
+		m_Bullets[m_BulletIndex].SetLength(sqrtf(powf((float)m_Bullets[m_BulletIndex].GetDirection().x, 2) + powf((float)m_Bullets[m_BulletIndex].GetDirection().y, 2)));
+		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirection().x / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
+											 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
 	}
 
 	m_BulletIndex = (m_BulletIndex + 1) % MAX_BULLET;

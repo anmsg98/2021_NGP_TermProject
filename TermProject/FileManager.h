@@ -10,7 +10,7 @@ private:
 
 public:
 	CFileManager() = default;
-	virtual ~CFileManager() = default;
+	~CFileManager() = default;
 
 	static CFileManager* GetInstance();
 

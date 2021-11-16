@@ -26,18 +26,13 @@ void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPA
 {
 	m_CursorPos.x = LOWORD(lParam);
 	m_CursorPos.y = HIWORD(lParam);
-	m_GameData->m_Players[m_ID].SetDirect(m_CursorPos.x + m_GameData->m_Players[m_ID].GetCameraStartPosition().x - m_GameData->m_Players[m_ID].GetPosition().m_X,
-										  m_CursorPos.y + m_GameData->m_Players[m_ID].GetCameraStartPosition().y - m_GameData->m_Players[m_ID].GetPosition().m_Y);
 
 	switch (message)
 	{
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
-		m_GameData->m_Players[m_ID].FireBullet(m_CursorPos);
-		break;
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
-		break;
 	case WM_MOUSEMOVE:
 		break;
 	}
@@ -45,44 +40,53 @@ void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 void CGameScene::ProcessInput()
 {
+	POSITION Position{ m_GameData->m_Players[m_ID].GetPosition() };
 	float Speed{ 300.0f * m_GameData->m_DeltaTime };
-	RECT MapRect{ m_Map->GetRect() };
-	POSITION PlayerPos{ m_GameData->m_Players[m_ID].GetPosition() };
 
+	// 플레이어의 위치 값 조정
 	if (GetAsyncKeyState('W') & 0x8000)
 	{
-		if (PlayerPos.m_Y > MapRect.top + 0.5f * m_GameData->m_Players[m_ID].GetHeight())
+		if (Position.m_Y > m_Map->GetRect().top + 0.5f * m_GameData->m_Players[m_ID].GetHeight())
 		{
-			PlayerPos.m_Y -= Speed;
+			Position.m_Y -= Speed;
 		}
 	}
 
 	if (GetAsyncKeyState('S') & 0x8000)
 	{
-		if (PlayerPos.m_Y < MapRect.bottom - 0.5f * m_GameData->m_Players[m_ID].GetHeight())
+		if (Position.m_Y < m_Map->GetRect().bottom - 0.5f * m_GameData->m_Players[m_ID].GetHeight())
 		{
-			PlayerPos.m_Y += Speed;
+			Position.m_Y += Speed;
 		}
 	}
 
 	if (GetAsyncKeyState('A') & 0x8000)
 	{
-		if (PlayerPos.m_X > MapRect.left + 0.5f * m_GameData->m_Players[m_ID].GetWidth())
+		if (Position.m_X > m_Map->GetRect().left + 0.5f * m_GameData->m_Players[m_ID].GetWidth())
 		{
-			PlayerPos.m_X -= Speed;
+			Position.m_X -= Speed;
 		}
 	}
 
 	if (GetAsyncKeyState('D') & 0x8000)
 	{
-		if (PlayerPos.m_X < MapRect.right - 0.5f * m_GameData->m_Players[m_ID].GetWidth())
+		if (Position.m_X < m_Map->GetRect().right - 0.5f * m_GameData->m_Players[m_ID].GetWidth())
 		{
-			PlayerPos.m_X += Speed;
+			Position.m_X += Speed;
 		}
 	}
 
-	m_GameData->m_Players[m_ID].SetPosition(PlayerPos);
-	m_GameData->m_Players[m_ID].UpdateCamera(m_ClientRect, MapRect);
+	// 플레이어의 총알 발사 처리
+	if (GetAsyncKeyState(MK_LBUTTON) & 0x0001)
+	{
+		m_GameData->m_Players[m_ID].FireBullet(m_CursorPos);
+	}
+
+	// 플레이어의 위치, 방향, 카메라 등 갱신
+	m_GameData->m_Players[m_ID].SetPosition(Position);
+	m_GameData->m_Players[m_ID].SetDirection(m_CursorPos.x + m_GameData->m_Players[m_ID].GetCameraStartPosition().x - m_GameData->m_Players[m_ID].GetPosition().m_X,
+											 m_CursorPos.y + m_GameData->m_Players[m_ID].GetCameraStartPosition().y - m_GameData->m_Players[m_ID].GetPosition().m_Y);
+	m_GameData->m_Players[m_ID].UpdateCamera(m_ClientRect, m_Map->GetRect());
 }
 
 void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data)
@@ -111,6 +115,26 @@ void CGameScene::BuildObject(int ID, GameData* Data)
 	m_Map->SetRect(MapRect);
 }
 
+void CGameScene::Animate()
+{
+	m_GameData->m_Tower.Animate(m_GameData->m_DeltaTime);
+
+	for (int i = 0; i < MAX_MONSTER; ++i)
+	{
+		m_GameData->m_Monsters[i].Animate(m_GameData->m_DeltaTime);
+	}
+
+	for (int i = 0; i < MAX_ITEM; ++i)
+	{
+		m_GameData->m_Items[i].Animate(m_GameData->m_DeltaTime);
+	}
+
+	for (int i = 0; i < MAX_PLAYER; ++i)
+	{
+		m_GameData->m_Players[i].Animate(m_GameData->m_DeltaTime);
+	}
+}
+
 void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 {
 	m_hBitmap = CreateCompatibleBitmap(hDC, m_Map->GetRect().right, m_Map->GetRect().bottom);
@@ -123,23 +147,23 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 	SelectObject(hMemDC2, hOldBitmap);
 
 	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SpriteSheet"));
-	//m_GameData->m_Tower.Render(hMemDC, hMemDC2);
+	m_GameData->m_Tower.Render(hMemDC, hMemDC2);
 
 	for (int i = 0 ; i < MAX_MONSTER; ++i)
 	{
-		//m_GameData->m_Monsters[i].Render(hMemDC, hMemDC2);
+		m_GameData->m_Monsters[i].Render(hMemDC, hMemDC2);
 	}
 
 	for (int i = 0 ; i < MAX_ITEM ; ++i)
 	{
-		//m_GameData->m_Items[i].Render(hMemDC, hMemDC2);
+		m_GameData->m_Items[i].Render(hMemDC, hMemDC2);
 	}
 
 	SelectObject(hMemDC2, hOldBitmap);
 
 	for (int i = 0; i < MAX_PLAYER; ++i)
 	{
-		//m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
+		m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
 	}
 
 	POINT PlayerCameraPos{ m_GameData->m_Players[m_ID].GetCameraStartPosition() };

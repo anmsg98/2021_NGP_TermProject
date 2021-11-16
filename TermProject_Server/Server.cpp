@@ -76,13 +76,12 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
         printf("[플레이어 %d] : (%.03f, %.03f)\n", Player->GetID(), Player->GetPosition().m_X, Player->GetPosition().m_Y);
     }
 
+    cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;
+
     closesocket(Player->GetSocket());
 
-    // 접속이 종료된 클라이언트는 플레이어 아이디를 통해 제거한다.
-    if (Server->DestroyPlayer(Player->GetID()))
-    {
-        cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;
-    }
+    // 접속이 종료된 클라이언트의 플레이어 객체는 값을 초기값으로 만든다.
+    Server->DestroyPlayer(Player->GetID());
 
     return 0;
 }
@@ -96,7 +95,7 @@ void CServer::err_quit(const char* Msg)
         NULL, WSAGetLastError(),
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         (LPTSTR)&MsgBuffer, 0, NULL);
-    MessageBox(NULL, (LPCWSTR)MsgBuffer, (LPCWSTR)Msg, MB_ICONERROR);
+    MessageBox(NULL, (LPCTSTR)MsgBuffer, (LPCTSTR)Msg, MB_ICONERROR);
 
     LocalFree(MsgBuffer);
     exit(1);
@@ -112,7 +111,7 @@ void CServer::err_display(const char* Msg)
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         (LPTSTR)&MsgBuffer, 0, NULL);
 
-    cout << "[" << Msg << "] " << (char*)MsgBuffer << endl;
+    cout << "[" << Msg << "] " << (char*)MsgBuffer;
 
     LocalFree(MsgBuffer);
 }
@@ -284,8 +283,14 @@ bool CServer::DestroyPlayer(int ID)
     {
         if (m_GameData->m_Players[i].GetID() == ID)
         {
-            // 매개변수로 넘어온 아이디를 가진 플레이어가 있다면 해당 플레이어를 초기화한다.
+            // 매개변수로 넘어온 아이디를 가진 플레이어가 있다면 해당 플레이어를 초기화하고 초기값으로 설정한다.
             ZeroMemory(&m_GameData->m_Players[i], sizeof(CPlayer));
+
+            m_GameData->m_Players[i].SetActive(false);
+            m_GameData->m_Players[i].SetHp(100);
+            m_GameData->m_Players[i].SetPosition(0.5f * m_Map->GetRect().right - 50.0f + 50.0f * i, 0.5f * m_Map->GetRect().bottom + 50.0f);
+            m_GameData->m_Players[i].SetWidth(62.5f);
+            m_GameData->m_Players[i].SetHeight(90.0f);
 
             return true;
         }
@@ -326,7 +331,7 @@ void CServer::BuildObject()
     // 타워를 초기화한다.
     m_GameData->m_Tower.SetActive(true);
     m_GameData->m_Tower.SetHp(5000);
-    m_GameData->m_Tower.SetPosition(1200.0f, 740.0f);
+    m_GameData->m_Tower.SetPosition(0.5f * MapRect.right, 0.5f * MapRect.bottom);
     m_GameData->m_Tower.SetWidth(228.0f);
     m_GameData->m_Tower.SetHeight(213.0f);
 
@@ -335,7 +340,7 @@ void CServer::BuildObject()
     {
         m_GameData->m_Players[i].SetActive(false);
         m_GameData->m_Players[i].SetHp(100);
-        m_GameData->m_Players[i].SetPosition(50.0f + 50.0f * i, 50.0f);
+        m_GameData->m_Players[i].SetPosition(0.5f * MapRect.right - 50.0f + 50.0f * i, 0.5f * MapRect.bottom + 50.0f);
         m_GameData->m_Players[i].SetWidth(62.5f);
         m_GameData->m_Players[i].SetHeight(90.0f);
     }
@@ -343,7 +348,7 @@ void CServer::BuildObject()
     // 모든 몬스터를 초기화한다.
     for (int i = 0; i < MAX_MONSTER; ++i)
     {
-        m_GameData->m_Monsters[i].SetActive(false);
+        m_GameData->m_Monsters[i].SetActive(true);
         m_GameData->m_Monsters[i].SetWidth(73.5f);
         m_GameData->m_Monsters[i].SetHeight(76.0f);
 
@@ -373,16 +378,17 @@ void CServer::BuildObject()
         }
 
         // 맵의 중앙을 도착점으로 지정
-        m_GameData->m_Monsters[i].SetDirect((float)m_Map->GetRect().right * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_Y);
-        m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirect().x, 2) + powf((float)m_GameData->m_Monsters[i].GetDirect().y, 2)));
+        m_GameData->m_Monsters[i].SetDirection((float)m_Map->GetRect().right * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_Y);
+        m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirection().x, 2) + powf((float)m_GameData->m_Monsters[i].GetDirection().y, 2)));
     }
 
     // 아이템을 초기화한다.
     for (int i = 0; i < MAX_ITEM; ++i)
     {
-        m_GameData->m_Items[i].SetActive(false);
+        m_GameData->m_Items[i].SetActive(true);
         m_GameData->m_Items[i].SetWidth(34.0f);
         m_GameData->m_Items[i].SetHeight(40.0f);
+        m_GameData->m_Items[i].SetPosition(0.5f * MapRect.right - 50.0f + 50.0f * i, 0.5f * MapRect.bottom - 150.0f);
 
         // 아이템의 종류 설정
         int Type{ rand() % 2 + 1 };
@@ -420,8 +426,8 @@ void CServer::CreateMonster()
     //                Monster->SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().bottom - 30.0f);
     //            }
 
-    //            Monster->SetDirect((float)m_Map->GetRect().right * 0.5f - Monster->GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - Monster->GetPosition().m_Y);
-    //            Monster->SetLength(sqrtf(powf((float)Monster->GetDirect().x, 2) + powf((float)Monster->GetDirect().y, 2)));
+    //            Monster->SetDirection((float)m_Map->GetRect().right * 0.5f - Monster->GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - Monster->GetPosition().m_Y);
+    //            Monster->SetLength(sqrtf(powf((float)Monster->GetDirection().x, 2) + powf((float)Monster->GetDirection().y, 2)));
 
     //            printf("[안내] 몬스터 생성됨(%.02f, %.02f)\n", Monster->GetPosition().m_X, Monster->GetPosition().m_Y);
     //            break;

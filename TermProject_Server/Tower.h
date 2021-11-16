@@ -9,8 +9,8 @@ private:
 
 public:
 	CTower() = default;
-	virtual ~CTower() = default;
+	~CTower() = default;
 
-	virtual void Animate(float DeltaTime);
-	virtual void Render(HDC hMemDC, HDC hMemDC2);
+	void Animate(float DeltaTime);
+	void Render(HDC hMemDC, HDC hMemDC2);
 };

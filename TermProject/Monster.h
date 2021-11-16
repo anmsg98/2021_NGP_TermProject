@@ -21,8 +21,8 @@ public:
 	CMonster() = default;
 	~CMonster() = default;
 
-	virtual void Animate(float DeltaTime);
-	virtual void Render(HDC hMemDC, HDC hMemDC2);
+	void Animate(float DeltaTime);
+	void Render(HDC hMemDC, HDC hMemDC2);
 
 	void SetType(int Type);
 	int GetType() const;
@@ -30,6 +30,6 @@ public:
 	void SetLength(float Length);
 	float GetLength() const;
 
-	void SetDirect(float DirX, float DirY);
-	POINT GetDirect() const;
+	void SetDirection(float DirX, float DirY);
+	POINT GetDirection() const;
 };

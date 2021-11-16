@@ -14,10 +14,10 @@ protected:
 
 public:
 	CGameObject() = default;
-	virtual ~CGameObject() = default;
+	~CGameObject() = default;
 
-	virtual void Animate(float DeltaTime);
-	virtual void Render(HDC hMemDC, HDC hMemDC2);
+	void Animate(float DeltaTime);
+	void Render(HDC hMemDC, HDC hMemDC2);
 
 	void SetActive(bool IsActive);
 	bool IsActive() const;

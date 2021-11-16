@@ -33,7 +33,7 @@ using namespace std;
 #define CLIENT_WIDTH	 800
 #define CLIENT_HEIGHT	 600
 
-#define PI 3.141592654
+#define PI 3.141592f
 
 // 텍스트로 현재 HP 출력
 #define DEBUG_HP
