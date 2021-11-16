@@ -7,8 +7,42 @@ void CMonster::Animate(float DeltaTime)
 	{
 		if (m_Hp != 0)
 		{
-			m_Position.m_X += (GetDirection().x / GetLength()) * DeltaTime * 100.0f;
-			m_Position.m_Y += (GetDirection().y / GetLength()) * DeltaTime * 100.0f;
+			if (is_TowerCollide)
+			{
+				m_TimeElapsed_T += DeltaTime;
+				if (m_TimeElapsed_T < 0.3f)
+				{
+					m_Position.m_X -= (GetDirection().x / GetLength()) * DeltaTime * 300.0f;
+					m_Position.m_Y -= (GetDirection().y / GetLength()) * DeltaTime * 300.0f;
+				}
+				else
+				{
+					m_TimeElapsed_T = 0.0f;
+					is_TowerCollide = false;
+				}
+			}
+			if (is_BulletCollide)
+			{
+				m_TimeElapsed_B += DeltaTime;
+				if (m_TimeElapsed_B < 0.3f)
+				{
+					m_Position.m_X += (GetDirection().x / GetLength()) * DeltaTime * 300.0f;
+					m_Position.m_Y += (GetDirection().y / GetLength()) * DeltaTime * 300.0f;
+				}
+				else
+				{
+					SetDirection(m_MapPosition.x - GetPosition().m_X, m_MapPosition.y - GetPosition().m_Y);
+					SetLength(sqrtf(powf((float)GetDirection().x, 2) + powf((float)GetDirection().y, 2)));
+					m_TimeElapsed_B = 0.0f;
+					is_BulletCollide = false;
+				}
+			}
+
+			else
+			{
+				m_Position.m_X += (GetDirection().x / GetLength()) * DeltaTime * 100.0f;
+				m_Position.m_Y += (GetDirection().y / GetLength()) * DeltaTime * 100.0f;
+			}
 		}
 		else
 		{
@@ -87,4 +121,9 @@ void CMonster::SetDirection(float DirX, float DirY)
 POINT CMonster::GetDirection() const
 {
 	return m_Direction;
+}
+
+POINT CMonster::GetMapPosition() const
+{
+	return m_MapPosition;
 }
