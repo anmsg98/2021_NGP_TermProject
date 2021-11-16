@@ -236,29 +236,3 @@ void CPlayer::UpdateCamera(const RECT& ClientRect, const RECT& MapRect)
 		}
 	}
 }
-
-float CPlayer::CheckBulletByMonsterCollision(const RECT& MonsterRect)
-{
-	for (int i = 0; i < MAX_BULLET; ++i)
-	{
-		if (m_Bullets[i].IsActive())
-		{
-			RECT CollidedRect{};
-			RECT BulletRect{ (int)(m_Bullets[i].GetPosition().m_X - 0.5f * m_Bullets[i].GetWidth()),
-							 (int)(m_Bullets[i].GetPosition().m_Y - 0.5f * m_Bullets[i].GetHeight()),
-							 (int)(m_Bullets[i].GetPosition().m_X + 0.5f * m_Bullets[i].GetWidth()),
-							 (int)(m_Bullets[i].GetPosition().m_Y + 0.5f * m_Bullets[i].GetHeight()) };
-
-			// 한 프레임에 한 객체 간의 충돌만을 검사하고 총알의 공격력을 반환한다.
-			if (IntersectRect(&CollidedRect, &BulletRect, &MonsterRect))
-			{
-				m_Bullets[i].SetActive(false);
-
-				return m_Bullets[i].GetAttackPower();
-			}
-		}
-	}
-
-	// 충돌이 일어나지 않았다면, 0을 반환한다.
-	return 0;
-}

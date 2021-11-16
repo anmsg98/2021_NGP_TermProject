@@ -60,6 +60,7 @@ public:
 
 	void SetID(int ID);
 	int GetID() const;
+	CBullet* GetBullets();
 
 	void SetSocket(SOCKET Socket);
 	SOCKET GetSocket() const;
@@ -79,5 +80,4 @@ public:
 
 	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
 
-	float CheckBulletByMonsterCollision(const RECT& MonsterRect);
 };

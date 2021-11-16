@@ -17,7 +17,7 @@ private:
 public:
 	CBullet() = default;
 	~CBullet() = default;
-
+ 
 	void Animate(float DeltaTime);
 	void Render(HDC hMemDC, HDC hMemDC2);
 
@@ -79,5 +79,4 @@ public:
 
 	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
 
-	float CheckBulletByMonsterCollision(const RECT& MonsterRect);
 };
