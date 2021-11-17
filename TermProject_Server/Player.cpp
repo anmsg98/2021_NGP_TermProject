@@ -81,7 +81,7 @@ void CPlayer::Animate(float DeltaTime)
 		if (m_IsGetItem)
 		{
 			m_ItemDuration += DeltaTime;
-
+			
 			// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
 			if (m_ItemDuration >= 8.0f)
 			{

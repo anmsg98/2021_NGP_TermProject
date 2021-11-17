@@ -37,6 +37,8 @@ public:
 	void OnCreate(const HINSTANCE& hInstance, const HWND& hWnd);
 	void OnDestroy();
 
+	void SetActive(bool IsActive);
+
 	// 소켓 관련 오류함수
 	void err_quit(const char* Msg);
 	void err_display(const char* Msg);

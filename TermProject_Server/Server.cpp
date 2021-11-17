@@ -34,66 +34,10 @@ CServer::~CServer()
     WSACleanup();
 }
 
-DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
-{
-    // 서버 자기 자신에 대한 포인터로, 스레드 함수 내에서 멤버변수에 접근하기 위해서 이와 같이 구현하였다.
-    CServer* Server{ (CServer*)Arg };
-
-    // 아이디로부터 가장 최근에 접속한 클라이언트의 플레이어 데이터를 가져온다.
-    CPlayer* Player{ Server->GetPlayerFromID(m_RecentID) };
-    int ID{ Player->GetID() };
-
-    // 최초로 클라이언트에게 초기화된 플레이어의 아이디를 보낸다.
-    int ReturnValue{ send(Player->GetSocket(), (char*)&ID, sizeof(int), 0) };
-
-    if (ReturnValue == SOCKET_ERROR)
-    {
-        Server->err_display("send()");
-    }
-
-    while (true)
-    {
-        ReturnValue = send(Player->GetSocket(), (char*)Server->m_GameData, sizeof(GameData), 0);
-
-        if (ReturnValue == SOCKET_ERROR)
-        {
-            Server->err_display("send()");
-            break;
-        }
-
-        ReturnValue = Server->recvn(Player->GetSocket(), (char*)Player, sizeof(CPlayer), 0);
-
-        if (ReturnValue == SOCKET_ERROR)
-        {
-            Server->err_display("recv()");
-            break;
-        }
-        else if (ReturnValue == 0)
-        {
-            break;
-        }
-        
-        SetEvent(Server->m_SyncHandles[ID]);
-        WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
-
-        printf("\r[플레이어 %d] : (%.02f, %.02f)", Player->GetID(), Player->GetPosition().m_X, Player->GetPosition().m_Y);
-    }
-
-    cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;
-
-    closesocket(Player->GetSocket());
-
-    // 접속이 종료된 클라이언트의 플레이어 객체는 값을 초기값으로 만든다.
-    Server->DestroyPlayer(Player->GetID());
-
-    return 0;
-}
-
 DWORD WINAPI CServer::AcceptClient(LPVOID Arg)
 {
     // 서버 자기 자신에 대한 포인터로, 스레드 함수 내에서 멤버변수에 접근하기 위해서 이와 같이 구현하였다.
     CServer* Server{ (CServer*)Arg };
-
     SOCKET ClientSocket{};
     SOCKADDR_IN ClientAddress{};
 
@@ -132,26 +76,83 @@ DWORD WINAPI CServer::AcceptClient(LPVOID Arg)
     return 0;
 }
 
+DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
+{
+    // 서버 자기 자신에 대한 포인터로, 스레드 함수 내에서 멤버변수에 접근하기 위해서 이와 같이 구현하였다.
+    CServer* Server{ (CServer*)Arg };
+
+    // 아이디로부터 가장 최근에 접속한 클라이언트의 플레이어 데이터를 가져온다.
+    CPlayer* Player{ &Server->m_GameData->m_Players[m_RecentID] };
+    int ID{ Player->GetID() };
+
+    // 최초로 클라이언트에게 초기화된 플레이어의 아이디를 보낸다.
+    int ReturnValue{ send(Player->GetSocket(), (char*)&ID, sizeof(int), 0) };
+
+    if (ReturnValue == SOCKET_ERROR)
+    {
+        Server->err_display("send()");
+    }
+
+    while (true)
+    {
+        ReturnValue = send(Player->GetSocket(), (char*)Server->m_GameData, sizeof(GameData), 0);
+
+        if (ReturnValue == SOCKET_ERROR)
+        {
+            Server->err_display("send()");
+            break;
+        }
+
+        ReturnValue = Server->recvn(Player->GetSocket(), (char*)Player, sizeof(CPlayer), 0);
+
+        if (ReturnValue == SOCKET_ERROR)
+        {
+            Server->err_display("recv()");
+            break;
+        }
+        else if (ReturnValue == 0)
+        {
+            break;
+        }
+
+        SetEvent(Server->m_SyncHandles[ID]);
+        WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
+
+        //printf("\r[플레이어 %d] : (%.02f, %.02f)", Player->GetID(), Player->GetPosition().m_X, Player->GetPosition().m_Y);
+    }
+
+    cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;
+
+    closesocket(Player->GetSocket());
+
+    // 접속이 종료된 클라이언트의 플레이어 객체는 값을 초기값으로 만든다.
+    Server->DestroyPlayer(Player->GetID());
+
+    return 0;
+}
+
 void CServer::ProcessGameData()
 {
     while (true)
     {
         WaitForMultipleObjects(2, m_SyncHandles, TRUE, INFINITE);
 
+        for (int i = 0; i < MAX_PLAYER; ++i)
+        {
+            ResetEvent(m_SyncHandles[i]);
+        }
+
         m_Timer->Update();
         m_GameData->m_DeltaTime = m_Timer->GetDeltaTime();
-       
-        // 객체 간 충돌 체크 및 처리
+
+        Animate();
+
         CheckBulletByMonsterCollision();
         CheckTowerByMonsterCollision();
         CheckPlayerByItemCollision();
 
-        // 객체생성
-
-        // 애니메이트
-        Animate();
-
         SetEvent(m_MainSyncHandle);
+        ResetEvent(m_MainSyncHandle);
     }
 }
 
@@ -286,21 +287,6 @@ int CServer::GetValidID() const
     return -1;
 }
 
-CPlayer* CServer::GetPlayerFromID(int ID)
-{
-    for (int i = 0; i < MAX_PLAYER; ++i)
-    {
-        if (m_GameData->m_Players[i].GetID() == ID)
-        {
-            // 매개변수로 넘어온 아이디를 가진 플레이어가 있다면 해당 플레이어의 주소 값을 반환한다.
-            return &m_GameData->m_Players[i];
-        }
-    }
-
-    // 만약 반복문을 빠져 나온다면, 해당 아이디를 가진 플레이어는 존재하지 않는 것이므로 nullptr을 반환한다.
-    return nullptr;
-}
-
 bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
 {
     int ValidID{ GetValidID() };
@@ -318,7 +304,7 @@ bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
     m_GameData->m_Players[ValidID].SetHp(100.0f);
     m_GameData->m_Players[ValidID].SetPosition(0.5f * m_Map->GetRect().right - 50.0f + 50.0f * ValidID, 0.5f * m_Map->GetRect().bottom + 50.0f);
 
-    // 가장 최근에 사용된 아ValidID이디를 갱신한다.
+    // 가장 최근에 사용된 유효한 아이디를 갱신한다.
     m_RecentID = ValidID;
 
     return true;

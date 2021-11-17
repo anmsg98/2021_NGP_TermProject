@@ -113,26 +113,6 @@ void CGameScene::BuildObject(int ID, GameData* Data)
 	m_Map->SetBitmapRect(CFileManager::GetInstance()->GetRect("Background"));
 }
 
-void CGameScene::Animate()
-{
-	m_GameData->m_Tower.Animate(m_GameData->m_DeltaTime);
-
-	for (int i = 0; i < MAX_MONSTER; ++i)
-	{
-		m_GameData->m_Monsters[i].Animate(m_GameData->m_DeltaTime);
-	}
-
-	for (int i = 0; i < MAX_ITEM; ++i)
-	{
-		m_GameData->m_Items[i].Animate(m_GameData->m_DeltaTime);
-	}
-
-	for (int i = 0; i < MAX_PLAYER; ++i)
-	{
-		m_GameData->m_Players[i].Animate(m_GameData->m_DeltaTime);
-	}
-}
-
 void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 {
 	m_hBitmap = CreateCompatibleBitmap(hDC, m_Map->GetRect().right, m_Map->GetRect().bottom);
@@ -157,11 +137,12 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 		m_GameData->m_Items[i].Render(hMemDC, hMemDC2);
 	}
 
-	//SelectObject(hMemDC2, hOldBitmap);
+	SelectObject(hMemDC2, hOldBitmap);
 
 	for (int i = 0; i < MAX_PLAYER; ++i)
 	{
 		m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
+		SelectObject(hMemDC2, hOldBitmap);
 	}
 
 	POINT PlayerCameraPos{ m_GameData->m_Players[m_ID].GetCameraStartPosition() };

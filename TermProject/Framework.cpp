@@ -40,6 +40,11 @@ void CFramework::OnDestroy()
 
 }
 
+void CFramework::SetActive(bool IsActive)
+{
+	m_IsActive = IsActive;
+}
+
 void CFramework::err_quit(const char* Msg)
 {
 	LPVOID MsgBuffer{};
@@ -185,7 +190,10 @@ void CFramework::ProcessInput()
 		err_display("recv()");
 	}
 
-	m_Scenes.top()->ProcessInput();	
+	if (m_IsActive)
+	{
+		m_Scenes.top()->ProcessInput();
+	}
 
 	ReturnValue = send(m_Socket, (char*)&m_GameData->m_Players[m_ID], sizeof(CPlayer), 0);
 

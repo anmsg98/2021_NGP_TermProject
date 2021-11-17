@@ -41,13 +41,13 @@ public:
 	CServer();
 	~CServer();
 
+	// 클라이언트 접속을 받는 쓰레드 함수
+	static DWORD WINAPI AcceptClient(LPVOID Arg);
+
 	// 각 클라이언트 처리를 위한 쓰레드 함수
 	static DWORD WINAPI ProcessClient(LPVOID Arg);
 
-	//클라이언트 접속을 받는 쓰레드 함수
-	static DWORD WINAPI AcceptClient(LPVOID Arg);
-
-	//서버에서 이루어지는 처리를 위한 함수
+	// 서버에서 이루어지는 처리를 위한 함수
 	void ProcessGameData();
 
 	// 소켓 관련 오류함수
@@ -63,15 +63,9 @@ public:
 	// 이벤트 생성
 	void InitEvent();
 
-	// 클라이언트 수용
-	void AcceptClient();
-
 	// 유효한 플레이어 아이디 반환
 	int GetValidID() const;
 	
-	// 해당 아이디를 가진 플레이어 반환
-	CPlayer* GetPlayerFromID(int ID);
-
 	// 수용한 클라이언트의 플레이어 생성 및 제거
 	bool CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress);
 	bool DestroyPlayer(int ID);
@@ -85,7 +79,7 @@ public:
 	void LoopGameScene();
 
 	void BuildObject();
-		
+
 	void Animate();
 
 	// 몬스터 생성 및 제거
@@ -100,5 +94,4 @@ public:
 	void CheckBulletByMonsterCollision();
 	void CheckTowerByMonsterCollision();
 	void CheckPlayerByItemCollision();
-
 };

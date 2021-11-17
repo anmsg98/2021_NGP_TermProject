@@ -110,9 +110,9 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SpriteSheet") };
 		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, m_BitmapRect.m_Left, m_BitmapRect.m_Top, m_BitmapRect.m_Width, m_BitmapRect.m_Height, atan2f(m_Direction.m_Y, m_Direction.m_X) * 180.0f / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
 
-		//SelectObject(hMemDC2, hRotateBitmap);
+		SelectObject(hMemDC2, hRotateBitmap);
 		DrawRect(hMemDC, GetPosition(), 2 * GetWidth(), 2 * GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
-		//SelectObject(hMemDC2, hSourceBitmap);
+		SelectObject(hMemDC2, hSourceBitmap);
 
 #ifdef DEBUG_HP
 		TCHAR HpText[32]{};
@@ -207,7 +207,7 @@ void CPlayer::FireBullet(const POINT& CursorPos)
 		m_Bullets[m_BulletIndex].SetDirection(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
 		m_Bullets[m_BulletIndex].SetLength(sqrtf(powf(m_Bullets[m_BulletIndex].GetDirection().m_X, 2) + powf(m_Bullets[m_BulletIndex].GetDirection().m_Y, 2)));
 		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirection().m_X / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
-			GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().m_Y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
+											 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().m_Y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
 	}
 
 	m_BulletIndex = (m_BulletIndex + 1) % MAX_BULLET;
