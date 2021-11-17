@@ -41,7 +41,7 @@ void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPA
 void CGameScene::ProcessInput()
 {
 	POSITION Position{ m_GameData->m_Players[m_ID].GetPosition() };
-	float Speed{ 300.0f * m_GameData->m_DeltaTime };
+	float Speed{ 3.0f };
 
 	// 플레이어의 위치 값 조정
 	if (GetAsyncKeyState('W') & 0x8000)
@@ -157,7 +157,7 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 		m_GameData->m_Items[i].Render(hMemDC, hMemDC2);
 	}
 
-	SelectObject(hMemDC2, hOldBitmap);
+	//SelectObject(hMemDC2, hOldBitmap);
 
 	for (int i = 0; i < MAX_PLAYER; ++i)
 	{

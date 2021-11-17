@@ -110,9 +110,9 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SpriteSheet") };
 		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, m_BitmapRect.m_Left, m_BitmapRect.m_Top, m_BitmapRect.m_Width, m_BitmapRect.m_Height, atan2f(m_Direction.m_Y, m_Direction.m_X) * 180.0f / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
 
-		SelectObject(hMemDC2, hRotateBitmap);
+		//SelectObject(hMemDC2, hRotateBitmap);
 		DrawRect(hMemDC, GetPosition(), 2 * GetWidth(), 2 * GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
-		SelectObject(hMemDC2, hSourceBitmap);
+		//SelectObject(hMemDC2, hSourceBitmap);
 
 #ifdef DEBUG_HP
 		TCHAR HpText[32]{};

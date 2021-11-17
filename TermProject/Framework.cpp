@@ -185,10 +185,9 @@ void CFramework::ProcessInput()
 		err_display("recv()");
 	}
 
-	m_Scenes.top()->ProcessInput();
-	m_Scenes.top()->Animate();
+	m_Scenes.top()->ProcessInput();	
 
-	ReturnValue = send(m_Socket, (char*)m_GameData, sizeof(GameData), 0);
+	ReturnValue = send(m_Socket, (char*)&m_GameData->m_Players[m_ID], sizeof(CPlayer), 0);
 
 	if (ReturnValue == SOCKET_ERROR)
 	{
