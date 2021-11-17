@@ -25,6 +25,8 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 
 	GetClientRect(hWnd, &m_ClientRect);
 	ConnectServer();
+	CFileManager::GetInstance()->LoadBitmaps(hInstance);
+	CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
 
 	// 씬을 생성한다.
 	CScene* Scene{ new CGameScene{} };

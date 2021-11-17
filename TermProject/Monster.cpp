@@ -22,7 +22,7 @@ void CMonster::Animate(float DeltaTime)
 					m_CollisionDuration = 0.0f;
 
 					SetDirection(m_PrevDirection.m_X, m_PrevDirection.m_Y);
-					SetLength(sqrtf(powf(GetDirection().m_X, 2) + powf(GetDirection().m_Y, 2)));
+					SetLength(sqrtf(powf((float)GetDirection().m_X, 2) + powf((float)GetDirection().m_Y, 2)));
 				}
 			}
 			else
@@ -50,25 +50,11 @@ void CMonster::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		USER_RECT Rect{};
 		int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
 
-		if (m_Type == LOWER)
-		{
-			Rect = CFileManager::GetInstance()->GetRect("Monster_1_1");
-		}
-		else if (m_Type == MIDDLE)
-		{
-			Rect = CFileManager::GetInstance()->GetRect("Monster_2_1");
-		}
-		else if (m_Type == UPPER)
-		{
-			Rect = CFileManager::GetInstance()->GetRect("Monster_3_1");
-		}
+		m_BitmapRect.m_Left = m_BitmapRect.m_Width * FrameIndex;
 
-		Rect.m_Left = Rect.m_Width * FrameIndex;
-
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
+		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, m_BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
 #ifdef DEBUG_HP
 		TCHAR HpText[32]{};

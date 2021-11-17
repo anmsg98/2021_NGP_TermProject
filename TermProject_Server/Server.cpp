@@ -1,11 +1,14 @@
 #include "stdafx.h"
 #include "Server.h"
 #include "Map.h"
+#include "FileManager.h"
 
 int CServer::m_RecentID;
 
 CServer::CServer()
 {
+    CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
+
     m_Timer = new CTimer{};
     m_GameData = new GameData{};
 }
@@ -329,11 +332,13 @@ void CServer::BuildObject()
 
     m_Map = new CMap{};
     m_Map->SetRect(MapRect);
+    m_Map->SetBitmapRect(CFileManager::GetInstance()->GetRect("Background"));
 
     // 타워를 초기화한다.
     m_GameData->m_Tower.SetActive(true);
     m_GameData->m_Tower.SetHp(5000.0f);
     m_GameData->m_Tower.SetPosition(0.5f * MapRect.right, 0.5f * MapRect.bottom);
+    m_GameData->m_Tower.SetBitmapRect(CFileManager::GetInstance()->GetRect("Tower_1_1"));
     m_GameData->m_Tower.SetWidth(228.0f);
     m_GameData->m_Tower.SetHeight(213.0f);
 
@@ -347,35 +352,52 @@ void CServer::BuildObject()
         m_GameData->m_Players[i].SetHeight(90.0f);
     }
 
+    m_GameData->m_Players[0].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_1"));
+    m_GameData->m_Players[1].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_2"));
+    m_GameData->m_Players[2].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_3"));
+    m_GameData->m_Players[3].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_4"));
+
     // 모든 몬스터를 초기화한다.
     for (int i = 0; i < MAX_MONSTER; ++i)
     {
-        m_GameData->m_Monsters[i].SetActive(true);
-        m_GameData->m_Monsters[i].SetWidth(73.5f);
-        m_GameData->m_Monsters[i].SetHeight(76.0f);
-
          // 몬스터의 종류 설정
         int Type{ rand() % 3 + 1 };
 
+        switch (Type)
+        {
+        case CMonster::LOWER:
+            m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_1_1"));
+            break;
+        case CMonster::MIDDLE:
+            m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_2_1"));
+            break;
+        case CMonster::UPPER:
+            m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_3_1"));
+            break;
+        }
+
+        m_GameData->m_Monsters[i].SetActive(true);
         m_GameData->m_Monsters[i].SetType(Type);
         m_GameData->m_Monsters[i].SetHp(100.0f * Type);
+        m_GameData->m_Monsters[i].SetWidth(73.5f);
+        m_GameData->m_Monsters[i].SetHeight(76.0f);
 
         // 몬스터의 스폰 지점 설정
         Type = rand() % 4;
 
         switch (Type)
         {
-        case 0:
-            m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().left + 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
-            break;
-        case 1:
-            m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().right - 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
-            break;
-        case 2:
+        case MONSTER_GEN_LOCATION::TOP:
             m_GameData->m_Monsters[i].SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().top + 30.0f);
             break;
-        case 3:
+        case MONSTER_GEN_LOCATION::BOTTOM:
             m_GameData->m_Monsters[i].SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().bottom - 30.0f);
+            break;
+        case MONSTER_GEN_LOCATION::LEFT:
+            m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().left + 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
+            break;
+        case MONSTER_GEN_LOCATION::RIGHT:
+            m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().right - 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
             break;
         }
 
@@ -387,16 +409,25 @@ void CServer::BuildObject()
     // 아이템을 초기화한다.
     for (int i = 0; i < MAX_ITEM; ++i)
     {
-        m_GameData->m_Items[i].SetActive(true);
-        m_GameData->m_Items[i].SetWidth(34.0f);
-        m_GameData->m_Items[i].SetHeight(40.0f);
-        m_GameData->m_Items[i].SetPosition(0.5f * MapRect.right - 120.0f + 80.0f * i, 0.5f * MapRect.bottom - 150.0f);
-
         // 아이템의 종류 설정
         int Type{ rand() % 2 + 1 };
 
+        switch (Type)
+        {
+        case CItem::HP_UP:
+            m_GameData->m_Items[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Potion_1"));
+            break;
+        case CItem::ATTACK_POWER_UP:
+            m_GameData->m_Items[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Potion_2"));
+            break;
+        }
+
+        m_GameData->m_Items[i].SetActive(true);
         m_GameData->m_Items[i].SetType(Type);
         m_GameData->m_Items[i].SetHp(60.0f);
+        m_GameData->m_Items[i].SetPosition(0.5f * MapRect.right - 120.0f + 80.0f * i, 0.5f * MapRect.bottom - 150.0f);
+        m_GameData->m_Items[i].SetWidth(34.0f);
+        m_GameData->m_Items[i].SetHeight(40.0f);
     }
 }
 

@@ -9,6 +9,8 @@
 
 class CMap;
 
+enum MONSTER_GEN_LOCATION { TOP, BOTTOM, LEFT, RIGHT };
+
 struct GameData
 {
 	float					m_DeltaTime{};

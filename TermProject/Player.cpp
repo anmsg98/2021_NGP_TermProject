@@ -12,7 +12,7 @@ void CBullet::Animate(float DeltaTime)
 
 		if (m_Position.m_X <= 0.0f || m_Position.m_X >= 2400.0f || m_Position.m_Y <= 0.0f || m_Position.m_Y >= 1500.0f)
 		{
-			m_IsActive = true;
+			m_IsActive = false;
 		}
 	}
 }
@@ -21,19 +21,9 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		USER_RECT Rect{};
+		m_BitmapRect.m_Left += m_BitmapRect.m_Width * (int)(m_AttackPower / 30.0f);
 
-		// 플레이어가 아이템을 획득하여 총알이 강화된 경우와 분리한다.
-		if (m_AttackPower == 10.0f)
-		{
-			Rect = CFileManager::GetInstance()->GetRect("Bullet_1");
-		}
-		else if (m_AttackPower == 30.0f)
-		{
-			Rect = CFileManager::GetInstance()->GetRect("Bullet_2");
-		}
-
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
+		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, m_BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 	}
 }
 
@@ -80,6 +70,7 @@ CPlayer::CPlayer()
 	{
 		m_Bullets[i].SetWidth(20.0f);
 		m_Bullets[i].SetHeight(15.0f);
+		m_Bullets[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Bullet_1"));
 	}
 }
 
@@ -115,9 +106,9 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Player_1") };
+		USER_RECT Rect{ 0, 0, m_BitmapRect.m_Width, m_BitmapRect.m_Height };
 		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SpriteSheet") };
-		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, 0, 0, Rect.m_Width, Rect.m_Height, atan2f(m_Direction.m_Y, m_Direction.m_X) * 180.0f / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
+		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, m_BitmapRect.m_Left, m_BitmapRect.m_Top, m_BitmapRect.m_Width, m_BitmapRect.m_Height, atan2f(m_Direction.m_Y, m_Direction.m_X) * 180.0f / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
 
 		SelectObject(hMemDC2, hRotateBitmap);
 		DrawRect(hMemDC, GetPosition(), 2 * GetWidth(), 2 * GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());

@@ -51,6 +51,16 @@ const POSITION& CGameObject::GetPosition() const
 	return m_Position;
 }
 
+void CGameObject::SetBitmapRect(const USER_RECT& Rect)
+{
+	m_BitmapRect = Rect;
+}
+
+const USER_RECT& CGameObject::GetBitmapRect() const
+{
+	return m_BitmapRect;
+}
+
 void CGameObject::SetWidth(float Width)
 {
 	m_Width = Width;

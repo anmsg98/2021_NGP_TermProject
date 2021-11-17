@@ -91,9 +91,6 @@ void CGameScene::ProcessInput()
 
 void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data)
 {
-	CFileManager::GetInstance()->LoadBitmaps(hInstance);
-	CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
-
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject(ID, Data);
 }
@@ -113,6 +110,7 @@ void CGameScene::BuildObject(int ID, GameData* Data)
 
 	m_Map = new CMap{};
 	m_Map->SetRect(MapRect);
+	m_Map->SetBitmapRect(CFileManager::GetInstance()->GetRect("Background"));
 }
 
 void CGameScene::Animate()

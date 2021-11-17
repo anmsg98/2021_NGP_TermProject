@@ -4,6 +4,7 @@ class CMap
 {
 private:
 	RECT			m_Rect{};
+	USER_RECT		m_BitmapRect{};
 
 public:
 	CMap() = default;
@@ -13,4 +14,7 @@ public:
 
 	void SetRect(const RECT& Rect);
 	const RECT& GetRect() const;
+
+	void SetBitmapRect(const USER_RECT& Rect);
+	const USER_RECT& GetBitmapRect() const;
 };

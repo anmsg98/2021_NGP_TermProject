@@ -9,6 +9,8 @@ protected:
 	float				m_Hp{};
 
 	POSITION			m_Position{};
+
+	USER_RECT			m_BitmapRect{};
 	float				m_Width{};
 	float				m_Height{};
 
@@ -28,6 +30,9 @@ public:
 	void SetPosition(const POSITION& Position);
 	void SetPosition(float Xpos, float Ypos);
 	const POSITION& GetPosition() const;
+
+	void SetBitmapRect(const USER_RECT& Rect);
+	const USER_RECT& GetBitmapRect() const;
 
 	void SetWidth(float Width);
 	float GetWidth() const;

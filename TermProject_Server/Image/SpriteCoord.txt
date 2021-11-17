@@ -1,0 +1,103 @@
+<NAME>: Background
+<LTWH>: 0 0 2400 1500
+
+
+
+<NAME>: Player_1
+<LTWH>: 0 0 125 180
+
+<NAME>: Player_2
+<LTWH>: 125 0 125 180
+
+<NAME>: Player_3
+<LTWH>: 250 0 125 180
+
+<NAME>: Player_4
+<LTWH>: 375 0 125 180
+
+
+
+<NAME>: Potion_1
+<LTWH>: 800 0 68 80
+
+<NAME>: Potion_2
+<LTWH>: 868 0 68 80
+
+
+
+<NAME>: Bullet_1
+<LTWH>: 800 80 40 30
+
+<NAME>: Bullet_2
+<LTWH>: 840 80 40 30
+
+
+
+<NAME>: Monster_1_1
+<LTWH>: 0 180 147 152
+
+<NAME>: Monster_1_2
+<LTWH>: 147 180 147 152
+
+<NAME>: Monster_1_3
+<LTWH>: 294 180 147 152
+
+<NAME>: Monster_1_4
+<LTWH>: 441 180 147 152
+
+<NAME>: Monster_1_5
+<LTWH>: 588 180 147 152
+
+
+
+<NAME>: Monster_2_1
+<LTWH>: 0 332 150 152
+
+<NAME>: Monster_2_2
+<LTWH>: 150 332 150 152
+
+<NAME>: Monster_2_3
+<LTWH>: 300 332 150 152
+
+<NAME>: Monster_2_4
+<LTWH>: 450 332 150 152
+
+<NAME>: Monster_2_5
+<LTWH>: 600 332 150 152
+
+
+
+<NAME>: Monster_3_1
+<LTWH>: 0 484 136 161
+
+<NAME>: Monster_3_2
+<LTWH>: 136 484 136 161
+
+<NAME>: Monster_3_3
+<LTWH>: 272 484 136 161
+
+<NAME>: Monster_3_4
+<LTWH>: 408 484 136 161
+
+<NAME>: Monster_3_5
+<LTWH>: 544 484 136 161
+
+
+
+<NAME>: Tower_1_1
+<LTWH>: 0 645 228 213
+
+<NAME>: Tower_1_2
+<LTWH>: 228 645 228 213
+
+<NAME>: Tower_1_3
+<LTWH>: 456 645 228 213
+
+<NAME>: Tower_1_4
+<LTWH>: 684 645 228 213
+
+<NAME>: Tower_1_5
+<LTWH>: 912 645 228 213
+
+<NAME>: Tower_1_6
+<LTWH>: 1140 645 228 213
