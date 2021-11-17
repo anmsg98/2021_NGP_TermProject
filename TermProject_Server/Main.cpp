@@ -6,5 +6,5 @@ int main()
 	CServer Server{};
 
 	Server.InitServer();
-	Server.AcceptClient();
+	Server.ProcessGameData();	
 }

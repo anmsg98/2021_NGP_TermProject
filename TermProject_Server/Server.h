@@ -44,6 +44,12 @@ public:
 	// 각 클라이언트 처리를 위한 쓰레드 함수
 	static DWORD WINAPI ProcessClient(LPVOID Arg);
 
+	//클라이언트 접속을 받는 쓰레드 함수
+	static DWORD WINAPI AcceptClient(LPVOID Arg);
+
+	//서버에서 이루어지는 처리를 위한 함수
+	void ProcessGameData();
+
 	// 소켓 관련 오류함수
     void err_quit(const char* Msg);
 	void err_display(const char* Msg);
@@ -79,6 +85,8 @@ public:
 	void LoopGameScene();
 
 	void BuildObject();
+		
+	void Animate();
 
 	// 몬스터 생성 및 제거
 	void CreateMonster();
@@ -92,4 +100,5 @@ public:
 	void CheckBulletByMonsterCollision();
 	void CheckTowerByMonsterCollision();
 	void CheckPlayerByItemCollision();
+
 };

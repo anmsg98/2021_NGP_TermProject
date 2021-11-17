@@ -61,7 +61,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
             break;
         }
 
-        ReturnValue = Server->recvn(Player->GetSocket(), (char*)Server->m_GameData, sizeof(GameData), 0);
+        ReturnValue = Server->recvn(Player->GetSocket(), (char*)Player, sizeof(CPlayer), 0);
 
         if (ReturnValue == SOCKET_ERROR)
         {
@@ -73,13 +73,8 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
             break;
         }
         
-        Server->m_Timer->Update();
-        Server->m_GameData->m_DeltaTime = Server->m_Timer->GetDeltaTime();
-        
-        // 객체 간 충돌 체크 및 처리
-        Server->CheckBulletByMonsterCollision();
-        Server->CheckTowerByMonsterCollision();
-        Server->CheckPlayerByItemCollision();
+        SetEvent(Server->m_SyncHandles[ID]);
+        WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
 
         printf("\r[플레이어 %d] : (%.02f, %.02f)", Player->GetID(), Player->GetPosition().m_X, Player->GetPosition().m_Y);
     }
@@ -92,6 +87,72 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     Server->DestroyPlayer(Player->GetID());
 
     return 0;
+}
+
+DWORD WINAPI CServer::AcceptClient(LPVOID Arg)
+{
+    // 서버 자기 자신에 대한 포인터로, 스레드 함수 내에서 멤버변수에 접근하기 위해서 이와 같이 구현하였다.
+    CServer* Server{ (CServer*)Arg };
+
+    SOCKET ClientSocket{};
+    SOCKADDR_IN ClientAddress{};
+
+    while (true)
+    {
+        int AddressLength{ sizeof(ClientAddress) };
+
+        ClientSocket = accept(Server->m_ListenSocket, (SOCKADDR*)&ClientAddress, &AddressLength);
+
+        if (ClientSocket == INVALID_SOCKET)
+        {
+            Server->err_display("accept()");
+            break;
+        }
+
+        // CreatePlayer() 함수가 false를 반환한 경우, 최대인원이 접속한 것이므로 continue를 통해 게임시작 전까지 accept() 대기 상태로 만든다.
+        if (!Server->CreatePlayer(ClientSocket, ClientAddress))
+        {
+            continue;
+        }
+
+        cout << "[클라이언트 접속] " << "IP : " << inet_ntoa(ClientAddress.sin_addr) << ", 포트번호 : " << ntohs(ClientAddress.sin_port) << endl;
+
+        HANDLE ThreadHandle{ CreateThread(NULL, 0, ProcessClient, (LPVOID)Server, 0, NULL) };
+
+        if (ThreadHandle)
+        {
+            CloseHandle(ThreadHandle);
+        }
+        else
+        {
+            closesocket(ClientSocket);
+        }
+    }
+
+    return 0;
+}
+
+void CServer::ProcessGameData()
+{
+    while (true)
+    {
+        WaitForMultipleObjects(2, m_SyncHandles, TRUE, INFINITE);
+
+        m_Timer->Update();
+        m_GameData->m_DeltaTime = m_Timer->GetDeltaTime();
+       
+        // 객체 간 충돌 체크 및 처리
+        CheckBulletByMonsterCollision();
+        CheckTowerByMonsterCollision();
+        CheckPlayerByItemCollision();
+
+        // 객체생성
+
+        // 애니메이트
+        Animate();
+
+        SetEvent(m_MainSyncHandle);
+    }
 }
 
 void CServer::err_quit(const char* Msg)
@@ -187,50 +248,26 @@ void CServer::InitServer()
         err_quit("listen()");
     }
 
+    InitEvent();
     BuildObject();
+
+    HANDLE hThread{ CreateThread(NULL, 0, AcceptClient, (LPVOID)this, 0, NULL) };
+
+    if (hThread)
+    {
+        CloseHandle(hThread);
+    }
+
     m_Timer->Start();
 }
 
 void CServer::InitEvent()
 {
+    m_MainSyncHandle = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-}
-
-void CServer::AcceptClient()
-{
-    SOCKET ClientSocket{};
-    SOCKADDR_IN ClientAddress{};
-
-    while (true)
+    for (int i = 0; i < MAX_PLAYER; ++i)
     {
-        int AddressLength{ sizeof(ClientAddress) };
-
-        ClientSocket = accept(m_ListenSocket, (SOCKADDR*)&ClientAddress, &AddressLength);
-
-        if (ClientSocket == INVALID_SOCKET)
-        {
-            err_display("accept()");
-            break;
-        }
-        
-        // CreatePlayer() 함수가 false를 반환한 경우, 최대인원이 접속한 것이므로 continue를 통해 게임시작 전까지 accept() 대기 상태로 만든다.
-        if (!CreatePlayer(ClientSocket, ClientAddress))
-        {
-            continue;
-        }
-
-        cout << "[클라이언트 접속] " << "IP : " << inet_ntoa(ClientAddress.sin_addr) << ", 포트번호 : " << ntohs(ClientAddress.sin_port) << endl;
-
-        HANDLE ThreadHandle{ CreateThread(NULL, 0, ProcessClient, (LPVOID)this, 0, NULL) };
-
-        if (ThreadHandle)
-        {
-            CloseHandle(ThreadHandle);
-        }
-        else
-        {
-            closesocket(ClientSocket);
-        }
+        m_SyncHandles[i] = CreateEvent(NULL, TRUE, FALSE, NULL);
     }
 }
 
@@ -428,6 +465,26 @@ void CServer::BuildObject()
         m_GameData->m_Items[i].SetPosition(0.5f * MapRect.right - 120.0f + 80.0f * i, 0.5f * MapRect.bottom - 150.0f);
         m_GameData->m_Items[i].SetWidth(34.0f);
         m_GameData->m_Items[i].SetHeight(40.0f);
+    }
+}
+
+void CServer::Animate()
+{
+    m_GameData->m_Tower.Animate(m_GameData->m_DeltaTime);
+
+    for (int i = 0; i < MAX_MONSTER; ++i)
+    {
+        m_GameData->m_Monsters[i].Animate(m_GameData->m_DeltaTime);
+    }
+
+    for (int i = 0; i < MAX_ITEM; ++i)
+    {
+        m_GameData->m_Items[i].Animate(m_GameData->m_DeltaTime);
+    }
+
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        m_GameData->m_Players[i].Animate(m_GameData->m_DeltaTime);
     }
 }
 
