@@ -5,7 +5,8 @@
 #include "Monster.h"
 #include "Item.h"
 
-#define SERVER_PORT 9000
+#define SERVER_CAPACITY			   2
+#define SERVER_PORT				9000
 
 class CMap;
 
@@ -13,8 +14,6 @@ enum MONSTER_GEN_LOCATION { TOP, BOTTOM, LEFT, RIGHT };
 
 struct GameData
 {
-	float					m_DeltaTime{};
-
 	CPlayer					m_Players[MAX_PLAYER]{};
 	CTower					m_Tower{};
 	CMonster				m_Monsters[MAX_MONSTER]{};
@@ -74,21 +73,15 @@ public:
 	bool CheckAllPlayerReady();
 	bool CheckGameOver();
 
-	// 대기실/인게임 송수신
-	void LoopWaitingScene();
-	void LoopGameScene();
+	void WaitingLoop();
+	void GameLoop();
 
 	void BuildObject();
 
 	void Animate();
 
-	// 몬스터 생성 및 제거
 	void CreateMonster();
-	void RemoveMonster();
-
-	// 아이템 생성 및 제거
 	void CreateItem();
-	void RemoveItem();
 
 	// 게임 월드 내의 객체 간 충돌 검사
 	void CheckBulletByMonsterCollision();

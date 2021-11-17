@@ -5,16 +5,7 @@
 
 void CBullet::Animate(float DeltaTime)
 {
-	if (m_IsActive)
-	{
-		m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 1000.f;
-		m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 1000.f;
 
-		if (m_Position.m_X <= 0.0f || m_Position.m_X >= 2400.0f || m_Position.m_Y <= 0.0f || m_Position.m_Y >= 1500.0f)
-		{
-			m_IsActive = false;
-		}
-	}
 }
 
 void CBullet::Render(HDC hMemDC, HDC hMemDC2)
@@ -76,30 +67,7 @@ CPlayer::CPlayer()
 
 void CPlayer::Animate(float DeltaTime)
 {
-	if (m_IsActive)
-	{
-		if (m_IsGetItem)
-		{
-			m_ItemDuration += DeltaTime;
 
-			// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
-			if (m_ItemDuration >= 8.0f)
-			{
-				m_IsGetItem = false;
-				m_ItemDuration = 0.0f;
-
-				for (int i = 0; i < MAX_BULLET; ++i)
-				{
-					m_Bullets[i].SetAttackPower(10.0f);
-				}
-			}
-		}
-
-		for (int i = 0; i < MAX_BULLET; ++i)
-		{
-			m_Bullets[i].Animate(DeltaTime);
-		}
-	}
 }
 
 void CPlayer::Render(HDC hMemDC, HDC hMemDC2)

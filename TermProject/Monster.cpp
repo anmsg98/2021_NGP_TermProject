@@ -3,47 +3,7 @@
 
 void CMonster::Animate(float DeltaTime)
 {
-	if (m_IsActive)
-	{
-		if (m_Hp != 0)
-		{
-			if (m_IsCollided)
-			{
-				m_CollisionDuration += DeltaTime;
 
-				if (m_CollisionDuration < 0.2f)
-				{
-					m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 300.0f;
-					m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 300.0f;
-				}
-				else
-				{
-					m_IsCollided = false;
-					m_CollisionDuration = 0.0f;
-
-					SetDirection(m_PrevDirection.m_X, m_PrevDirection.m_Y);
-					SetLength(sqrtf(powf((float)GetDirection().m_X, 2) + powf((float)GetDirection().m_Y, 2)));
-				}
-			}
-			else
-			{
-				m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 100.0f;
-				m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 100.0f;
-			}
-		}
-		else
-		{
-			const int FrameFPS{ 15 };
-
-			m_AnimationTime += FrameFPS * DeltaTime;
-
-			if (m_AnimationTime >= m_AnimationFrame)
-			{
-				m_AnimationTime = 0.0f;
-				m_IsActive = false;
-			}
-		}
-	}
 }
 
 void CMonster::Render(HDC hMemDC, HDC hMemDC2)

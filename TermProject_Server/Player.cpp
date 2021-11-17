@@ -19,12 +19,7 @@ void CBullet::Animate(float DeltaTime)
 
 void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 {
-	if (m_IsActive)
-	{
-		m_BitmapRect.m_Left += m_BitmapRect.m_Width * (int)(m_AttackPower / 30.0f);
 
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, m_BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
-	}
 }
 
 void CBullet::SetAttackPower(float AttackPower)
@@ -104,28 +99,7 @@ void CPlayer::Animate(float DeltaTime)
 
 void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 {
-	if (m_IsActive)
-	{
-		USER_RECT Rect{ 0, 0, m_BitmapRect.m_Width, m_BitmapRect.m_Height };
-		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SpriteSheet") };
-		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, m_BitmapRect.m_Left, m_BitmapRect.m_Top, m_BitmapRect.m_Width, m_BitmapRect.m_Height, atan2f(m_Direction.m_Y, m_Direction.m_X) * 180.0f / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
 
-		SelectObject(hMemDC2, hRotateBitmap);
-		DrawRect(hMemDC, GetPosition(), 2 * GetWidth(), 2 * GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
-		SelectObject(hMemDC2, hSourceBitmap);
-
-#ifdef DEBUG_HP
-		TCHAR HpText[32]{};
-
-		sprintf(HpText, "%.f", m_Hp);
-		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Height), HpText, lstrlen(HpText));
-#endif
-
-		for (int i = 0; i < MAX_BULLET; ++i)
-		{
-			m_Bullets[i].Render(hMemDC, hMemDC2);
-		}
-	}
 }
 
 void CPlayer::SetID(int ID)

@@ -117,8 +117,6 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
 
         SetEvent(Server->m_SyncHandles[ID]);
         WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
-
-        //printf("\r[플레이어 %d] : (%.02f, %.02f)", Player->GetID(), Player->GetPosition().m_X, Player->GetPosition().m_Y);
     }
 
     cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;
@@ -135,7 +133,7 @@ void CServer::ProcessGameData()
 {
     while (true)
     {
-        WaitForMultipleObjects(2, m_SyncHandles, TRUE, INFINITE);
+        WaitForMultipleObjects(SERVER_CAPACITY, m_SyncHandles, TRUE, INFINITE);
 
         for (int i = 0; i < MAX_PLAYER; ++i)
         {
@@ -143,7 +141,6 @@ void CServer::ProcessGameData()
         }
 
         m_Timer->Update();
-        m_GameData->m_DeltaTime = m_Timer->GetDeltaTime();
 
         Animate();
 
@@ -338,12 +335,12 @@ bool CServer::CheckGameOver()
     return false;
 }
 
-void CServer::LoopWaitingScene()
+void CServer::WaitingLoop()
 {
 
 }
 
-void CServer::LoopGameScene()
+void CServer::GameLoop()
 {
 
 }
@@ -456,21 +453,21 @@ void CServer::BuildObject()
 
 void CServer::Animate()
 {
-    m_GameData->m_Tower.Animate(m_GameData->m_DeltaTime);
+    m_GameData->m_Tower.Animate(m_Timer->GetDeltaTime());
 
     for (int i = 0; i < MAX_MONSTER; ++i)
     {
-        m_GameData->m_Monsters[i].Animate(m_GameData->m_DeltaTime);
+        m_GameData->m_Monsters[i].Animate(m_Timer->GetDeltaTime());
     }
 
     for (int i = 0; i < MAX_ITEM; ++i)
     {
-        m_GameData->m_Items[i].Animate(m_GameData->m_DeltaTime);
+        m_GameData->m_Items[i].Animate(m_Timer->GetDeltaTime());
     }
 
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
-        m_GameData->m_Players[i].Animate(m_GameData->m_DeltaTime);
+        m_GameData->m_Players[i].Animate(m_Timer->GetDeltaTime());
     }
 }
 
@@ -513,11 +510,6 @@ void CServer::CreateMonster()
     //}
 }
 
-void CServer::RemoveMonster()
-{
-
-}
-
 void CServer::CreateItem()
 {
     //m_CurrentItemGenTime += DeltaTime;
@@ -540,11 +532,6 @@ void CServer::CreateItem()
     //    }
     //    m_CurrentItemGenTime = 0.0f;
     //}
-}
-
-void CServer::RemoveItem()
-{
-
 }
 
 void CServer::CheckBulletByMonsterCollision()

@@ -16,10 +16,7 @@ void CItem::Animate(float DeltaTime)
 
 void CItem::Render(HDC hMemDC, HDC hMemDC2)
 {
-	if (m_IsActive)
-	{
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, m_BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
-	}
+
 }
 
 void CItem::SetType(int Type)

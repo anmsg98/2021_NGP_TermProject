@@ -1,5 +1,4 @@
 #pragma once
-#include "Timer.h"
 #include "Player.h"
 #include "Tower.h"
 #include "Monster.h"
@@ -9,8 +8,6 @@ class CMap;
 
 struct GameData
 {
-	float							m_DeltaTime{};
-
 	CPlayer							m_Players[MAX_PLAYER]{};
 	CTower							m_Tower{};
 	CMonster						m_Monsters[MAX_MONSTER]{};
