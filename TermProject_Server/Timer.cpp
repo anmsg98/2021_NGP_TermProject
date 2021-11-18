@@ -7,12 +7,21 @@ void CTimer::Start()
 	QueryPerformanceCounter(&m_LastTime);
 }
 
-void CTimer::Update()
+void CTimer::Update(float LockFPS)
 {
 	QueryPerformanceCounter(&m_CurrentTime);
 
 	m_DeltaTime = (float)(m_CurrentTime.QuadPart - m_LastTime.QuadPart) / m_Second.QuadPart;
 	m_LastTime = m_CurrentTime;
+
+	if (LockFPS > 0.0f)
+	{
+		while (m_DeltaTime < (1.0f / LockFPS))
+		{
+			QueryPerformanceCounter(&m_CurrentTime);
+			m_DeltaTime = (float)(m_CurrentTime.QuadPart - m_LastTime.QuadPart) / m_Second.QuadPart;
+		}
+	}
 }
 
 float CTimer::GetDeltaTime()

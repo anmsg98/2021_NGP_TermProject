@@ -14,7 +14,7 @@ public:
 	~CTimer() = default;
 
 	void Start();
-	void Update();
+	void Update(float LockFPS);
 
 	float GetDeltaTime();
 };
