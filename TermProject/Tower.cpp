@@ -10,12 +10,11 @@ void CTower::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		USER_RECT Rect{ CFileManager::GetInstance()->GetRect("Tower_1_1") };
 		int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
 
-		Rect.m_Left = Rect.m_Width * FrameIndex;
+		m_BitmapRect.m_Left = m_BitmapRect.m_Width * FrameIndex;
 
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
+		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, m_BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
 #ifdef DEBUG_HP
 		TCHAR HpText[32]{};
