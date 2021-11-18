@@ -81,6 +81,7 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 		SelectObject(hMemDC2, hRotateBitmap);
 		DrawRect(hMemDC, GetPosition(), 2 * GetWidth(), 2 * GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
 		SelectObject(hMemDC2, hSourceBitmap);
+		DeleteObject(hRotateBitmap);
 
 #ifdef DEBUG_HP
 		TCHAR HpText[32]{};
