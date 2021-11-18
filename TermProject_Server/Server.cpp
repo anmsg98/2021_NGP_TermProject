@@ -104,7 +104,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
         }
 
         ReturnValue = Server->recvn(Player->GetSocket(), (char*)Player, sizeof(CPlayer), 0);
-
+        
         if (ReturnValue == SOCKET_ERROR)
         {
             Server->err_display("recv()");
@@ -133,14 +133,14 @@ void CServer::ProcessGameData()
 {
     while (true)
     {
-        WaitForMultipleObjects(SERVER_CAPACITY, m_SyncHandles, TRUE, INFINITE);
+        WaitForMultipleObjects(MAX_PLAYER, m_SyncHandles, TRUE, INFINITE);
 
         for (int i = 0; i < MAX_PLAYER; ++i)
         {
             ResetEvent(m_SyncHandles[i]);
         }
 
-        m_Timer->Update();
+        m_Timer->Update(60.0f);
 
         Animate();
 
@@ -374,8 +374,8 @@ void CServer::BuildObject()
 
     m_GameData->m_Players[0].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_1"));
     m_GameData->m_Players[1].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_2"));
-    m_GameData->m_Players[2].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_3"));
-    m_GameData->m_Players[3].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_4"));
+    //m_GameData->m_Players[2].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_3"));
+    //m_GameData->m_Players[3].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_4"));
 
     // 모든 몬스터를 초기화한다.
     for (int i = 0; i < MAX_MONSTER; ++i)
@@ -396,7 +396,7 @@ void CServer::BuildObject()
             break;
         }
 
-        m_GameData->m_Monsters[i].SetActive(true);
+        m_GameData->m_Monsters[i].SetActive(false);
         m_GameData->m_Monsters[i].SetType(Type);
         m_GameData->m_Monsters[i].SetHp(100.0f * Type);
         m_GameData->m_Monsters[i].SetWidth(73.5f);

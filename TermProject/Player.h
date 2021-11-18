@@ -1,8 +1,8 @@
 #pragma once
 #include "GameObject.h"
 
-#define MAX_PLAYER 4
-#define MAX_BULLET 10
+#define MAX_PLAYER  2
+#define MAX_BULLET  5
 
 // ============================================== CBullet ==============================================
 

@@ -5,7 +5,6 @@
 #include "Monster.h"
 #include "Item.h"
 
-#define SERVER_CAPACITY			   2
 #define SERVER_PORT				9000
 
 class CMap;

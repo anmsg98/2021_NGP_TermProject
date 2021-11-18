@@ -137,12 +137,10 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 		m_GameData->m_Items[i].Render(hMemDC, hMemDC2);
 	}
 
-	SelectObject(hMemDC2, hOldBitmap);
-
 	for (int i = 0; i < MAX_PLAYER; ++i)
 	{
-		m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
 		SelectObject(hMemDC2, hOldBitmap);
+		m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
 	}
 
 	POINT PlayerCameraPos{ m_GameData->m_Players[m_ID].GetCameraStartPosition() };
