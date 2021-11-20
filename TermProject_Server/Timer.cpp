@@ -10,9 +10,7 @@ void CTimer::Start()
 void CTimer::Update(float LockFPS)
 {
 	QueryPerformanceCounter(&m_CurrentTime);
-
 	m_DeltaTime = (float)(m_CurrentTime.QuadPart - m_LastTime.QuadPart) / m_Second.QuadPart;
-	m_LastTime = m_CurrentTime;
 
 	if (LockFPS > 0.0f)
 	{
@@ -22,6 +20,8 @@ void CTimer::Update(float LockFPS)
 			m_DeltaTime = (float)(m_CurrentTime.QuadPart - m_LastTime.QuadPart) / m_Second.QuadPart;
 		}
 	}
+
+	m_LastTime = m_CurrentTime;
 }
 
 float CTimer::GetDeltaTime()

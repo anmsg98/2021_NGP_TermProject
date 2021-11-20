@@ -15,10 +15,10 @@ CServer::CServer()
 
 CServer::~CServer()
 {
-	if (m_Timer)
-	{
-		delete m_Timer;
-	}
+    if (m_Timer)
+    {
+        delete m_Timer;
+    }
 
     if (m_Map)
     {
@@ -88,6 +88,8 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     // 최초로 클라이언트에게 초기화된 플레이어의 아이디를 보낸다.
     int ReturnValue{ send(Player->GetSocket(), (char*)&ID, sizeof(int), 0) };
 
+    int Number{};
+
     if (ReturnValue == SOCKET_ERROR)
     {
         Server->err_display("send()");
@@ -104,7 +106,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
         }
 
         ReturnValue = Server->recvn(Player->GetSocket(), (char*)Player, sizeof(CPlayer), 0);
-        
+
         if (ReturnValue == SOCKET_ERROR)
         {
             Server->err_display("recv()");
@@ -131,16 +133,22 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
 
 void CServer::ProcessGameData()
 {
+    m_Timer->Start();
+
     while (true)
     {
-        WaitForMultipleObjects(MAX_PLAYER, m_SyncHandles, TRUE, INFINITE);
-
         for (int i = 0; i < MAX_PLAYER; ++i)
         {
-            ResetEvent(m_SyncHandles[i]);
+            if (m_GameData->m_Players[i].GetSocket())
+            {
+                WaitForSingleObject(m_SyncHandles[i], INFINITE);
+            }
         }
 
         m_Timer->Update(60.0f);
+
+        CreateMonster();
+        CreateItem();
 
         Animate();
 
@@ -255,8 +263,6 @@ void CServer::InitServer()
     {
         CloseHandle(hThread);
     }
-
-    m_Timer->Start();
 }
 
 void CServer::InitEvent()
@@ -265,7 +271,7 @@ void CServer::InitEvent()
 
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
-        m_SyncHandles[i] = CreateEvent(NULL, TRUE, FALSE, NULL);
+        m_SyncHandles[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
     }
 }
 
@@ -316,6 +322,8 @@ bool CServer::DestroyPlayer(int ID)
             // 매개변수로 넘어온 아이디를 가진 플레이어가 있다면 소켓을 NULL로 만들어 다른 클라이언트가 접속할 수 있게 한다.
             m_GameData->m_Players[i].SetSocket(NULL);
             m_GameData->m_Players[i].SetActive(false);
+            
+            SetEvent(m_SyncHandles[i]);
 
             return true;
         }
@@ -374,80 +382,22 @@ void CServer::BuildObject()
 
     m_GameData->m_Players[0].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_1"));
     m_GameData->m_Players[1].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_2"));
-    //m_GameData->m_Players[2].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_3"));
-    //m_GameData->m_Players[3].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_4"));
+    m_GameData->m_Players[2].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_3"));
+    m_GameData->m_Players[3].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_4"));
 
     // 모든 몬스터를 초기화한다.
     for (int i = 0; i < MAX_MONSTER; ++i)
     {
-         // 몬스터의 종류 설정
-        int Type{ rand() % 3 + 1 };
-
-        switch (Type)
-        {
-        case CMonster::LOWER:
-            m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_1_1"));
-            break;
-        case CMonster::MIDDLE:
-            m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_2_1"));
-            break;
-        case CMonster::UPPER:
-            m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_3_1"));
-            break;
-        }
-
-        m_GameData->m_Monsters[i].SetActive(false);
-        m_GameData->m_Monsters[i].SetType(Type);
-        m_GameData->m_Monsters[i].SetHp(100.0f * Type);
         m_GameData->m_Monsters[i].SetWidth(73.5f);
         m_GameData->m_Monsters[i].SetHeight(76.0f);
-
-        // 몬스터의 스폰 지점 설정
-        Type = rand() % 4;
-
-        switch (Type)
-        {
-        case MONSTER_GEN_LOCATION::TOP:
-            m_GameData->m_Monsters[i].SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().top + 30.0f);
-            break;
-        case MONSTER_GEN_LOCATION::BOTTOM:
-            m_GameData->m_Monsters[i].SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().bottom - 30.0f);
-            break;
-        case MONSTER_GEN_LOCATION::LEFT:
-            m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().left + 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
-            break;
-        case MONSTER_GEN_LOCATION::RIGHT:
-            m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().right - 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
-            break;
-        }
-
-        // 맵의 중앙을 도착점으로 지정
-        m_GameData->m_Monsters[i].SetDirection((float)m_Map->GetRect().right * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_Y);
-        m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirection().m_X, 2) + powf((float)m_GameData->m_Monsters[i].GetDirection().m_Y, 2)));
     }
 
     // 아이템을 초기화한다.
     for (int i = 0; i < MAX_ITEM; ++i)
     {
-        // 아이템의 종류 설정
-        int Type{ rand() % 2 + 1 };
-
-        switch (Type)
-        {
-        case CItem::HP_UP:
-            m_GameData->m_Items[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Potion_1"));
-            break;
-        case CItem::ATTACK_POWER_UP:
-            m_GameData->m_Items[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Potion_2"));
-            break;
-        }
-
-        m_GameData->m_Items[i].SetActive(true);
-        m_GameData->m_Items[i].SetType(Type);
-        m_GameData->m_Items[i].SetHp(60.0f);
-        m_GameData->m_Items[i].SetPosition(0.5f * MapRect.right - 120.0f + 80.0f * i, 0.5f * MapRect.bottom - 150.0f);
         m_GameData->m_Items[i].SetWidth(34.0f);
         m_GameData->m_Items[i].SetHeight(40.0f);
+        m_GameData->m_Items[i].SetHp(60.0f);
     }
 }
 
@@ -473,65 +423,97 @@ void CServer::Animate()
 
 void CServer::CreateMonster()
 {
-    //m_CurrentMonsterGenTime += DeltaTime;
+    m_CurrentMonsterGenTime += m_Timer->GetDeltaTime();
 
-    //if (m_CurrentMonsterGenTime >= m_MonsterGenTime)
-    //{
-    //    for (const auto& Monster : m_Monsters)
-    //    {
-    //        if (!Monster->IsActive())
-    //        {
-    //            Monster->SetActive(true);
-    //            Monster->SetHp(10 * Monster->GetType());
+    if (m_CurrentMonsterGenTime >= m_MonsterGenTime)
+    {
+        for (int i = 0; i < MAX_MONSTER; ++i)
+        {
+            if (!m_GameData->m_Monsters[i].IsActive())
+            {
+                // 몬스터의 종류 설정
+                int Type{ rand() % 3 + 1 };
 
-    //            switch (Monster->GetType())
-    //            {
-    //            case 0:
-    //                Monster->SetPosition((float)m_Map->GetRect().left + 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
-    //                break;
-    //            case 1:
-    //                Monster->SetPosition((float)m_Map->GetRect().right - 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
-    //                break;
-    //            case 2:
-    //                Monster->SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().top + 30.0f);
-    //                break;
-    //            case 3:
-    //                Monster->SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().bottom - 30.0f);
-    //            }
+                switch (Type)
+                {
+                case CMonster::LOWER:
+                    m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_1_1"));
+                    break;
+                case CMonster::MIDDLE:
+                    m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_2_1"));
+                    break;
+                case CMonster::UPPER:
+                    m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_3_1"));
+                    break;
+                }
 
-    //            Monster->SetDirection((float)m_Map->GetRect().right * 0.5f - Monster->GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - Monster->GetPosition().m_Y);
-    //            Monster->SetLength(sqrtf(powf((float)Monster->GetDirection().x, 2) + powf((float)Monster->GetDirection().y, 2)));
+                m_GameData->m_Monsters[i].SetActive(true);
+                m_GameData->m_Monsters[i].SetType(Type);
+                m_GameData->m_Monsters[i].SetHp(100.0f * Type);
 
-    //            printf("[안내] 몬스터 생성됨(%.02f, %.02f)\n", Monster->GetPosition().m_X, Monster->GetPosition().m_Y);
-    //            break;
-    //        }
-    //    }
-    //    m_CurrentMonsterGenTime = 0.0f;
-    //}
+                Type = rand() % 4;
+
+                switch (Type)
+                {
+                case MONSTER_GEN_LOCATION::TOP:
+                    m_GameData->m_Monsters[i].SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().top + 30.0f);
+                    break;
+                case MONSTER_GEN_LOCATION::BOTTOM:
+                    m_GameData->m_Monsters[i].SetPosition(RandF((float)m_Map->GetRect().left + 30.0f, (float)m_Map->GetRect().right - 30.0f), (float)m_Map->GetRect().bottom - 30.0f);
+                    break;
+                case MONSTER_GEN_LOCATION::LEFT:
+                    m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().left + 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
+                    break;
+                case MONSTER_GEN_LOCATION::RIGHT:
+                    m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().right - 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
+                    break;
+                }
+
+                // 맵의 중앙을 도착점으로 지정
+                m_GameData->m_Monsters[i].SetDirection((float)m_Map->GetRect().right * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_Y);
+                m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirection().m_X, 2) + powf((float)m_GameData->m_Monsters[i].GetDirection().m_Y, 2)));
+
+                printf("[안내] 몬스터 생성됨(%.02f, %.02f)\n", m_GameData->m_Monsters[i].GetPosition().m_X, m_GameData->m_Monsters[i].GetPosition().m_Y);
+                break;
+            }
+        }
+        m_CurrentMonsterGenTime = 0.0f;
+    }
 }
 
 void CServer::CreateItem()
 {
-    //m_CurrentItemGenTime += DeltaTime;
+    m_CurrentItemGenTime += m_Timer->GetDeltaTime();
 
-    //if (m_CurrentItemGenTime >= m_ItemGenTime)
-    //{
-    //    for (const auto& Item : m_Items)
-    //    {
-    //        if (!Item->IsActive())
-    //        {
-    //            Item->SetActive(true);
-    //            Item->SetHp(120);
-    //            Item->SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f),
-    //                RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
+    if (m_CurrentItemGenTime >= m_ItemGenTime)
+    {
+        for (int i = 0; i < MAX_ITEM; ++i)
+        {
+            if (!m_GameData->m_Items[i].IsActive())
+            {
+                // 아이템의 종류 설정
+                int Type{ rand() % 2 + 1 };
 
+                switch (Type)
+                {
+                case CItem::HP_UP:
+                    m_GameData->m_Items[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Potion_1"));
+                    break;
+                case CItem::ATTACK_POWER_UP:
+                    m_GameData->m_Items[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Potion_2"));
+                    break;
+                }
 
-    //            printf("[안내] 아이템 생성됨(%.02f, %.02f)\n", Item->GetPosition().m_X, Item->GetPosition().m_Y);
-    //            break;
-    //        }
-    //    }
-    //    m_CurrentItemGenTime = 0.0f;
-    //}
+                m_GameData->m_Items[i].SetActive(true);
+                m_GameData->m_Items[i].SetType(Type);
+                m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
+
+                printf("[안내] 아이템 생성됨(%.02f, %.02f)\n", m_GameData->m_Items[i].GetPosition().m_X, m_GameData->m_Items[i].GetPosition().m_Y);
+                break;
+            }
+        }
+        m_CurrentItemGenTime = 0.0f;
+    }
 }
 
 void CServer::CheckBulletByMonsterCollision()
