@@ -29,10 +29,13 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 	CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
 
 	// 씬을 생성한다.
-	CScene* Scene{ new CGameScene{} };
+	m_GameScene = new CGameScene{};
+	m_GameScene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
 
-	Scene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
-	m_Scenes.push(Scene);
+	m_WaitingScene = new CWaitingScene{};
+	m_WaitingScene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
+
+	m_Scenes.push(m_WaitingScene);
 }
 
 void CFramework::OnDestroy()
@@ -181,25 +184,9 @@ void CFramework::ProcessMouseMessage(const HWND& hWnd, UINT message, WPARAM wPar
 
 void CFramework::ProcessInput()
 {
-	int ReturnValue{};
-	
-	ReturnValue = recvn(m_Socket, (char*)m_GameData, sizeof(GameData), 0);
-
-	if (ReturnValue == SOCKET_ERROR)
-	{
-		err_display("recv()");
-	}
-
 	if (m_IsActive)
 	{
 		m_Scenes.top()->ProcessInput();
-	}
-
-	ReturnValue = send(m_Socket, (char*)&m_GameData->m_Players[m_ID], sizeof(CPlayer), 0);
-
-	if (ReturnValue == SOCKET_ERROR)
-	{
-		err_display("send()");
 	}
 }
 
@@ -222,8 +209,44 @@ void CFramework::Render()
 	EndPaint(m_hWnd, &m_PaintStruct);
 }
 
+void CFramework::ChangeScene(int PreState)
+{
+	if (PreState != m_GameData->m_State)
+	{
+		if (PreState == WAITING && m_GameData->m_State == GAME)
+		{
+			m_Scenes.push(m_GameScene);
+		}
+		else if (PreState == GAME && m_GameData->m_State == WAITING)
+		{
+			m_Scenes.pop();
+		}
+	}
+}
+
 void CFramework::Update()
 {
+	int PreState{ m_GameData->m_State };
+	int ReturnValue{};
+
+	ReturnValue = recvn(m_Socket, (char*)m_GameData, sizeof(GameData), 0);
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		err_display("recv()");
+	}
+
+	ChangeScene(PreState);
 	ProcessInput();
+
+	ReturnValue = send(m_Socket, (char*)&m_GameData->m_Players[m_ID], sizeof(CPlayer), 0);
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		err_display("send()");
+	}
+
 	PrepareRender();
 }
+
+

@@ -28,6 +28,9 @@ private:
 
 	stack<CScene*>				m_Scenes{};
 
+	CScene*                     m_WaitingScene;
+	CScene*                     m_GameScene;
+
 public:
 	CFramework();
 	~CFramework();
@@ -54,5 +57,6 @@ public:
 	void PrepareRender();
 	void Render();
 
+	void ChangeScene(int PreState);
 	void Update();
 };
