@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Monster.h"
-
+int KillCount = 0;
 void CMonster::Animate(float DeltaTime)
 {
 	if (m_IsActive)
@@ -39,8 +39,10 @@ void CMonster::Animate(float DeltaTime)
 
 			if (m_AnimationTime >= m_AnimationFrame)
 			{
+				SetDirection(0, 0);
 				m_IsActive = false;
 				m_AnimationTime = 0.0f;
+				KillCount++;
 			}
 		}
 	}
