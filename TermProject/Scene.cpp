@@ -110,7 +110,6 @@ void CGameScene::BuildObject(int ID, GameData* Data)
 
 	m_Map = new CMap{};
 	m_Map->SetRect(MapRect);
-	m_Map->SetBitmapRect(CFileManager::GetInstance()->GetRect("Background"));
 }
 
 void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
@@ -120,11 +119,11 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 
 	HBITMAP hOldBitmap{};
 
-	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("Background"));
+	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("BACKGROUND"));
 	m_Map->Render(hMemDC, hMemDC2);
 	SelectObject(hMemDC2, hOldBitmap);
 
-	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SpriteSheet"));
+	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SPRITE_SHEET"));
 	m_GameData->m_Tower.Render(hMemDC, hMemDC2);
 
 	for (int i = 0 ; i < MAX_MONSTER; ++i)

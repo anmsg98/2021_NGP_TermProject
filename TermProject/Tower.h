@@ -4,7 +4,7 @@
 class CTower : public CGameObject
 {
 private:
-	const int				m_AnimationFrame{ 6 };
+	const int				m_AnimationFrame{ 5 };
 	float					m_AnimationTime{};
 
 public:

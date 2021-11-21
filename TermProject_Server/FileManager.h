@@ -3,7 +3,7 @@
 class CFileManager
 {
 private:
-	COLORREF								m_TransparentColor{ RGB(255, 174, 201) };
+	const COLORREF							m_TransparentColor{ RGB(1, 1, 1) };
 
 	unordered_map<string, USER_RECT>		m_Rects{};
 	unordered_map<string, HBITMAP>			m_Bitmaps{};

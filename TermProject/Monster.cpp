@@ -10,17 +10,49 @@ void CMonster::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
+		USER_RECT BitmapRect{};
 
-		m_BitmapRect.m_Left = m_BitmapRect.m_Width * FrameIndex;
+		switch (m_Type)
+		{
+		case LOWER:
+			BitmapRect = CFileManager::GetInstance()->GetRect("MONSTER_1");
+			break;
+		case MIDDLE:
+			BitmapRect = CFileManager::GetInstance()->GetRect("MONSTER_2");
+			break;
+		case UPPER:
+			BitmapRect = CFileManager::GetInstance()->GetRect("MONSTER_3");
+			break;
+		}
+		
+		if (m_Hp <= 0.0f)
+		{
+			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
+			
+			BitmapRect.m_Left = BitmapRect.m_Width * FrameIndex;
+		}
 
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, m_BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+
+		// Ã¼·Â¹Ù
+		POSITION Position{ GetPosition() };
+
+		Position.m_Y -= 0.5f * BitmapRect.m_Height;
+		BitmapRect = CFileManager::GetInstance()->GetRect("HP_1");
+
+		DrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+
+		BitmapRect = CFileManager::GetInstance()->GetRect("HP_2");
+
+		float CurrentWidth{ BitmapRect.m_Width * (m_Hp / m_MaxHp) };
+
+		FixedDrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, CurrentWidth, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
 #ifdef DEBUG_HP
 		TCHAR HpText[32]{};
 
 		sprintf(HpText, "%.f", m_Hp);
-		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Height), HpText, lstrlen(HpText));
+		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Size.m_Y), HpText, lstrlen(HpText));
 #endif
 	}
 }

@@ -65,7 +65,6 @@ CPlayer::CPlayer()
 	{
 		m_Bullets[i].SetWidth(20.0f);
 		m_Bullets[i].SetHeight(15.0f);
-		m_Bullets[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Bullet_1"));
 	}
 }
 
@@ -73,26 +72,41 @@ void CPlayer::Animate(float DeltaTime)
 {
 	if (m_IsActive)
 	{
-		if (m_IsGetItem)
+		if (m_Hp > 0.0f)
 		{
-			m_ItemDuration += DeltaTime;
-			
-			// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
-			if (m_ItemDuration >= 8.0f)
+			if (m_IsGetItem)
 			{
-				m_IsGetItem = false;
-				m_ItemDuration = 0.0f;
+				m_ItemDuration += DeltaTime;
 
-				for (int i = 0; i < MAX_BULLET; ++i)
+				// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
+				if (m_ItemDuration >= 8.0f)
 				{
-					m_Bullets[i].SetAttackPower(10.0f);
+					m_IsGetItem = false;
+					m_ItemDuration = 0.0f;
+
+					for (int i = 0; i < MAX_BULLET; ++i)
+					{
+						m_Bullets[i].SetAttackPower(10.0f);
+					}
 				}
 			}
-		}
 
-		for (int i = 0; i < MAX_BULLET; ++i)
+			for (int i = 0; i < MAX_BULLET; ++i)
+			{
+				m_Bullets[i].Animate(DeltaTime);
+			}
+		}
+		else
 		{
-			m_Bullets[i].Animate(DeltaTime);
+			const int FrameFPS{ 15 };
+
+			m_AnimationTime += FrameFPS * DeltaTime;
+
+			if (m_AnimationTime >= m_AnimationFrame)
+			{
+				m_IsActive = false;
+				m_AnimationTime = 0.0f;
+			}
 		}
 	}
 }

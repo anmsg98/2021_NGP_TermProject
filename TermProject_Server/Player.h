@@ -9,7 +9,7 @@
 class CBullet : public CGameObject
 {
 private:
-	float			m_AttackPower{ 10.0 };
+	float			m_AttackPower{ 10.0f };
 
 	float			m_Length{};
 	VECTOR2D		m_Direction{};
@@ -45,6 +45,9 @@ private:
 	POINT				m_CameraStartPosition{};
 
 	VECTOR2D			m_Direction{};
+
+	const int			m_AnimationFrame{ 5 };
+	float				m_AnimationTime{};
 
 	bool				m_IsGetItem{};
 	float				m_ItemDuration{};

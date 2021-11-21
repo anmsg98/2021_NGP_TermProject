@@ -5,7 +5,7 @@ void CMonster::Animate(float DeltaTime)
 {
 	if (m_IsActive)
 	{
-		if (m_Hp != 0)
+		if (m_Hp > 0.0f)
 		{
 			if (m_IsCollided)
 			{
@@ -39,8 +39,8 @@ void CMonster::Animate(float DeltaTime)
 
 			if (m_AnimationTime >= m_AnimationFrame)
 			{
-				m_AnimationTime = 0.0f;
 				m_IsActive = false;
+				m_AnimationTime = 0.0f;
 			}
 		}
 	}

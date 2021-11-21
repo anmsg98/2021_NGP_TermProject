@@ -10,7 +10,19 @@ void CItem::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, m_BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+		USER_RECT BitmapRect{};
+
+		switch (m_Type)
+		{
+		case HP_UP:
+			BitmapRect = CFileManager::GetInstance()->GetRect("POTION_1");
+			break;
+		case ATTACK_POWER_UP:
+			BitmapRect = CFileManager::GetInstance()->GetRect("POTION_2");
+			break;
+		}
+
+		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 	}
 }
 

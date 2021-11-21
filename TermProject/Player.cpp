@@ -12,9 +12,11 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		m_BitmapRect.m_Left += m_BitmapRect.m_Width * (int)(m_AttackPower / 30.0f);
+		USER_RECT BitmapRect{ CFileManager::GetInstance()->GetRect("BULLET") };
 
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, m_BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+		BitmapRect.m_Left += BitmapRect.m_Width * (int)(m_AttackPower / 30.0f);
+
+		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 	}
 }
 
@@ -57,12 +59,7 @@ VECTOR2D CBullet::GetDirection() const
 
 CPlayer::CPlayer()
 {
-	for (int i = 0; i < MAX_BULLET; ++i)
-	{
-		m_Bullets[i].SetWidth(20.0f);
-		m_Bullets[i].SetHeight(15.0f);
-		m_Bullets[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Bullet_1"));
-	}
+
 }
 
 void CPlayer::Animate(float DeltaTime)
@@ -74,20 +71,59 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		USER_RECT Rect{ 0, 0, m_BitmapRect.m_Width, m_BitmapRect.m_Height };
-		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SpriteSheet") };
-		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, m_BitmapRect.m_Left, m_BitmapRect.m_Top, m_BitmapRect.m_Width, m_BitmapRect.m_Height, atan2f(m_Direction.m_Y, m_Direction.m_X) * 180.0f / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
+		USER_RECT BitmapRect{};
+
+		switch (m_ID)
+		{
+		case 0:
+			BitmapRect = CFileManager::GetInstance()->GetRect("PLAYER_1");
+			break;
+		case 1:
+			BitmapRect = CFileManager::GetInstance()->GetRect("PLAYER_2");
+			break;
+		case 2:
+			BitmapRect = CFileManager::GetInstance()->GetRect("PLAYER_3");
+			break;
+		case 3:
+			BitmapRect = CFileManager::GetInstance()->GetRect("PLAYER_4");
+			break;
+		}
+
+		if (m_Hp <= 0.0f)
+		{
+			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
+			
+			BitmapRect.m_Left = BitmapRect.m_Width * FrameIndex;
+		}
+
+		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SPRITE_SHEET") };
+		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, BitmapRect.m_Left, BitmapRect.m_Top, BitmapRect.m_Width, BitmapRect.m_Height, atan2f(m_Direction.m_Y, m_Direction.m_X) * 180.0f / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
+		USER_RECT Rect{ 0, 0, BitmapRect.m_Width, BitmapRect.m_Height };
 
 		SelectObject(hMemDC2, hRotateBitmap);
 		DrawRect(hMemDC, GetPosition(), 2 * GetWidth(), 2 * GetHeight(), hMemDC2, Rect, CFileManager::GetInstance()->GetTransparentColor());
 		SelectObject(hMemDC2, hSourceBitmap);
 		DeleteObject(hRotateBitmap);
 
+		// Ã¼·Â¹Ù
+		POSITION Position{ GetPosition() };
+
+		Position.m_Y -= 0.4f * BitmapRect.m_Height;
+		BitmapRect = CFileManager::GetInstance()->GetRect("HP_1");
+
+		DrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+
+		BitmapRect = CFileManager::GetInstance()->GetRect("HP_2");
+
+		float CurrentWidth{ BitmapRect.m_Width * (m_Hp / m_MaxHp) };
+
+		FixedDrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, CurrentWidth, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+
 #ifdef DEBUG_HP
 		TCHAR HpText[32]{};
 
 		sprintf(HpText, "%.f", m_Hp);
-		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Height), HpText, lstrlen(HpText));
+		TextOut(hMemDC, (int)(m_Position.m_X - 15.0f), (int)(m_Position.m_Y - 0.5f * m_Size.m_Y), HpText, lstrlen(HpText));
 #endif
 
 		for (int i = 0; i < MAX_BULLET; ++i)

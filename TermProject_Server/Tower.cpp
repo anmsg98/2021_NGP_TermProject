@@ -13,8 +13,8 @@ void CTower::Animate(float DeltaTime)
 
 			if (m_AnimationTime >= m_AnimationFrame)
 			{
-				m_AnimationTime = 0.0f;
 				m_IsActive = false;
+				m_AnimationTime = 0.0f;
 			}
 		}
 	}
