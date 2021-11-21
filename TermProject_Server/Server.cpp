@@ -146,15 +146,15 @@ void CServer::ProcessGameData()
 
         m_Timer->Update(60.0f);
 
-        CRoundManager();
-        CreateItem();
-
-        Animate();
-
-        CheckPlayerByMonsterCollision();
-        CheckBulletByMonsterCollision();
-        CheckTowerByMonsterCollision();
-        CheckPlayerByItemCollision();
+        switch (m_GameData->m_State)
+        {
+        case GAME_STATE::WAITING:
+            WaitingLoop();
+            break;
+        case GAME_STATE::GAME:
+            GameLoop();
+            break;
+        }
 
         SetEvent(m_MainSyncHandle);
         ResetEvent(m_MainSyncHandle);
@@ -255,6 +255,7 @@ void CServer::InitServer()
     }
 
     InitEvent();
+    m_GameData->m_State = WAITING;
     BuildObject();
 
     HANDLE hThread{ CreateThread(NULL, 0, AcceptClient, (LPVOID)this, 0, NULL) };
@@ -305,7 +306,7 @@ bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
     m_GameData->m_Players[ValidID].SetSocketAddress(SocketAddress);
     m_GameData->m_Players[ValidID].SetActive(true);
     m_GameData->m_Players[ValidID].SetHp(100.0f);
-    m_GameData->m_Players[ValidID].SetPosition(0.5f * m_Map->GetRect().right - 50.0f + 50.0f * ValidID, 0.5f * m_Map->GetRect().bottom + 50.0f);
+    m_GameData->m_Players[ValidID].SetPosition(200.0f + 100.0f * ValidID, 300.0f);
 
     // 가장 최근에 사용된 유효한 아이디를 갱신한다.
     m_RecentID = ValidID;
@@ -335,22 +336,57 @@ bool CServer::DestroyPlayer(int ID)
 
 bool CServer::CheckAllPlayerReady()
 {
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        if (!m_GameData->m_Players[i].GetSocket())
+        {
+            break;
+        }
+
+        if (i == MAX_PLAYER - 1)
+        {
+            return true;
+        }
+    }
     return false;
 }
 
 bool CServer::CheckGameOver()
 {
-    return false;
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        if (m_GameData->m_Players[i].GetHp() > 0.0f)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void CServer::WaitingLoop()
 {
-
+    if (CheckAllPlayerReady())
+    {
+        m_GameData->m_State = GAME;
+        InitGame();
+    }
 }
 
 void CServer::GameLoop()
 {
+    CRoundManager();
 
+    Animate();
+
+    CheckPlayerByMonsterCollision();
+    CheckBulletByMonsterCollision();
+    CheckTowerByMonsterCollision();
+    CheckPlayerByItemCollision();
+
+    if (CheckGameOver())
+    {
+        m_GameData->m_State = WAITING;
+    }
 }
 
 void CServer::BuildObject()
@@ -395,6 +431,45 @@ void CServer::BuildObject()
     }
 }
 
+void CServer::InitGame()
+{
+    // 맵을 초기화한다.
+    RECT MapRect{ 0, 0, 2400, 1500 };
+
+    m_Map = new CMap{};
+    m_Map->SetRect(MapRect);
+
+    // 타워를 초기화한다.
+    m_GameData->m_Tower.SetActive(true);
+    m_GameData->m_Tower.SetMaxHp(5000.0f);
+    m_GameData->m_Tower.SetHp(5000.0f);
+    m_GameData->m_Tower.SetPosition(0.5f * MapRect.right, 0.5f * MapRect.bottom);
+
+    // 모든 플레이어를 초기화한다.
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        if (m_GameData->m_Players[i].GetSocket())
+        {
+            m_GameData->m_Players[i].SetActive(true);
+            m_GameData->m_Players[i].SetMaxHp(100.0f);
+            m_GameData->m_Players[i].SetHp(100.0f);
+            m_GameData->m_Players[i].SetPosition(0.5f * MapRect.right - 150.0f + 80.0f * i, 0.5f * MapRect.bottom + 100.0f);
+        }
+    }
+
+    // 모든 몬스터를 초기화한다.
+    for (int i = 0; i < MAX_MONSTER; ++i)
+    {
+        m_GameData->m_Monsters[i].SetActive(false);
+    }
+
+    // 아이템을 초기화한다.
+    for (int i = 0; i < MAX_ITEM; ++i)
+    {
+        m_GameData->m_Items[i].SetActive(false);
+    }
+}
+
 void CServer::Animate()
 {
     m_GameData->m_Tower.Animate(m_Timer->GetDeltaTime());
@@ -422,13 +497,14 @@ void CServer::CRoundManager()
     {
         m_GenFrequency = 0;
         KillCount = 0;
-        round++;
+        m_Round++;
     }
-    CreateMonster(round);
+    CreateMonster();
+    CreateItem();
 }
 
 
-void CServer::CreateMonster(int round)
+void CServer::CreateMonster()
 {
     m_CurrentMonsterGenTime += m_Timer->GetDeltaTime();
 
@@ -443,8 +519,8 @@ void CServer::CreateMonster(int round)
 
                 m_GameData->m_Monsters[i].SetActive(true);
                 m_GameData->m_Monsters[i].SetType(Type);
-                m_GameData->m_Monsters[i].SetMaxHp(1.0f * Type * round);
-                m_GameData->m_Monsters[i].SetHp(1.0f * Type * round);
+                m_GameData->m_Monsters[i].SetMaxHp(1.0f * Type * m_Round);
+                m_GameData->m_Monsters[i].SetHp(1.0f * Type * m_Round);
 
                 Type = rand() % 4;
 
@@ -475,7 +551,7 @@ void CServer::CreateMonster(int round)
         }
         m_CurrentMonsterGenTime = 0.0f;
     }
-    printf("라운드 : %d, 현제 몬스터 수 : %d\n", round, m_GenFrequency - KillCount);
+    printf("라운드 : %d, 현제 몬스터 수 : %d\n", m_Round, m_GenFrequency - KillCount);
 }
 
 void CServer::CreateItem()
