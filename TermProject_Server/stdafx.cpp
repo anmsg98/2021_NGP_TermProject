@@ -14,6 +14,15 @@ void DrawRect(HDC hMemDC, const POSITION& Position, float Width, float Height, H
 		hMemDC2, (int)Rect.m_Left, (int)Rect.m_Top, (int)Rect.m_Width, (int)Rect.m_Height, TransparentColor);
 }
 
+void FixedDrawRect(HDC hMemDC, const POSITION& Position, float FixedWidth, float FixedHeight, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor)
+{
+	int OriginX{ (int)(Position.m_X - 0.5f * FixedWidth) };
+	int OriginY{ (int)(Position.m_Y - 0.5f * FixedHeight) };
+
+	TransparentBlt(hMemDC, OriginX, OriginY, (int)Width, (int)Height,
+		hMemDC2, (int)Rect.m_Left, (int)Rect.m_Top, (int)Rect.m_Width, (int)Rect.m_Height, TransparentColor);
+}
+
 HBITMAP GetRotatedBitmap(HDC hDC, HBITMAP hBitmap, int SourceX, int SourceY, int DestWidth, int DestHeight, float Angle, COLORREF TransparentColor)
 {
 	HDC SourceDC{ CreateCompatibleDC(hDC) };									 // 회전할 비트맵 원본을 선택할 DC

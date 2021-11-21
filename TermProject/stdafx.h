@@ -35,7 +35,7 @@ using namespace std;
 #define PI				3.141592f
 
 // 텍스트로 현재 HP 출력
-#define DEBUG_HP
+//#define DEBUG_HP
 
 struct POSITION
 {
@@ -66,4 +66,5 @@ struct VECTOR2D
 float RandF(float Min, float Max);
 
 void DrawRect(HDC hMemDC, const POSITION& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);
+void FixedDrawRect(HDC hMemDC, const POSITION& Position, float FixedWidth, float FixedHeight, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);
 HBITMAP GetRotatedBitmap(HDC hDC, HBITMAP hBitmap, int SourceX, int SourceY, int DestWidth, int DestHeight, float Angle, COLORREF TransparentColor);
