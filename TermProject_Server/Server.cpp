@@ -88,8 +88,6 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     // 최초로 클라이언트에게 초기화된 플레이어의 아이디를 보낸다.
     int ReturnValue{ send(Player->GetSocket(), (char*)&ID, sizeof(int), 0) };
 
-    int Number{};
-
     if (ReturnValue == SOCKET_ERROR)
     {
         Server->err_display("send()");
@@ -152,6 +150,7 @@ void CServer::ProcessGameData()
 
         Animate();
 
+        CheckPlayerByMonsterCollision();
         CheckBulletByMonsterCollision();
         CheckTowerByMonsterCollision();
         CheckPlayerByItemCollision();
@@ -360,13 +359,12 @@ void CServer::BuildObject()
 
     m_Map = new CMap{};
     m_Map->SetRect(MapRect);
-    m_Map->SetBitmapRect(CFileManager::GetInstance()->GetRect("Background"));
 
     // 타워를 초기화한다.
     m_GameData->m_Tower.SetActive(true);
+    m_GameData->m_Tower.SetMaxHp(5000.0f);
     m_GameData->m_Tower.SetHp(5000.0f);
     m_GameData->m_Tower.SetPosition(0.5f * MapRect.right, 0.5f * MapRect.bottom);
-    m_GameData->m_Tower.SetBitmapRect(CFileManager::GetInstance()->GetRect("Tower_1_1"));
     m_GameData->m_Tower.SetWidth(228.0f);
     m_GameData->m_Tower.SetHeight(213.0f);
 
@@ -374,16 +372,12 @@ void CServer::BuildObject()
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
         m_GameData->m_Players[i].SetActive(false);
+        m_GameData->m_Players[i].SetMaxHp(100.0f);
         m_GameData->m_Players[i].SetHp(100.0f);
         m_GameData->m_Players[i].SetPosition(0.5f * MapRect.right - 150.0f + 80.0f * i, 0.5f * MapRect.bottom + 100.0f);
         m_GameData->m_Players[i].SetWidth(62.5f);
         m_GameData->m_Players[i].SetHeight(90.0f);
     }
-
-    m_GameData->m_Players[0].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_1"));
-    m_GameData->m_Players[1].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_2"));
-    m_GameData->m_Players[2].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_3"));
-    m_GameData->m_Players[3].SetBitmapRect(CFileManager::GetInstance()->GetRect("Player_4"));
 
     // 모든 몬스터를 초기화한다.
     for (int i = 0; i < MAX_MONSTER; ++i)
@@ -397,7 +391,6 @@ void CServer::BuildObject()
     {
         m_GameData->m_Items[i].SetWidth(34.0f);
         m_GameData->m_Items[i].SetHeight(40.0f);
-        m_GameData->m_Items[i].SetHp(60.0f);
     }
 }
 
@@ -434,21 +427,9 @@ void CServer::CreateMonster()
                 // 몬스터의 종류 설정
                 int Type{ rand() % 3 + 1 };
 
-                switch (Type)
-                {
-                case CMonster::LOWER:
-                    m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_1_1"));
-                    break;
-                case CMonster::MIDDLE:
-                    m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_2_1"));
-                    break;
-                case CMonster::UPPER:
-                    m_GameData->m_Monsters[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Monster_3_1"));
-                    break;
-                }
-
                 m_GameData->m_Monsters[i].SetActive(true);
                 m_GameData->m_Monsters[i].SetType(Type);
+                m_GameData->m_Monsters[i].SetMaxHp(100.0f * Type);
                 m_GameData->m_Monsters[i].SetHp(100.0f * Type);
 
                 Type = rand() % 4;
@@ -494,18 +475,10 @@ void CServer::CreateItem()
                 // 아이템의 종류 설정
                 int Type{ rand() % 2 + 1 };
 
-                switch (Type)
-                {
-                case CItem::HP_UP:
-                    m_GameData->m_Items[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Potion_1"));
-                    break;
-                case CItem::ATTACK_POWER_UP:
-                    m_GameData->m_Items[i].SetBitmapRect(CFileManager::GetInstance()->GetRect("Potion_2"));
-                    break;
-                }
-
                 m_GameData->m_Items[i].SetActive(true);
                 m_GameData->m_Items[i].SetType(Type);
+                m_GameData->m_Items[i].SetMaxHp(60.0f);
+                m_GameData->m_Items[i].SetHp(60.0f);
                 m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
 
                 printf("[안내] 아이템 생성됨(%.02f, %.02f)\n", m_GameData->m_Items[i].GetPosition().m_X, m_GameData->m_Items[i].GetPosition().m_Y);
@@ -513,6 +486,42 @@ void CServer::CreateItem()
             }
         }
         m_CurrentItemGenTime = 0.0f;
+    }
+}
+
+void CServer::CheckPlayerByMonsterCollision()
+{
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        // 서버와 연결 중이고 생존 한 플레이어에 대해서만 충돌을 검사한다.
+        if (m_GameData->m_Players[i].GetSocket() && m_GameData->m_Players[i].IsActive())
+        {
+            RECT CollidedRect{};
+            RECT PlayerRect{ (int)(m_GameData->m_Players[i].GetPosition().m_X - 0.5f * m_GameData->m_Players[i].GetWidth()),
+                             (int)(m_GameData->m_Players[i].GetPosition().m_Y - 0.5f * m_GameData->m_Players[i].GetHeight()),
+                             (int)(m_GameData->m_Players[i].GetPosition().m_X + 0.5f * m_GameData->m_Players[i].GetWidth()),
+                             (int)(m_GameData->m_Players[i].GetPosition().m_Y + 0.5f * m_GameData->m_Players[i].GetHeight()) };
+
+            for (int j = 0; j < MAX_MONSTER; ++j)
+            {
+                if (m_GameData->m_Monsters[j].IsActive() && !m_GameData->m_Monsters[j].IsCollided())
+                {
+                    RECT CollidedRect{};
+                    RECT MonsterRect{ (int)(m_GameData->m_Monsters[j].GetPosition().m_X - 0.5f * m_GameData->m_Monsters[j].GetWidth()),
+                                      (int)(m_GameData->m_Monsters[j].GetPosition().m_Y - 0.5f * m_GameData->m_Monsters[j].GetHeight()),
+                                      (int)(m_GameData->m_Monsters[j].GetPosition().m_X + 0.5f * m_GameData->m_Monsters[j].GetWidth()),
+                                      (int)(m_GameData->m_Monsters[j].GetPosition().m_Y + 0.5f * m_GameData->m_Monsters[j].GetHeight()) };
+
+                    if (IntersectRect(&CollidedRect, &PlayerRect, &MonsterRect))
+                    {
+                        m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() - 2.5f * m_GameData->m_Monsters[i].GetType());
+                        m_GameData->m_Monsters[j].PrepareCollision();
+                        m_GameData->m_Monsters[j].SetPrevDirection(m_GameData->m_Monsters[j].GetDirection().m_X, m_GameData->m_Monsters[j].GetDirection().m_Y);
+                        m_GameData->m_Monsters[j].SetDirection(-m_GameData->m_Monsters[j].GetDirection().m_X, -m_GameData->m_Monsters[j].GetDirection().m_Y);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -583,7 +592,7 @@ void CServer::CheckTowerByMonsterCollision()
 
                 if (IntersectRect(&CollidedRect, &TowerRect, &MonsterRect))
                 {
-                    m_GameData->m_Tower.SetHp(m_GameData->m_Tower.GetHp() - 10 * m_GameData->m_Monsters[i].GetType());
+                    m_GameData->m_Tower.SetHp(m_GameData->m_Tower.GetHp() - 10.0f * m_GameData->m_Monsters[i].GetType());
                     m_GameData->m_Monsters[i].PrepareCollision();
                     m_GameData->m_Monsters[i].SetPrevDirection(m_GameData->m_Monsters[i].GetDirection().m_X, m_GameData->m_Monsters[i].GetDirection().m_Y);
                     m_GameData->m_Monsters[i].SetDirection(-m_GameData->m_Monsters[i].GetDirection().m_X, -m_GameData->m_Monsters[i].GetDirection().m_Y);
@@ -623,7 +632,7 @@ void CServer::CheckPlayerByItemCollision()
                         }
                         else if (m_GameData->m_Items[j].GetType() == CItem::HP_UP)
                         {
-                            m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() + 30);
+                            m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() + 30.0f);
                         }
 
                         m_GameData->m_Items[j].SetActive(false);
