@@ -12,12 +12,37 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 {
 	if (m_IsActive)
 	{
-		USER_RECT BitmapRect{ CFileManager::GetInstance()->GetRect("BULLET") };
+		USER_RECT BitmapRect{};
 
-		BitmapRect.m_Left += BitmapRect.m_Width * (int)(m_AttackPower / 30.0f);
+		if (m_IsCollided)
+		{
+			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
 
-		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+			BitmapRect = CFileManager::GetInstance()->GetRect("EXPLOSION");
+			BitmapRect.m_Left = BitmapRect.m_Left + BitmapRect.m_Width * (FrameIndex % 4);
+			BitmapRect.m_Top = BitmapRect.m_Top + BitmapRect.m_Height * (FrameIndex / 4);
+
+			DrawRect(hMemDC, GetPosition(), BitmapRect.m_Width, BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+		}
+		else
+		{
+			BitmapRect = CFileManager::GetInstance()->GetRect("BULLET");
+			BitmapRect.m_Left += BitmapRect.m_Width * (int)(m_AttackPower / 30.0f);
+
+			DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+		}
 	}
+}
+
+bool CBullet::IsCollided() const
+{
+	return m_IsCollided;
+}
+
+void CBullet::PrepareCollision()
+{
+	m_IsCollided = true;
+	m_AnimationTime = 0.0f;
 }
 
 void CBullet::SetAttackPower(float AttackPower)
@@ -208,11 +233,14 @@ void CPlayer::FireBullet(const POINT& CursorPos)
 {
 	if (m_Bullets)
 	{
-		m_Bullets[m_BulletIndex].SetActive(true);
-		m_Bullets[m_BulletIndex].SetDirection(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
-		m_Bullets[m_BulletIndex].SetLength(sqrtf(powf(m_Bullets[m_BulletIndex].GetDirection().m_X, 2) + powf(m_Bullets[m_BulletIndex].GetDirection().m_Y, 2)));
-		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirection().m_X / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
-											 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().m_Y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
+		if (!m_Bullets[m_BulletIndex].IsCollided())
+		{
+			m_Bullets[m_BulletIndex].SetActive(true);
+			m_Bullets[m_BulletIndex].SetDirection(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
+			m_Bullets[m_BulletIndex].SetLength(sqrtf(powf(m_Bullets[m_BulletIndex].GetDirection().m_X, 2) + powf(m_Bullets[m_BulletIndex].GetDirection().m_Y, 2)));
+			m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirection().m_X / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
+											     GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().m_Y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
+		}
 	}
 
 	m_BulletIndex = (m_BulletIndex + 1) % MAX_BULLET;

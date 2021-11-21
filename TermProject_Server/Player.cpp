@@ -7,12 +7,28 @@ void CBullet::Animate(float DeltaTime)
 {
 	if (m_IsActive)
 	{
-		m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 1000.f;
-		m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 1000.f;
-
-		if (m_Position.m_X <= 0.0f || m_Position.m_X >= 2400.0f || m_Position.m_Y <= 0.0f || m_Position.m_Y >= 1500.0f)
+		if (m_IsCollided)
 		{
-			m_IsActive = false;
+			const int FrameFPS{ 20 };
+
+			m_AnimationTime += FrameFPS * DeltaTime;
+
+			if (m_AnimationTime >= m_AnimationFrame)
+			{
+				m_IsActive = false;
+				m_IsCollided = false;
+				m_AnimationTime = 0.0f;
+			}
+		}
+		else
+		{
+			m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 1000.f;
+			m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 1000.f;
+
+			if (m_Position.m_X <= 0.0f || m_Position.m_X >= 2400.0f || m_Position.m_Y <= 0.0f || m_Position.m_Y >= 1500.0f)
+			{
+				m_IsActive = false;
+			}
 		}
 	}
 }
@@ -20,6 +36,17 @@ void CBullet::Animate(float DeltaTime)
 void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 {
 
+}
+
+bool CBullet::IsCollided() const
+{
+	return m_IsCollided;
+}
+
+void CBullet::PrepareCollision()
+{
+	m_IsCollided = true;
+	m_AnimationTime = 0.0f;
 }
 
 void CBullet::SetAttackPower(float AttackPower)

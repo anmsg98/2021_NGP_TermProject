@@ -9,10 +9,15 @@
 class CBullet : public CGameObject
 {
 private:
-	float			m_AttackPower{ 10.0f };
+	bool				m_IsCollided{};
 
-	float			m_Length{};
-	VECTOR2D		m_Direction{};
+	float				m_AttackPower{ 10.0f };
+
+	float				m_Length{};
+	VECTOR2D			m_Direction{};
+
+	const int			m_AnimationFrame{ 16 };
+	float				m_AnimationTime{};
 
 public:
 	CBullet() = default;
@@ -20,6 +25,9 @@ public:
 
 	void Animate(float DeltaTime);
 	void Render(HDC hMemDC, HDC hMemDC2);
+
+	bool IsCollided() const;
+	void PrepareCollision();
 
 	void SetAttackPower(float AttackPower);
 	float GetAttackPower() const;

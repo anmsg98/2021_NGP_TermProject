@@ -536,7 +536,7 @@ void CServer::CheckBulletByMonsterCollision()
 
             for (int j = 0; j < MAX_BULLET; ++j)
             {
-                if (Bullets[j].IsActive())
+                if (Bullets[j].IsActive() && !Bullets[j].IsCollided())
                 {
                     RECT BulletRect{ (int)(Bullets[j].GetPosition().m_X - 0.5f * Bullets[j].GetWidth()),
                                      (int)(Bullets[j].GetPosition().m_Y - 0.5f * Bullets[j].GetHeight()),
@@ -555,7 +555,7 @@ void CServer::CheckBulletByMonsterCollision()
 
                             if (IntersectRect(&CollidedRect, &BulletRect, &MonsterRect))
                             {
-                                Bullets[j].SetActive(false);
+                                Bullets[j].PrepareCollision();
 
                                 m_GameData->m_Monsters[k].PrepareCollision();
                                 m_GameData->m_Monsters[k].SetHp(m_GameData->m_Monsters[k].GetHp() - Bullets[j].GetAttackPower());
