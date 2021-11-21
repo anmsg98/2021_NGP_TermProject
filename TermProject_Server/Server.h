@@ -35,8 +35,12 @@ private:
     CMap*                 m_Map{};
     GameData*             m_GameData{};                  // 게임 데이터
 
+    int                   round = 1;
+    bool                  round_end{};
+
     const float           m_MonsterGenTime{ 5.0f };
     float                 m_CurrentMonsterGenTime{};
+    int                   m_GenFrequency{};
 
     const float           m_ItemGenTime{ 10.0f };
     float                 m_CurrentItemGenTime{};
@@ -84,9 +88,12 @@ public:
     void BuildObject();
 
     void Animate();
-
-    void CreateMonster();
+    // 몬스터 및 아이템 생성
+    void CreateMonster(int round);
     void CreateItem();
+
+    // 라운드별 몬스터 출현
+    void CRoundManager();
 
     // 게임 월드 내의 객체 간 충돌 검사
     void CheckPlayerByMonsterCollision();

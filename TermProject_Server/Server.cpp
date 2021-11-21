@@ -4,6 +4,7 @@
 #include "FileManager.h"
 
 int CServer::m_RecentID;
+extern int KillCount;
 
 CServer::CServer()
 {
@@ -145,7 +146,7 @@ void CServer::ProcessGameData()
 
         m_Timer->Update(60.0f);
 
-        CreateMonster();
+        CRoundManager();
         CreateItem();
 
         Animate();
@@ -414,7 +415,20 @@ void CServer::Animate()
     }
 }
 
-void CServer::CreateMonster()
+
+void CServer::CRoundManager()
+{
+    if (KillCount == 30)
+    {
+        m_GenFrequency = 0;
+        KillCount = 0;
+        round++;
+    }
+    CreateMonster(round);
+}
+
+
+void CServer::CreateMonster(int round)
 {
     m_CurrentMonsterGenTime += m_Timer->GetDeltaTime();
 
@@ -422,15 +436,15 @@ void CServer::CreateMonster()
     {
         for (int i = 0; i < MAX_MONSTER; ++i)
         {
-            if (!m_GameData->m_Monsters[i].IsActive())
+            if (!m_GameData->m_Monsters[i].IsActive() && m_GenFrequency != MAX_MONSTER)
             {
                 // 몬스터의 종류 설정
                 int Type{ rand() % 3 + 1 };
 
                 m_GameData->m_Monsters[i].SetActive(true);
                 m_GameData->m_Monsters[i].SetType(Type);
-                m_GameData->m_Monsters[i].SetMaxHp(100.0f * Type);
-                m_GameData->m_Monsters[i].SetHp(100.0f * Type);
+                m_GameData->m_Monsters[i].SetMaxHp(1.0f * Type * round);
+                m_GameData->m_Monsters[i].SetHp(1.0f * Type * round);
 
                 Type = rand() % 4;
 
@@ -454,12 +468,14 @@ void CServer::CreateMonster()
                 m_GameData->m_Monsters[i].SetDirection((float)m_Map->GetRect().right * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_Y);
                 m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirection().m_X, 2) + powf((float)m_GameData->m_Monsters[i].GetDirection().m_Y, 2)));
 
-                printf("[안내] 몬스터 생성됨(%.02f, %.02f)\n", m_GameData->m_Monsters[i].GetPosition().m_X, m_GameData->m_Monsters[i].GetPosition().m_Y);
-                break;
+                m_GenFrequency++;
+                if (m_GenFrequency % MAX_MONSTER == 0) break;
             }
+           
         }
         m_CurrentMonsterGenTime = 0.0f;
     }
+    printf("라운드 : %d, 현제 몬스터 수 : %d\n", round, m_GenFrequency - KillCount);
 }
 
 void CServer::CreateItem()
@@ -481,7 +497,7 @@ void CServer::CreateItem()
                 m_GameData->m_Items[i].SetHp(60.0f);
                 m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
 
-                printf("[안내] 아이템 생성됨(%.02f, %.02f)\n", m_GameData->m_Items[i].GetPosition().m_X, m_GameData->m_Items[i].GetPosition().m_Y);
+                //printf("[안내] 아이템 생성됨(%.02f, %.02f)\n", m_GameData->m_Items[i].GetPosition().m_X, m_GameData->m_Items[i].GetPosition().m_Y);
                 break;
             }
         }
