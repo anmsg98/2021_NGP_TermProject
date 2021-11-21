@@ -21,6 +21,16 @@ bool CGameObject::IsActive() const
 	return m_IsActive;
 }
 
+void CGameObject::SetMaxHp(float Hp)
+{
+	m_MaxHp = Hp;
+}
+
+float CGameObject::GetMaxHp() const
+{
+	return m_MaxHp;
+}
+
 void CGameObject::SetHp(float Hp)
 {
 	m_Hp = Hp;
@@ -28,6 +38,10 @@ void CGameObject::SetHp(float Hp)
 	if (m_Hp <= 0.0f)
 	{
 		m_Hp = 0.0f;
+	}
+	else if (m_Hp >= m_MaxHp)
+	{
+		m_Hp = m_MaxHp;
 	}
 }
 
@@ -51,32 +65,32 @@ const POSITION& CGameObject::GetPosition() const
 	return m_Position;
 }
 
-void CGameObject::SetBitmapRect(const USER_RECT& Rect)
+void CGameObject::SetSize(const VECTOR2D& Size)
 {
-	m_BitmapRect = Rect;
+	m_Size = Size;
 }
 
-const USER_RECT& CGameObject::GetBitmapRect() const
+const VECTOR2D& CGameObject::GetSize() const
 {
-	return m_BitmapRect;
+	return m_Size;
 }
 
 void CGameObject::SetWidth(float Width)
 {
-	m_Width = Width;
+	m_Size.m_X = Width;
 }
 
 float CGameObject::GetWidth() const
 {
-	return m_Width;
+	return m_Size.m_X;
 }
 
 void CGameObject::SetHeight(float Height)
 {
-	m_Height = Height;
+	m_Size.m_Y = Height;
 }
 
 float CGameObject::GetHeight() const
 {
-	return m_Height;
+	return m_Size.m_Y;
 }

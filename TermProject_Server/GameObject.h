@@ -6,13 +6,11 @@ class CGameObject
 protected:
 	bool				m_IsActive{};
 
+	float				m_MaxHp{};
 	float				m_Hp{};
 
 	POSITION			m_Position{};
-
-	USER_RECT			m_BitmapRect{};
-	float				m_Width{};
-	float				m_Height{};
+	VECTOR2D			m_Size{};
 
 public:
 	CGameObject() = default;
@@ -24,6 +22,9 @@ public:
 	void SetActive(bool IsActive);
 	bool IsActive() const;
 
+	void SetMaxHp(float Hp);
+	float GetMaxHp() const;
+
 	void SetHp(float Hp);
 	float GetHp() const;
 
@@ -31,8 +32,8 @@ public:
 	void SetPosition(float Xpos, float Ypos);
 	const POSITION& GetPosition() const;
 
-	void SetBitmapRect(const USER_RECT& Rect);
-	const USER_RECT& GetBitmapRect() const;
+	void SetSize(const VECTOR2D& Size);
+	const VECTOR2D& GetSize() const;
 
 	void SetWidth(float Width);
 	float GetWidth() const;
