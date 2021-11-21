@@ -9,13 +9,12 @@
 
 class CMap;
 
-enum MONSTER_GEN_LOCATION { TOP, BOTTOM, LEFT, RIGHT };
-
 enum GAME_STATE { WAITING, GAME };
+enum MONSTER_GEN_LOCATION { TOP, BOTTOM, LEFT, RIGHT };
 
 struct GameData
 {
-    int                   m_State;
+    int                   m_State{};
 
     CPlayer               m_Players[MAX_PLAYER]{};
     CTower                m_Tower{};
@@ -40,11 +39,11 @@ private:
     GameData*             m_GameData{};                  // 게임 데이터
 
     int                   m_Round{ 1 };
-    bool                  m_Round_End{};
 
     const float           m_MonsterGenTime{ 5.0f };
     float                 m_CurrentMonsterGenTime{};
-    int                   m_GenFrequency{};
+    int                   m_TotalMonsterCount{};
+    int                   m_CurrentMonsterCount{};
 
     const float           m_ItemGenTime{ 10.0f };
     float                 m_CurrentItemGenTime{};
@@ -98,8 +97,8 @@ public:
     void CreateMonster();
     void CreateItem();
 
-    // 라운드별 몬스터 출현
-    void CRoundManager();
+    // 라운드 갱신
+    void UpdateRound();
 
     // 게임 월드 내의 객체 간 충돌 검사
     void CheckPlayerByMonsterCollision();

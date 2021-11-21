@@ -4,7 +4,6 @@
 #include "FileManager.h"
 
 int CServer::m_RecentID;
-extern int KillCount;
 
 CServer::CServer()
 {
@@ -374,7 +373,7 @@ void CServer::WaitingLoop()
 
 void CServer::GameLoop()
 {
-    CRoundManager();
+    UpdateRound();
 
     Animate();
 
@@ -490,29 +489,23 @@ void CServer::Animate()
     }
 }
 
-
-void CServer::CRoundManager()
-{
-    if (KillCount == 30)
-    {
-        m_GenFrequency = 0;
-        KillCount = 0;
-        m_Round++;
-    }
-    CreateMonster();
-    CreateItem();
-}
-
-
 void CServer::CreateMonster()
 {
+    if (m_TotalMonsterCount == 30)
+    {
+        return;
+    }
+
+    // 몬스터의 생성은 10마리씩 3회 호출되며, GenCount는 1회 호출 시, 10마리로 제한을 하기 위한 변수이다.
+    int GenCount{};
+
     m_CurrentMonsterGenTime += m_Timer->GetDeltaTime();
 
     if (m_CurrentMonsterGenTime >= m_MonsterGenTime)
     {
         for (int i = 0; i < MAX_MONSTER; ++i)
         {
-            if (!m_GameData->m_Monsters[i].IsActive() && m_GenFrequency != MAX_MONSTER)
+            if (!m_GameData->m_Monsters[i].IsActive())
             {
                 // 몬스터의 종류 설정
                 int Type{ rand() % 3 + 1 };
@@ -544,14 +537,21 @@ void CServer::CreateMonster()
                 m_GameData->m_Monsters[i].SetDirection((float)m_Map->GetRect().right * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_Y);
                 m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirection().m_X, 2) + powf((float)m_GameData->m_Monsters[i].GetDirection().m_Y, 2)));
 
-                m_GenFrequency++;
-                if (m_GenFrequency % MAX_MONSTER == 0) break;
+                ++GenCount;
+
+                if (GenCount == 10)
+                {
+                    break;
+                }
             }
-           
         }
+
         m_CurrentMonsterGenTime = 0.0f;
+        m_TotalMonsterCount += GenCount;
+        m_CurrentMonsterCount += GenCount;
+
+        cout << "<<<<< WAVE " << m_TotalMonsterCount / GenCount <<  " START! >>>>>" << endl;
     }
-    printf("라운드 : %d, 현제 몬스터 수 : %d\n", m_Round, m_GenFrequency - KillCount);
 }
 
 void CServer::CreateItem()
@@ -572,12 +572,29 @@ void CServer::CreateItem()
                 m_GameData->m_Items[i].SetMaxHp(60.0f);
                 m_GameData->m_Items[i].SetHp(60.0f);
                 m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
-
-                //printf("[안내] 아이템 생성됨(%.02f, %.02f)\n", m_GameData->m_Items[i].GetPosition().m_X, m_GameData->m_Items[i].GetPosition().m_Y);
+                
                 break;
             }
         }
         m_CurrentItemGenTime = 0.0f;
+    }
+}
+
+void CServer::UpdateRound()
+{
+    CreateMonster();
+    CreateItem();
+
+    if (m_TotalMonsterCount == 30 && m_CurrentMonsterCount == 0)
+    {
+        ++m_Round;
+        m_TotalMonsterCount = 0;
+
+        cout << "==== " << m_Round << " ROUND CLEAR ====" << endl;
+    }
+    else
+    {
+        cout << "\r현재 몬스터 수 / 총 몬스터 수 : " << m_CurrentMonsterCount << " / " << m_TotalMonsterCount;
     }
 }
 
@@ -654,6 +671,11 @@ void CServer::CheckBulletByMonsterCollision()
                                 m_GameData->m_Monsters[k].SetPrevDirection(m_GameData->m_Monsters[k].GetDirection().m_X, m_GameData->m_Monsters[k].GetDirection().m_Y);
                                 m_GameData->m_Monsters[k].SetDirection(Bullets[j].GetDirection().m_X, Bullets[j].GetDirection().m_Y);
                                 m_GameData->m_Monsters[k].SetLength(Bullets[j].GetLength());
+
+                                if (m_GameData->m_Monsters[k].GetHp() <= 0.0f)
+                                {
+                                    --m_CurrentMonsterCount;
+                                }
                             }
                         }
                     }
