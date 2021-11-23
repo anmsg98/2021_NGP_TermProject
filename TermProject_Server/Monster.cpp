@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Monster.h"
 
-void CMonster::Animate(float DeltaTime)
+void CMonster::Animate()
 {
 	if (m_IsActive)
 	{
@@ -9,12 +9,12 @@ void CMonster::Animate(float DeltaTime)
 		{
 			if (m_IsCollided)
 			{
-				m_CollisionDuration += DeltaTime;
+				m_CollisionDuration += 1.0f;
 
-				if (m_CollisionDuration < 0.2f)
+				if (m_CollisionDuration < 10.0f)
 				{
-					m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 300.0f;
-					m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 300.0f;
+					m_Position.m_X += (GetDirection().m_X / GetLength()) * 3.0f;
+					m_Position.m_Y += (GetDirection().m_Y / GetLength()) * 3.0f;
 				}
 				else
 				{
@@ -27,15 +27,13 @@ void CMonster::Animate(float DeltaTime)
 			}
 			else
 			{
-				m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 100.0f;
-				m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 100.0f;
+				m_Position.m_X += (GetDirection().m_X / GetLength());
+				m_Position.m_Y += (GetDirection().m_Y / GetLength());
 			}
 		}
 		else
 		{
-			const int FrameFPS{ 15 };
-
-			m_AnimationTime += FrameFPS * DeltaTime;
+			m_AnimationTime += 0.25f;
 
 			if (m_AnimationTime >= m_AnimationFrame)
 			{

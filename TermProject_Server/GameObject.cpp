@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
-void CGameObject::Animate(float DeltaTime)
+void CGameObject::Animate()
 {
 
 }

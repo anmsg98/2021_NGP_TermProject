@@ -3,15 +3,13 @@
 
 // ============================================== CBullet ==============================================
 
-void CBullet::Animate(float DeltaTime)
+void CBullet::Animate()
 {
 	if (m_IsActive)
 	{
 		if (m_IsCollided)
 		{
-			const int FrameFPS{ 20 };
-
-			m_AnimationTime += FrameFPS * DeltaTime;
+			m_AnimationTime += 0.25f;
 
 			if (m_AnimationTime >= m_AnimationFrame)
 			{
@@ -22,8 +20,8 @@ void CBullet::Animate(float DeltaTime)
 		}
 		else
 		{
-			m_Position.m_X += (GetDirection().m_X / GetLength()) * DeltaTime * 1000.f;
-			m_Position.m_Y += (GetDirection().m_Y / GetLength()) * DeltaTime * 1000.f;
+			m_Position.m_X += (GetDirection().m_X / GetLength()) * 10.0f;
+			m_Position.m_Y += (GetDirection().m_Y / GetLength()) * 10.0f;
 
 			if (m_Position.m_X <= 0.0f || m_Position.m_X >= 2400.0f || m_Position.m_Y <= 0.0f || m_Position.m_Y >= 1500.0f)
 			{
@@ -95,7 +93,7 @@ CPlayer::CPlayer()
 	}
 }
 
-void CPlayer::Animate(float DeltaTime)
+void CPlayer::Animate()
 {
 	if (m_IsActive)
 	{
@@ -103,10 +101,10 @@ void CPlayer::Animate(float DeltaTime)
 		{
 			if (m_IsGetItem)
 			{
-				m_ItemDuration += DeltaTime;
+				m_ItemDuration += 1.0f;
 
 				// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
-				if (m_ItemDuration >= 8.0f)
+				if (m_ItemDuration >= 10.0f)
 				{
 					m_IsGetItem = false;
 					m_ItemDuration = 0.0f;
@@ -120,14 +118,12 @@ void CPlayer::Animate(float DeltaTime)
 
 			for (int i = 0; i < MAX_BULLET; ++i)
 			{
-				m_Bullets[i].Animate(DeltaTime);
+				m_Bullets[i].Animate();
 			}
 		}
 		else
 		{
-			const int FrameFPS{ 15 };
-
-			m_AnimationTime += FrameFPS * DeltaTime;
+			m_AnimationTime += 0.25f;
 
 			if (m_AnimationTime >= m_AnimationFrame)
 			{

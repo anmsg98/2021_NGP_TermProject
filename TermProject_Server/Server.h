@@ -1,5 +1,4 @@
 #pragma once
-#include "Timer.h"
 #include "Player.h"
 #include "Tower.h"
 #include "Monster.h"
@@ -14,7 +13,7 @@ enum MONSTER_GEN_LOCATION { TOP, BOTTOM, LEFT, RIGHT };
 
 struct GameData
 {
-    int                   m_State{};
+    int                   m_State{ WAITING };
 
     CPlayer               m_Players[MAX_PLAYER]{};
     CTower                m_Tower{};
@@ -30,79 +29,58 @@ private:
     SOCKET                m_ListenSocket{};              // 클라이언트를 수용하기 위한 대기 소켓
     SOCKADDR_IN           m_SocketAddress{};             // 서버의 소켓 주소 구조체
 
-    CTimer*               m_Timer{};                     // 게임 내의 시간을 관리하기 위한 타이머
-
     HANDLE                m_MainSyncHandle{};            // 주스레드의 동기화를 위한 핸들
-    HANDLE                m_SyncHandles[MAX_PLAYER]{};   // 스레드함수의 동기화를 위한 핸들
+    HANDLE                m_SyncHandles[MAX_PLAYER]{};   // 각 스레드함수의 동기화를 위한 핸들
 
     CMap*                 m_Map{};
     GameData*             m_GameData{};                  // 게임 데이터
 
-    int                   m_Round{ 1 };
+    int                   m_Round{ 1 };                  // 현재 라운드
 
-    const float           m_MonsterGenTime{ 5.0f };
-    float                 m_CurrentMonsterGenTime{};
-    int                   m_TotalMonsterCount{};
-    int                   m_CurrentMonsterCount{};
+    const float           m_MonsterGenTime{ 480.0f };    // 몬스터가 생성되기 위해 도달해야 하는 시간
+    float                 m_CurrentMonsterGenTime{};     // 현재 몬스터의 생성시간
+    int                   m_TotalMonsterCount{};         // 총 몬스터의 수
+    int                   m_CurrentMonsterCount{};       // 현재 필드위에 존재하는 몬스터의 수
 
-    const float           m_ItemGenTime{ 10.0f };
-    float                 m_CurrentItemGenTime{};
+    const float           m_ItemGenTime{ 600.0f };       // 아이템이 생성되기 위해 도달해야 하는 시간
+    float                 m_CurrentItemGenTime{};        // 현재 아이템의 생성시간
 
 public:
     CServer();
     ~CServer();
 
-    // 클라이언트 접속을 받는 쓰레드 함수
-    static DWORD WINAPI AcceptClient(LPVOID Arg);
-
-    // 각 클라이언트 처리를 위한 쓰레드 함수
-    static DWORD WINAPI ProcessClient(LPVOID Arg);
-
-    // 서버에서 이루어지는 처리를 위한 함수
-    void ProcessGameData();
-
-    // 소켓 관련 오류함수
     void err_quit(const char* Msg);
     void err_display(const char* Msg);
-
-    // Length 바이트를 확실하게 수신
     int recvn(SOCKET Socket, char* Buffer, int Length, int Flags);
 
-    // 윈속 초기화 및 서버 생성
-    void InitServer();
+    static DWORD WINAPI AcceptClient(LPVOID Arg);                       // 클라이언트 접속을 받는 쓰레드 함수
+    static DWORD WINAPI ProcessClient(LPVOID Arg);                      // 각 클라이언트 처리를 위한 쓰레드 함수
 
-    // 이벤트 생성
-    void InitEvent();
+    void InitServer();                                                  // 윈속 초기화 및 서버 생성
+    void InitEvent();                                                   // 이벤트 객체 생성
+    void BuildObject();                                                 // 맵을 생성하고, 게임 내 모든 객체의 가로/세로 값 초기화
+    void InitGame();                                                    // 게임 내 모든 객체의 게임 정보 값 초기화
 
-    // 유효한 플레이어 아이디 반환
-    int GetValidID() const;
+    void ProcessGameData();                                             // 송수신 데이터를 처리하는 함수
+    void WaitingLoop();                                                 // 대기실 게임 루프
+    void GameLoop();                                                    // 인게임 게임 루프
 
-    // 수용한 클라이언트의 플레이어 생성 및 제거
-    bool CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress);
-    bool DestroyPlayer(int ID);
+    int GetValidID() const;                                             // 사용가능한 플레이어 아이디 반환
 
-    // 상태 확인
-    bool CheckAllPlayerReady();
-    bool CheckGameOver();
+    bool CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress); // 수용한 클라이언트의 플레이어 생성
+    bool DestroyPlayer(int ID);                                         // 수용한 클라이언트의 플레이어 제거
 
-    void WaitingLoop();
-    void GameLoop();
+    bool CheckAllPlayerReady();                                         // 모든 플레이어가 준비 상태인지 확인하는 함수
+    bool CheckGameOver();                                               // 게임 오버 상태인지 확인하는 함수
 
-    void BuildObject();
-    void InitGame();
+    void UpdateRound();                                                 // 라운드를 갱신하는 함수
+    void CreateMonster();                                               // 일정 주기로 몬스터를 생성하는 함수
+    void CreateItem();                                                  // 일정 주기로 아이템을 생성하는 함수
 
-    void Animate();
+    void Animate();                                                     // 게임 내 모든 객체의 움직임을 처리하는 함수
 
-    // 몬스터 및 아이템 생성
-    void CreateMonster();
-    void CreateItem();
-
-    // 라운드 갱신
-    void UpdateRound();
-
-    // 게임 월드 내의 객체 간 충돌 검사
-    void CheckPlayerByMonsterCollision();
-    void CheckBulletByMonsterCollision();
-    void CheckTowerByMonsterCollision();
-    void CheckPlayerByItemCollision();
+    void CheckPlayerByMonsterCollision();                               // 플레이어와 몬스터 간 충돌 검사 및 후처리
+    void CheckBulletByMonsterCollision();                               // 플레이어의 총알과 몬스터 간 충돌 검사 및 후처리
+    void CheckTowerByMonsterCollision();                                // 타워와 몬스터 간 충돌 검사 및 후처리
+    void CheckPlayerByItemCollision();                                  // 플레이어와 아이템 간 충돌 검사 및 후처리
 };

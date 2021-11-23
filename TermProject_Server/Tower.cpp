@@ -1,15 +1,13 @@
 #include "stdafx.h"
 #include "Tower.h"
 
-void CTower::Animate(float DeltaTime)
+void CTower::Animate()
 {
 	if (m_IsActive)
 	{
 		if (m_Hp <= 0.0f)
 		{
-			const int FrameFPS{ 7 };
-
-			m_AnimationTime += FrameFPS * DeltaTime;
+			m_AnimationTime += 0.25f;
 
 			if (m_AnimationTime >= m_AnimationFrame)
 			{

@@ -15,7 +15,7 @@ public:
 	CItem() = default;
 	~CItem() = default;
 
-	void Animate(float DeltaTime);
+	void Animate();
 	void Render(HDC hMemDC, HDC hMemDC2);
 
 	void SetType(int Type);

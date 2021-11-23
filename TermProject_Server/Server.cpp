@@ -9,17 +9,11 @@ CServer::CServer()
 {
     CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
 
-    m_Timer = new CTimer{};
     m_GameData = new GameData{};
 }
 
 CServer::~CServer()
 {
-    if (m_Timer)
-    {
-        delete m_Timer;
-    }
-
     if (m_Map)
     {
         delete m_Map;
@@ -32,6 +26,62 @@ CServer::~CServer()
 
     closesocket(m_ListenSocket);
     WSACleanup();
+}
+
+void CServer::err_quit(const char* Msg)
+{
+    LPVOID MsgBuffer{};
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL, WSAGetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR)&MsgBuffer, 0, NULL);
+    MessageBox(NULL, (LPCTSTR)MsgBuffer, (LPCTSTR)Msg, MB_ICONERROR);
+
+    LocalFree(MsgBuffer);
+    exit(1);
+}
+
+void CServer::err_display(const char* Msg)
+{
+    LPVOID MsgBuffer{};
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL, WSAGetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR)&MsgBuffer, 0, NULL);
+
+    cout << "[" << Msg << "] " << (char*)MsgBuffer;
+
+    LocalFree(MsgBuffer);
+}
+
+int CServer::recvn(SOCKET Socket, char* Buffer, int Length, int Flags)
+{
+    int Received{};
+    int Left{ Length };
+    char* Ptr{ Buffer };
+
+    while (Left > 0)
+    {
+        Received = recv(Socket, Ptr, Left, Flags);
+
+        if (Received == SOCKET_ERROR)
+        {
+            return SOCKET_ERROR;
+        }
+        else if (Received == 0)
+        {
+            break;
+        }
+
+        Left -= Received;
+        Ptr += Received;
+    }
+
+    return (Length - Left);
 }
 
 DWORD WINAPI CServer::AcceptClient(LPVOID Arg)
@@ -92,7 +142,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     {
         Server->err_display("send()");
     }
-
+    
     while (true)
     {
         ReturnValue = send(Player->GetSocket(), (char*)Server->m_GameData, sizeof(GameData), 0);
@@ -127,93 +177,6 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     Server->DestroyPlayer(Player->GetID());
 
     return 0;
-}
-
-void CServer::ProcessGameData()
-{
-    m_Timer->Start();
-
-    while (true)
-    {
-        for (int i = 0; i < MAX_PLAYER; ++i)
-        {
-            if (m_GameData->m_Players[i].GetSocket())
-            {
-                WaitForSingleObject(m_SyncHandles[i], INFINITE);
-            }
-        }
-
-        m_Timer->Update(60.0f);
-
-        switch (m_GameData->m_State)
-        {
-        case GAME_STATE::WAITING:
-            WaitingLoop();
-            break;
-        case GAME_STATE::GAME:
-            GameLoop();
-            break;
-        }
-
-        SetEvent(m_MainSyncHandle);
-        ResetEvent(m_MainSyncHandle);
-    }
-}
-
-void CServer::err_quit(const char* Msg)
-{
-    LPVOID MsgBuffer{};
-
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&MsgBuffer, 0, NULL);
-    MessageBox(NULL, (LPCTSTR)MsgBuffer, (LPCTSTR)Msg, MB_ICONERROR);
-
-    LocalFree(MsgBuffer);
-    exit(1);
-}
-
-void CServer::err_display(const char* Msg)
-{
-    LPVOID MsgBuffer{};
-
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&MsgBuffer, 0, NULL);
-
-    cout << "[" << Msg << "] " << (char*)MsgBuffer;
-
-    LocalFree(MsgBuffer);
-}
-
-int CServer::recvn(SOCKET Socket, char* Buffer, int Length, int Flags)
-{
-    int Received{};
-    int Left{ Length };
-    char* Ptr{ Buffer };
-
-    while (Left > 0)
-    {
-        Received = recv(Socket, Ptr, Left, Flags);
-
-        if (Received == SOCKET_ERROR)
-        {
-            return SOCKET_ERROR;
-        }
-        else if (Received == 0)
-        {
-            break;
-        }
-
-        Left -= Received;
-        Ptr += Received;
-    }
-
-    return (Length - Left);
 }
 
 void CServer::InitServer()
@@ -254,7 +217,6 @@ void CServer::InitServer()
     }
 
     InitEvent();
-    m_GameData->m_State = WAITING;
     BuildObject();
 
     HANDLE hThread{ CreateThread(NULL, 0, AcceptClient, (LPVOID)this, 0, NULL) };
@@ -272,6 +234,133 @@ void CServer::InitEvent()
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
         m_SyncHandles[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
+    }
+}
+
+void CServer::BuildObject()
+{
+    // 맵을 생성하고 초기화한다.
+    RECT MapRect{ 0, 0, 2400, 1500 };
+
+    m_Map = new CMap{};
+    m_Map->SetRect(MapRect);
+
+    // 타워를 초기화한다.
+    m_GameData->m_Tower.SetWidth(228.0f);
+    m_GameData->m_Tower.SetHeight(213.0f);
+
+    // 모든 플레이어를 초기화한다.
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        m_GameData->m_Players[i].SetWidth(62.5f);
+        m_GameData->m_Players[i].SetHeight(90.0f);
+    }
+
+    // 모든 몬스터를 초기화한다.
+    for (int i = 0; i < MAX_MONSTER; ++i)
+    {
+        m_GameData->m_Monsters[i].SetWidth(73.5f);
+        m_GameData->m_Monsters[i].SetHeight(76.0f);
+    }
+
+    // 아이템을 초기화한다.
+    for (int i = 0; i < MAX_ITEM; ++i)
+    {
+        m_GameData->m_Items[i].SetWidth(34.0f);
+        m_GameData->m_Items[i].SetHeight(40.0f);
+    }
+}
+
+void CServer::InitGame()
+{
+    // 타워를 초기화한다.
+    m_GameData->m_Tower.SetActive(true);
+    m_GameData->m_Tower.SetMaxHp(5000.0f);
+    m_GameData->m_Tower.SetHp(5000.0f);
+    m_GameData->m_Tower.SetPosition(0.5f * m_Map->GetRect().right, 0.5f * m_Map->GetRect().bottom);
+
+    // 모든 플레이어를 초기화한다.
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        if (m_GameData->m_Players[i].GetSocket())
+        {
+            m_GameData->m_Players[i].SetActive(true);
+            m_GameData->m_Players[i].SetMaxHp(100.0f);
+            m_GameData->m_Players[i].SetHp(100.0f);
+            m_GameData->m_Players[i].SetDirection(0.0f, 0.0f);
+            m_GameData->m_Players[i].SetPosition(0.5f * m_Map->GetRect().right - 150.0f + 80.0f * i, 0.5f * m_Map->GetRect().bottom + 100.0f);
+        }
+    }
+
+    // 모든 몬스터를 초기화한다.
+    for (int i = 0; i < MAX_MONSTER; ++i)
+    {
+        m_GameData->m_Monsters[i].SetActive(false);
+    }
+
+    // 아이템을 초기화한다.
+    for (int i = 0; i < MAX_ITEM; ++i)
+    {
+        m_GameData->m_Items[i].SetActive(false);
+    }
+
+    m_Round = 1;
+    m_CurrentMonsterGenTime = 0.0f;
+    m_TotalMonsterCount = 0;
+    m_CurrentMonsterCount = 0;
+    m_CurrentItemGenTime = 0.0f;
+}
+
+void CServer::ProcessGameData()
+{
+    while (true)
+    {
+        for (int i = 0; i < MAX_PLAYER; ++i)
+        {
+            if (m_GameData->m_Players[i].GetSocket())
+            {
+                WaitForSingleObject(m_SyncHandles[i], INFINITE);
+            }
+        }
+
+        switch (m_GameData->m_State)
+        {
+        case GAME_STATE::WAITING:
+            WaitingLoop();
+            break;
+        case GAME_STATE::GAME:
+            GameLoop();
+            break;
+        }
+
+        SetEvent(m_MainSyncHandle);
+        ResetEvent(m_MainSyncHandle);
+    }
+}
+
+void CServer::WaitingLoop()
+{
+    if (CheckAllPlayerReady())
+    {
+        InitGame();
+        m_GameData->m_State = GAME;
+    }
+}
+
+void CServer::GameLoop()
+{
+    UpdateRound();
+
+    Animate();
+
+    CheckPlayerByMonsterCollision();
+    CheckBulletByMonsterCollision();
+    CheckTowerByMonsterCollision();
+    CheckPlayerByItemCollision();
+
+    if (CheckGameOver())
+    {
+        m_GameData->m_State = WAITING;
     }
 }
 
@@ -335,6 +424,8 @@ bool CServer::DestroyPlayer(int ID)
 
 bool CServer::CheckAllPlayerReady()
 {
+    // 임시로 MAX_PLAYER가 접속하면 게임상태로 전환하도록 구현
+    // 이후, 준비완료 기능을 추가하여 아래 코드는 변경될 것임
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
         if (!m_GameData->m_Players[i].GetSocket())
@@ -347,145 +438,66 @@ bool CServer::CheckAllPlayerReady()
             return true;
         }
     }
+
     return false;
 }
 
 bool CServer::CheckGameOver()
 {
+    // 타워의 체력이 0이하가 되면 true를 반환한다.
+    if (m_GameData->m_Tower.GetHp() <= 0.0f)
+    {
+        return true;
+    }
+
+    // 접속한 플레이어들의 체력이 0이하인지 검사하고, 한 플레이어라도 0초과인 경우 false를 반환한다.
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
-        if (m_GameData->m_Players[i].GetHp() > 0.0f)
+        if (m_GameData->m_Players[i].GetSocket() && m_GameData->m_Players[i].GetHp() > 0.0f)
         {
             return false;
         }
     }
+
+    // 모든 플레이어의 체력이 0이하라면 true를 반환한다.
     return true;
-}
-
-void CServer::WaitingLoop()
-{
-    if (CheckAllPlayerReady())
-    {
-        m_GameData->m_State = GAME;
-        InitGame();
-    }
-}
-
-void CServer::GameLoop()
-{
-    UpdateRound();
-
-    Animate();
-
-    CheckPlayerByMonsterCollision();
-    CheckBulletByMonsterCollision();
-    CheckTowerByMonsterCollision();
-    CheckPlayerByItemCollision();
-
-    if (CheckGameOver())
-    {
-        m_GameData->m_State = WAITING;
-    }
-}
-
-void CServer::BuildObject()
-{
-    // 맵을 초기화한다.
-    RECT MapRect{ 0, 0, 2400, 1500 };
-
-    m_Map = new CMap{};
-    m_Map->SetRect(MapRect);
-
-    // 타워를 초기화한다.
-    m_GameData->m_Tower.SetActive(true);
-    m_GameData->m_Tower.SetMaxHp(5000.0f);
-    m_GameData->m_Tower.SetHp(5000.0f);
-    m_GameData->m_Tower.SetPosition(0.5f * MapRect.right, 0.5f * MapRect.bottom);
-    m_GameData->m_Tower.SetWidth(228.0f);
-    m_GameData->m_Tower.SetHeight(213.0f);
-
-    // 모든 플레이어를 초기화한다.
-    for (int i = 0; i < MAX_PLAYER; ++i)
-    {
-        m_GameData->m_Players[i].SetActive(false);
-        m_GameData->m_Players[i].SetMaxHp(100.0f);
-        m_GameData->m_Players[i].SetHp(100.0f);
-        m_GameData->m_Players[i].SetPosition(0.5f * MapRect.right - 150.0f + 80.0f * i, 0.5f * MapRect.bottom + 100.0f);
-        m_GameData->m_Players[i].SetWidth(62.5f);
-        m_GameData->m_Players[i].SetHeight(90.0f);
-    }
-
-    // 모든 몬스터를 초기화한다.
-    for (int i = 0; i < MAX_MONSTER; ++i)
-    {
-        m_GameData->m_Monsters[i].SetWidth(73.5f);
-        m_GameData->m_Monsters[i].SetHeight(76.0f);
-    }
-
-    // 아이템을 초기화한다.
-    for (int i = 0; i < MAX_ITEM; ++i)
-    {
-        m_GameData->m_Items[i].SetWidth(34.0f);
-        m_GameData->m_Items[i].SetHeight(40.0f);
-    }
-}
-
-void CServer::InitGame()
-{
-    // 맵을 초기화한다.
-    RECT MapRect{ 0, 0, 2400, 1500 };
-
-    m_Map = new CMap{};
-    m_Map->SetRect(MapRect);
-
-    // 타워를 초기화한다.
-    m_GameData->m_Tower.SetActive(true);
-    m_GameData->m_Tower.SetMaxHp(5000.0f);
-    m_GameData->m_Tower.SetHp(5000.0f);
-    m_GameData->m_Tower.SetPosition(0.5f * MapRect.right, 0.5f * MapRect.bottom);
-
-    // 모든 플레이어를 초기화한다.
-    for (int i = 0; i < MAX_PLAYER; ++i)
-    {
-        if (m_GameData->m_Players[i].GetSocket())
-        {
-            m_GameData->m_Players[i].SetActive(true);
-            m_GameData->m_Players[i].SetMaxHp(100.0f);
-            m_GameData->m_Players[i].SetHp(100.0f);
-            m_GameData->m_Players[i].SetPosition(0.5f * MapRect.right - 150.0f + 80.0f * i, 0.5f * MapRect.bottom + 100.0f);
-        }
-    }
-
-    // 모든 몬스터를 초기화한다.
-    for (int i = 0; i < MAX_MONSTER; ++i)
-    {
-        m_GameData->m_Monsters[i].SetActive(false);
-    }
-
-    // 아이템을 초기화한다.
-    for (int i = 0; i < MAX_ITEM; ++i)
-    {
-        m_GameData->m_Items[i].SetActive(false);
-    }
 }
 
 void CServer::Animate()
 {
-    m_GameData->m_Tower.Animate(m_Timer->GetDeltaTime());
+    m_GameData->m_Tower.Animate();
 
     for (int i = 0; i < MAX_MONSTER; ++i)
     {
-        m_GameData->m_Monsters[i].Animate(m_Timer->GetDeltaTime());
+        m_GameData->m_Monsters[i].Animate();
     }
 
     for (int i = 0; i < MAX_ITEM; ++i)
     {
-        m_GameData->m_Items[i].Animate(m_Timer->GetDeltaTime());
+        m_GameData->m_Items[i].Animate();
     }
 
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
-        m_GameData->m_Players[i].Animate(m_Timer->GetDeltaTime());
+        m_GameData->m_Players[i].Animate();
+    }
+}
+
+void CServer::UpdateRound()
+{
+    CreateMonster();
+    CreateItem();
+
+    if (m_TotalMonsterCount == 30 && m_CurrentMonsterCount == 0)
+    {
+        cout << "==== " << m_Round << " ROUND CLEAR ====" << endl;
+
+        ++m_Round;
+        m_TotalMonsterCount = 0;
+    }
+    else
+    {
+        cout << "\r현재 몬스터 수 / 총 몬스터 수 : " << m_CurrentMonsterCount << " / " << m_TotalMonsterCount;
     }
 }
 
@@ -496,13 +508,13 @@ void CServer::CreateMonster()
         return;
     }
 
-    // 몬스터의 생성은 10마리씩 3회 호출되며, GenCount는 1회 호출 시, 10마리로 제한을 하기 위한 변수이다.
-    int GenCount{};
-
-    m_CurrentMonsterGenTime += m_Timer->GetDeltaTime();
+    m_CurrentMonsterGenTime += 1.0f;
 
     if (m_CurrentMonsterGenTime >= m_MonsterGenTime)
     {
+        // 몬스터의 생성은 10마리씩 3회 호출되며, GenCount는 1회 호출 시, 10마리로 제한을 하기 위한 변수이다.
+        int GenCount{};
+
         for (int i = 0; i < MAX_MONSTER; ++i)
         {
             if (!m_GameData->m_Monsters[i].IsActive())
@@ -550,13 +562,13 @@ void CServer::CreateMonster()
         m_TotalMonsterCount += GenCount;
         m_CurrentMonsterCount += GenCount;
 
-        cout << "<<<<< WAVE " << m_TotalMonsterCount / GenCount <<  " START! >>>>>" << endl;
+        cout << "<<<<< WAVE " << m_TotalMonsterCount / GenCount << " START! >>>>>" << endl;
     }
 }
 
 void CServer::CreateItem()
 {
-    m_CurrentItemGenTime += m_Timer->GetDeltaTime();
+    m_CurrentItemGenTime += 0.01f;
 
     if (m_CurrentItemGenTime >= m_ItemGenTime)
     {
@@ -572,29 +584,11 @@ void CServer::CreateItem()
                 m_GameData->m_Items[i].SetMaxHp(60.0f);
                 m_GameData->m_Items[i].SetHp(60.0f);
                 m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
-                
+
                 break;
             }
         }
         m_CurrentItemGenTime = 0.0f;
-    }
-}
-
-void CServer::UpdateRound()
-{
-    CreateMonster();
-    CreateItem();
-
-    if (m_TotalMonsterCount == 30 && m_CurrentMonsterCount == 0)
-    {
-        ++m_Round;
-        m_TotalMonsterCount = 0;
-
-        cout << "==== " << m_Round << " ROUND CLEAR ====" << endl;
-    }
-    else
-    {
-        cout << "\r현재 몬스터 수 / 총 몬스터 수 : " << m_CurrentMonsterCount << " / " << m_TotalMonsterCount;
     }
 }
 

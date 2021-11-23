@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "Item.h"
 
-void CItem::Animate(float DeltaTime)
+void CItem::Animate()
 {
 	if (m_IsActive)
 	{
-		m_Hp -= DeltaTime;
+		m_Hp -= 1.0f;
 
 		if (m_Hp <= 0.0f)
 		{

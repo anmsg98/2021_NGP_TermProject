@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 
-#define MAX_PLAYER  1
+#define MAX_PLAYER  2
 #define MAX_BULLET  5
 
 // ============================================== CBullet ==============================================
@@ -23,7 +23,7 @@ public:
 	CBullet() = default;
 	~CBullet() = default;
 
-	void Animate(float DeltaTime);
+	void Animate();
 	void Render(HDC hMemDC, HDC hMemDC2);
 
 	bool IsCollided() const;
@@ -67,7 +67,7 @@ public:
 	CPlayer();
 	~CPlayer() = default;
 
-	void Animate(float DeltaTime);
+	void Animate();
 	void Render(HDC hMemDC, HDC hMemDC2);
 
 	void SetID(int ID);
