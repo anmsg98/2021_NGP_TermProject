@@ -108,7 +108,13 @@
     <Image Include="TermProject.ico">
       <Filter>리소스 파일</Filter>
     </Image>
-    <Image Include="Image\Background.bmp">
+    <Image Include="Image\Background_Waiting.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Image\SpriteSheet.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Image\Background_InGame.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>
