@@ -172,7 +172,7 @@ void CGameScene::ProcessInput()
 	// 플레이어의 위치, 방향, 카메라 등 갱신
 	m_GameData->m_Players[m_ID].SetPosition(Position);
 	m_GameData->m_Players[m_ID].SetDirection(m_CursorPos.x + m_GameData->m_Players[m_ID].GetCameraStartPosition().x - m_GameData->m_Players[m_ID].GetPosition().m_X,
-		m_CursorPos.y + m_GameData->m_Players[m_ID].GetCameraStartPosition().y - m_GameData->m_Players[m_ID].GetPosition().m_Y);
+											 m_CursorPos.y + m_GameData->m_Players[m_ID].GetCameraStartPosition().y - m_GameData->m_Players[m_ID].GetPosition().m_Y);
 	m_GameData->m_Players[m_ID].UpdateCamera(m_ClientRect, m_Map->GetRect());
 }
 

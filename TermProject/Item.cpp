@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Item.h"
 
-void CItem::Animate(float DeltaTime)
+void CItem::Animate()
 {
 
 }

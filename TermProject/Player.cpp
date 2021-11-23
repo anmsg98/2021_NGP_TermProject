@@ -3,7 +3,7 @@
 
 // ============================================== CBullet ==============================================
 
-void CBullet::Animate(float DeltaTime)
+void CBullet::Animate()
 {
 
 }
@@ -87,7 +87,7 @@ CPlayer::CPlayer()
 
 }
 
-void CPlayer::Animate(float DeltaTime)
+void CPlayer::Animate()
 {
 
 }

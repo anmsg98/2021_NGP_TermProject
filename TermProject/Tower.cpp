@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Tower.h"
 
-void CTower::Animate(float DeltaTime)
+void CTower::Animate()
 {
 
 }

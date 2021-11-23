@@ -57,6 +57,6 @@ public:
 	void PrepareRender();
 	void Render();
 
-	void ChangeScene(int PreState);
+	void ChangeScene(int PrevState);
 	void Update();
 };

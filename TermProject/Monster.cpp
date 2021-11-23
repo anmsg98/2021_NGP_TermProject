@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Monster.h"
 
-void CMonster::Animate(float DeltaTime)
+void CMonster::Animate()
 {
 
 }

@@ -10,21 +10,21 @@ enum GAME_STATE { WAITING, GAME };
 
 struct GameData
 {
-	int                             m_State;
+	int                 m_State;
 
-	CPlayer							m_Players[MAX_PLAYER]{};
-	CTower							m_Tower{};
-	CMonster						m_Monsters[MAX_MONSTER]{};
-	CItem							m_Items[MAX_ITEM]{};
+	CPlayer				m_Players[MAX_PLAYER]{};
+	CTower				m_Tower{};
+	CMonster			m_Monsters[MAX_MONSTER]{};
+	CItem				m_Items[MAX_ITEM]{};
 };
 
 class CScene
 {
 protected:
-	RECT							m_ClientRect{};
+	RECT				m_ClientRect{};
 
-	HBITMAP							m_hBitmap{};
-	HBITMAP							m_hOldBitmap{};
+	HBITMAP				m_hBitmap{};
+	HBITMAP				m_hOldBitmap{};
 
 public:
 	CScene() = default;
@@ -47,9 +47,9 @@ public:
 class CWaitingScene : public CScene
 {
 private:
-	int					m_ID{};
-	CMap* m_Map{};
-	GameData* m_GameData{};
+	int						m_ID{};
+	CMap*					m_Map{};
+	GameData*				m_GameData{};
 
 public:
 	CWaitingScene() = default;

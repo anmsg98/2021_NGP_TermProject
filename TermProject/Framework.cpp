@@ -209,15 +209,15 @@ void CFramework::Render()
 	EndPaint(m_hWnd, &m_PaintStruct);
 }
 
-void CFramework::ChangeScene(int PreState)
+void CFramework::ChangeScene(int PrevState)
 {
-	if (PreState != m_GameData->m_State)
+	if (PrevState != m_GameData->m_State)
 	{
-		if (PreState == WAITING && m_GameData->m_State == GAME)
+		if (PrevState == WAITING && m_GameData->m_State == GAME)
 		{
 			m_Scenes.push(m_GameScene);
 		}
-		else if (PreState == GAME && m_GameData->m_State == WAITING)
+		else if (PrevState == GAME && m_GameData->m_State == WAITING)
 		{
 			m_Scenes.pop();
 		}
