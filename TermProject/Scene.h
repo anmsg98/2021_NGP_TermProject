@@ -5,6 +5,7 @@
 #include "Item.h"
 
 class CMap;
+class CButton;
 
 enum GAME_STATE { WAITING, GAME };
 
@@ -50,6 +51,7 @@ private:
 	int						m_ID{};
 	CMap*					m_Map{};
 	GameData*				m_GameData{};
+	CButton*				m_Buttons[2]{};
 
 public:
 	CWaitingScene() = default;
@@ -73,11 +75,11 @@ public:
 class CGameScene : public CScene
 {
 private:
-	POINT				m_CursorPos{};
+	POINT					m_CursorPos{};
 
-	int					m_ID{};
-	CMap*				m_Map{};
-	GameData*			m_GameData{};
+	int						m_ID{};
+	CMap*					m_Map{};
+	GameData*				m_GameData{};
 	
 public:
 	CGameScene() = default;

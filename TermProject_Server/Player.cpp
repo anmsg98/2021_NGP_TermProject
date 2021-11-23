@@ -149,6 +149,16 @@ int CPlayer::GetID() const
 	return m_ID;
 }
 
+void CPlayer::SetReady(bool IsReady)
+{
+	m_IsReady = IsReady;
+}
+
+bool CPlayer::IsReady() const
+{
+	return m_IsReady;
+}
+
 void CPlayer::SetSocket(SOCKET Socket)
 {
 	m_Socket = Socket;

@@ -288,7 +288,7 @@ void CServer::InitGame()
             m_GameData->m_Players[i].SetMaxHp(100.0f);
             m_GameData->m_Players[i].SetHp(100.0f);
             m_GameData->m_Players[i].SetDirection(0.0f, 0.0f);
-            m_GameData->m_Players[i].SetPosition(0.5f * m_Map->GetRect().right - 150.0f + 80.0f * i, 0.5f * m_Map->GetRect().bottom + 100.0f);
+            m_GameData->m_Players[i].SetPosition(135.0f, 178.0f);
         }
     }
 
@@ -394,7 +394,8 @@ bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
     m_GameData->m_Players[ValidID].SetSocketAddress(SocketAddress);
     m_GameData->m_Players[ValidID].SetActive(true);
     m_GameData->m_Players[ValidID].SetHp(100.0f);
-    m_GameData->m_Players[ValidID].SetPosition(200.0f + 100.0f * ValidID, 300.0f);
+    m_GameData->m_Players[ValidID].SetDirection(0.0f, 90.0f);
+    m_GameData->m_Players[ValidID].SetPosition(0.5f * m_GameData->m_Players[ValidID].GetWidth() + 135.0f + 157.0f * ValidID, 0.5f * m_GameData->m_Players[ValidID].GetHeight() + 178.0f);
 
     // 가장 최근에 사용된 유효한 아이디를 갱신한다.
     m_RecentID = ValidID;

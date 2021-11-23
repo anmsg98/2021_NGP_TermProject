@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 
-#define MAX_PLAYER  1
+#define MAX_PLAYER  2
 #define MAX_BULLET  5
 
 // ============================================== CBullet ==============================================
@@ -46,6 +46,7 @@ class CPlayer : public CGameObject
 {
 private:
 	int					m_ID{};
+	bool				m_IsReady{};
 
 	SOCKET			    m_Socket{};
 	SOCKADDR_IN		    m_SocketAddress{};
@@ -72,6 +73,9 @@ public:
 
 	void SetID(int ID);
 	int GetID() const;
+
+	void SetReady(bool IsReady);
+	bool IsReady() const;
 
 	void SetSocket(SOCKET Socket);
 	SOCKET GetSocket() const;

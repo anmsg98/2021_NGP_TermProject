@@ -15,7 +15,8 @@ COLORREF CFileManager::GetTransparentColor() const
 
 void CFileManager::LoadBitmaps(HINSTANCE hInstance)
 {
-	m_Bitmaps.insert(make_pair("BACKGROUND", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_BG))));
+	m_Bitmaps.insert(make_pair("BACKGROUND_W", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_BG_W))));
+	m_Bitmaps.insert(make_pair("BACKGROUND_I", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_BG_I))));
 	m_Bitmaps.insert(make_pair("SPRITE_SHEET", LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP_SPRITE))));
 }
 

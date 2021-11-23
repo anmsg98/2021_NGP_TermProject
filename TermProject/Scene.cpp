@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Scene.h"
 #include "Map.h"
+#include "Button.h"
 
 // ============================================== CWaitingScene ==============================================
 
@@ -39,7 +40,7 @@ void CWaitingScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, 
 
 void CWaitingScene::ProcessInput()
 {
-	m_GameData->m_Players[m_ID].UpdateCamera(m_ClientRect, m_Map->GetRect());
+
 }
 
 void CWaitingScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data)
@@ -59,10 +60,23 @@ void CWaitingScene::BuildObject(int ID, GameData* Data)
 	m_GameData = Data;
 
 	// 맵을 생성한다.
-	RECT MapRect{ 0, 0, 2400, 1500 };
+	RECT MapRect{ 0, 0, 800, 600 };
 
 	m_Map = new CMap{};
 	m_Map->SetRect(MapRect);
+
+	// 버튼을 생성한다.
+	m_Buttons[0] = new CButton{};
+	m_Buttons[0]->SetActive(false);
+	m_Buttons[0]->SetType(CButton::READY);
+	m_Buttons[0]->SetSize(VECTOR2D(300.0f, 62.0f));
+	m_Buttons[0]->SetPosition(0.5f * m_Buttons[0]->GetWidth() + 250.0f, 0.5f * m_Buttons[0]->GetHeight() + 330.0f);
+
+	m_Buttons[1] = new CButton{};
+	m_Buttons[1]->SetActive(false);
+	m_Buttons[1]->SetType(CButton::EXIT);
+	m_Buttons[1]->SetSize(VECTOR2D(300.0f, 62.0f));
+	m_Buttons[1]->SetPosition(0.5f * m_Buttons[1]->GetWidth() + 250.0f, 0.5f * m_Buttons[1]->GetHeight() + 410.0f);
 }
 
 void CWaitingScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
@@ -72,9 +86,13 @@ void CWaitingScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 
 	HBITMAP hOldBitmap{};
 
-	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("BACKGROUND"));
+	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("BACKGROUND_W"));
 	m_Map->Render(hMemDC, hMemDC2);
 	SelectObject(hMemDC2, hOldBitmap);
+
+	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SPRITE_SHEET"));
+	m_Buttons[0]->Render(hMemDC, hMemDC2);
+	m_Buttons[1]->Render(hMemDC, hMemDC2);
 
 	for (int i = 0; i < MAX_PLAYER; ++i)
 	{
@@ -206,7 +224,7 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 
 	HBITMAP hOldBitmap{};
 
-	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("BACKGROUND"));
+	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("BACKGROUND_I"));
 	m_Map->Render(hMemDC, hMemDC2);
 	SelectObject(hMemDC2, hOldBitmap);
 
