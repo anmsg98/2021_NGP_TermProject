@@ -120,7 +120,7 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 
 			BitmapRect.m_Left = BitmapRect.m_Width * FrameIndex;
 		}
-	
+
 		HBITMAP hSourceBitmap{ CFileManager::GetInstance()->GetBitmap("SPRITE_SHEET") };
 		HBITMAP hRotateBitmap{ GetRotatedBitmap(hMemDC, hSourceBitmap, BitmapRect.m_Left, BitmapRect.m_Top, BitmapRect.m_Width, BitmapRect.m_Height, atan2f(m_Direction.m_Y, m_Direction.m_X) * 180.0f / PI - 90.0f, CFileManager::GetInstance()->GetTransparentColor()) };
 		USER_RECT Rect{ 0, 0, BitmapRect.m_Width, BitmapRect.m_Height };
@@ -145,6 +145,14 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 			float CurrentWidth{ BitmapRect.m_Width * (m_Hp / m_MaxHp) };
 
 			FixedDrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, CurrentWidth, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+		}
+
+		if (m_IsReady)
+		{
+			BitmapRect = CFileManager::GetInstance()->GetRect("BUTTON_READY");
+			POSITION Position{ GetPosition() };
+			Position.m_Y += 0.8f * BitmapRect.m_Height;
+			DrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 		}
 
 #ifdef DEBUG_HP
