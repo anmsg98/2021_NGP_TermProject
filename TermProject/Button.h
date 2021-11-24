@@ -3,7 +3,7 @@
 class CButton
 {
 public:
-	enum { READY, EXIT };
+	enum { READY = 1, EXIT };
 
 private:
 	bool				m_IsActive{};

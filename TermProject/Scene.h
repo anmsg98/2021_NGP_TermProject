@@ -22,6 +22,8 @@ struct GameData
 class CScene
 {
 protected:
+	POINT				m_CursorPos{};
+
 	RECT				m_ClientRect{};
 
 	HBITMAP				m_hBitmap{};
@@ -75,8 +77,6 @@ public:
 class CGameScene : public CScene
 {
 private:
-	POINT					m_CursorPos{};
-
 	int						m_ID{};
 	CMap*					m_Map{};
 	GameData*				m_GameData{};

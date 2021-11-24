@@ -30,7 +30,7 @@ void CButton::Render(HDC hMemDC, HDC hMemDC2)
 		break;
 	}
 
-	DrawRect(hMemDC, GetPosition(), BitmapRect.m_Width, BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+	DrawRect(hMemDC, GetPosition(), (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 }
 
 void CButton::SetActive(bool IsActive)

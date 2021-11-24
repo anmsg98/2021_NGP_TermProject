@@ -248,5 +248,3 @@ void CFramework::Update()
 
 	PrepareRender();
 }
-
-

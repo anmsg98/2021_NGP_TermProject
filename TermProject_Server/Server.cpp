@@ -272,6 +272,25 @@ void CServer::BuildObject()
     }
 }
 
+void CServer::InitWaitingScene()
+{
+    // 모든 플레이어를 초기화한다.
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        if (m_GameData->m_Players[i].GetSocket())
+        {
+            m_GameData->m_Players[i].SetActive(true);
+            m_GameData->m_Players[i].SetReady(false);
+            m_GameData->m_Players[i].SetHp(0.0f);
+            m_GameData->m_Players[i].SetDirection(0.0f, 90.0f);
+            m_GameData->m_Players[i].SetPosition(0.5f * m_GameData->m_Players[i].GetWidth() + 135.0f + 157.0f * i, 0.5f * m_GameData->m_Players[i].GetHeight() + 178.0f);
+        }
+    }
+
+    // 게임 상태 변경
+    m_GameData->m_State = WAITING;
+}
+
 void CServer::InitGameScene()
 {
     // 타워를 초기화한다.
@@ -312,22 +331,9 @@ void CServer::InitGameScene()
     m_TotalMonsterCount = 0;
     m_CurrentMonsterCount = 0;
     m_CurrentItemGenTime = 0.0f;
-}
 
-void CServer::InitWaitingScene()
-{
-    // 모든 플레이어를 초기화한다.
-    for (int i = 0; i < MAX_PLAYER; ++i)
-    {
-        if (m_GameData->m_Players[i].GetSocket())
-        {
-            m_GameData->m_Players[i].SetActive(true);
-            m_GameData->m_Players[i].SetReady(false);
-            m_GameData->m_Players[i].SetHp(0.0f);
-            m_GameData->m_Players[i].SetDirection(0.0f, 90.0f);
-            m_GameData->m_Players[i].SetPosition(0.5f * m_GameData->m_Players[i].GetWidth() + 135.0f + 157.0f * i, 0.5f * m_GameData->m_Players[i].GetHeight() + 178.0f);
-        }
-    }
+    // 게임 상태 변경
+    m_GameData->m_State = GAME;
 }
 
 void CServer::ProcessGameData()
@@ -342,8 +348,6 @@ void CServer::ProcessGameData()
             }
         }
 
-        cout << "송수신완료" << endl;
-
         switch (m_GameData->m_State)
         {
         case GAME_STATE::WAITING:
@@ -354,8 +358,6 @@ void CServer::ProcessGameData()
             break;
         }
         
-        cout << "루프완료" << endl;
-
         SetEvent(m_MainSyncHandle);
         ResetEvent(m_MainSyncHandle);
     }
@@ -366,7 +368,6 @@ void CServer::WaitingLoop()
     if (CheckAllPlayerReady())
     {
         InitGameScene();
-        m_GameData->m_State = GAME;
     }
 }
 
@@ -384,7 +385,6 @@ void CServer::GameLoop()
     if (CheckGameOver())
     {
         InitWaitingScene();
-        m_GameData->m_State = WAITING;
     }
 }
 
@@ -418,13 +418,15 @@ bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
     m_GameData->m_Players[ValidID].SetSocketAddress(SocketAddress);
     m_GameData->m_Players[ValidID].SetActive(true);
     m_GameData->m_Players[ValidID].SetReady(false);
+    m_GameData->m_Players[ValidID].SetHp(0.0f);
     m_GameData->m_Players[ValidID].SetDirection(0.0f, 90.0f);
     m_GameData->m_Players[ValidID].SetPosition(0.5f * m_GameData->m_Players[ValidID].GetWidth() + 135.0f + 157.0f * ValidID, 0.5f * m_GameData->m_Players[ValidID].GetHeight() + 178.0f);
 
     // 가장 최근에 사용된 유효한 아이디를 갱신한다.
     m_RecentID = ValidID;
-    // 현재 플레이어 수 추가
-    m_PlayerCount++;
+
+    // 클라이언트 접속하면 현재 접속중인 플레이어의 수를 1증가시킨다.
+    ++m_PlayerCount;
 
     return true;
 }
@@ -438,7 +440,9 @@ bool CServer::DestroyPlayer(int ID)
             // 매개변수로 넘어온 아이디를 가진 플레이어가 있다면 소켓을 NULL로 만들어 다른 클라이언트가 접속할 수 있게 한다.
             m_GameData->m_Players[i].SetSocket(NULL);
             m_GameData->m_Players[i].SetActive(false);
-            m_PlayerCount--;
+            
+            // 클라이언트 종료되면 현재 접속중인 플레이어의 수를 1감소시킨다.
+            --m_PlayerCount;
             
             SetEvent(m_SyncHandles[i]);
 
@@ -452,8 +456,8 @@ bool CServer::DestroyPlayer(int ID)
 
 bool CServer::CheckAllPlayerReady()
 {
-    // 플레이어가 한명 이하일 때는 시작을 하지않는다.
-    if (m_PlayerCount < 2)
+    // 플레이어가 한명이하일 때는 시작하지 않는다.
+    if (m_PlayerCount <= 1)
     {
         return false;
     }
@@ -462,9 +466,9 @@ bool CServer::CheckAllPlayerReady()
 
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
-        if (m_GameData->m_Players[i].GetSocket() && m_GameData->m_Players[i].IsReady() == true)
+        if (m_GameData->m_Players[i].GetSocket() && m_GameData->m_Players[i].IsReady())
         {
-            ReadyCount++;
+            ++ReadyCount;
         }        
     }
 

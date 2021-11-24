@@ -27,31 +27,61 @@ void CWaitingScene::ProcessKeyboardMessage(HWND hWnd, UINT message, WPARAM wPara
 
 void CWaitingScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	m_CursorPos.x = LOWORD(lParam);
+	m_CursorPos.y = HIWORD(lParam);
+
 	switch (message)
 	{
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
 	case WM_MOUSEMOVE:
+		for (int i = 0; i < 2; ++i)
+		{
+			if (m_Buttons[i]->GetPosition().m_X - 0.5f * m_Buttons[i]->GetWidth() <= m_CursorPos.x && m_CursorPos.x <= m_Buttons[i]->GetPosition().m_X + 0.5f * m_Buttons[i]->GetWidth() &&
+				m_Buttons[i]->GetPosition().m_Y - 0.5f * m_Buttons[i]->GetHeight() <= m_CursorPos.y && m_CursorPos.y <= m_Buttons[i]->GetPosition().m_Y + 0.5f * m_Buttons[i]->GetHeight())
+			{
+				m_Buttons[i]->SetActive(true);
+			}
+			else
+			{
+				m_Buttons[i]->SetActive(false);
+			}
+		}
 		break;
 	}
 }
 
 void CWaitingScene::ProcessInput()
 {
-	if (GetAsyncKeyState('R') & 0x8000)
+	if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
 	{
-		if (m_GameData->m_Players[m_ID].IsReady())
-		{
-			m_GameData->m_Players[m_ID].SetReady(false);
-		}
-		else
-		{
-			m_GameData->m_Players[m_ID].SetReady(true);
-		}
+		PostQuitMessage(0);
 	}
 
+	if (GetAsyncKeyState(MK_LBUTTON) & 0x0001)
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			if (m_Buttons[i]->IsActive())
+			{
+				switch (m_Buttons[i]->GetType())
+				{
+				case CButton::READY:
+					if (m_GameData->m_Players[m_ID].IsReady())
+					{
+						m_GameData->m_Players[m_ID].SetReady(false);
+					}
+					else
+					{
+						m_GameData->m_Players[m_ID].SetReady(true);
+					}
+					break;
+				case CButton::EXIT:
+					PostQuitMessage(0);
+					break;
+				}
+				break;
+			}
+		}
+	}
 }
 
 void CWaitingScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data)
@@ -142,16 +172,6 @@ void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPA
 {
 	m_CursorPos.x = LOWORD(lParam);
 	m_CursorPos.y = HIWORD(lParam);
-
-	switch (message)
-	{
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
-	case WM_MOUSEMOVE:
-		break;
-	}
 }
 
 void CGameScene::ProcessInput()
