@@ -40,6 +40,17 @@ void CWaitingScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, 
 
 void CWaitingScene::ProcessInput()
 {
+	if (GetAsyncKeyState('R') & 0x8000)
+	{
+		if (m_GameData->m_Players[m_ID].IsReady())
+		{
+			m_GameData->m_Players[m_ID].SetReady(false);
+		}
+		else
+		{
+			m_GameData->m_Players[m_ID].SetReady(true);
+		}
+	}
 
 }
 
