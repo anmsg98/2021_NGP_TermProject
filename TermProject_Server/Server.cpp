@@ -218,6 +218,7 @@ void CServer::InitServer()
 
     InitEvent();
     BuildObject();
+    InitWaitingScene();
 
     HANDLE hThread{ CreateThread(NULL, 0, AcceptClient, (LPVOID)this, 0, NULL) };
 
@@ -271,7 +272,7 @@ void CServer::BuildObject()
     }
 }
 
-void CServer::InitGame()
+void CServer::InitGameScene()
 {
     // 타워를 초기화한다.
     m_GameData->m_Tower.SetActive(true);
@@ -285,10 +286,11 @@ void CServer::InitGame()
         if (m_GameData->m_Players[i].GetSocket())
         {
             m_GameData->m_Players[i].SetActive(true);
+            m_GameData->m_Players[i].SetReady(false);
             m_GameData->m_Players[i].SetMaxHp(100.0f);
             m_GameData->m_Players[i].SetHp(100.0f);
             m_GameData->m_Players[i].SetDirection(0.0f, 0.0f);
-            m_GameData->m_Players[i].SetPosition(135.0f, 178.0f);
+            m_GameData->m_Players[i].SetPosition(0.5f * m_Map->GetRect().right - 250.0f + (i % 2 * 500.0f), 0.5f * m_Map->GetRect().bottom - 250.0f + (i / 2 * 500.0f));
         }
     }
 
@@ -304,11 +306,28 @@ void CServer::InitGame()
         m_GameData->m_Items[i].SetActive(false);
     }
 
+    // 라운드 초기화
     m_Round = 1;
     m_CurrentMonsterGenTime = 0.0f;
     m_TotalMonsterCount = 0;
     m_CurrentMonsterCount = 0;
     m_CurrentItemGenTime = 0.0f;
+}
+
+void CServer::InitWaitingScene()
+{
+    // 모든 플레이어를 초기화한다.
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        if (m_GameData->m_Players[i].GetSocket())
+        {
+            m_GameData->m_Players[i].SetActive(true);
+            m_GameData->m_Players[i].SetReady(false);
+            m_GameData->m_Players[i].SetHp(0.0f);
+            m_GameData->m_Players[i].SetDirection(0.0f, 90.0f);
+            m_GameData->m_Players[i].SetPosition(0.5f * m_GameData->m_Players[i].GetWidth() + 135.0f + 157.0f * i, 0.5f * m_GameData->m_Players[i].GetHeight() + 178.0f);
+        }
+    }
 }
 
 void CServer::ProcessGameData()
@@ -323,6 +342,8 @@ void CServer::ProcessGameData()
             }
         }
 
+        cout << "송수신완료" << endl;
+
         switch (m_GameData->m_State)
         {
         case GAME_STATE::WAITING:
@@ -332,6 +353,8 @@ void CServer::ProcessGameData()
             GameLoop();
             break;
         }
+        
+        cout << "루프완료" << endl;
 
         SetEvent(m_MainSyncHandle);
         ResetEvent(m_MainSyncHandle);
@@ -342,7 +365,7 @@ void CServer::WaitingLoop()
 {
     if (CheckAllPlayerReady())
     {
-        InitGame();
+        InitGameScene();
         m_GameData->m_State = GAME;
     }
 }
@@ -360,6 +383,7 @@ void CServer::GameLoop()
 
     if (CheckGameOver())
     {
+        InitWaitingScene();
         m_GameData->m_State = WAITING;
     }
 }
@@ -393,12 +417,14 @@ bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
     m_GameData->m_Players[ValidID].SetSocket(Socket);
     m_GameData->m_Players[ValidID].SetSocketAddress(SocketAddress);
     m_GameData->m_Players[ValidID].SetActive(true);
-    m_GameData->m_Players[ValidID].SetHp(100.0f);
+    m_GameData->m_Players[ValidID].SetReady(false);
     m_GameData->m_Players[ValidID].SetDirection(0.0f, 90.0f);
     m_GameData->m_Players[ValidID].SetPosition(0.5f * m_GameData->m_Players[ValidID].GetWidth() + 135.0f + 157.0f * ValidID, 0.5f * m_GameData->m_Players[ValidID].GetHeight() + 178.0f);
 
     // 가장 최근에 사용된 유효한 아이디를 갱신한다.
     m_RecentID = ValidID;
+    // 현재 플레이어 수 추가
+    m_PlayerCount++;
 
     return true;
 }
@@ -412,6 +438,7 @@ bool CServer::DestroyPlayer(int ID)
             // 매개변수로 넘어온 아이디를 가진 플레이어가 있다면 소켓을 NULL로 만들어 다른 클라이언트가 접속할 수 있게 한다.
             m_GameData->m_Players[i].SetSocket(NULL);
             m_GameData->m_Players[i].SetActive(false);
+            m_PlayerCount--;
             
             SetEvent(m_SyncHandles[i]);
 
@@ -425,19 +452,25 @@ bool CServer::DestroyPlayer(int ID)
 
 bool CServer::CheckAllPlayerReady()
 {
-    // 임시로 MAX_PLAYER가 접속하면 게임상태로 전환하도록 구현
-    // 이후, 준비완료 기능을 추가하여 아래 코드는 변경될 것임
+    // 플레이어가 한명 이하일 때는 시작을 하지않는다.
+    if (m_PlayerCount < 2)
+    {
+        return false;
+    }
+
+    int ReadyCount{};
+
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
-        if (!m_GameData->m_Players[i].GetSocket())
+        if (m_GameData->m_Players[i].GetSocket() && m_GameData->m_Players[i].IsReady() == true)
         {
-            break;
-        }
+            ReadyCount++;
+        }        
+    }
 
-        if (i == MAX_PLAYER - 1)
-        {
-            return true;
-        }
+    if (ReadyCount == m_PlayerCount)
+    {
+        return true;
     }
 
     return false;

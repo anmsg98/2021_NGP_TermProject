@@ -36,6 +36,7 @@ private:
     GameData*             m_GameData{};                  // 게임 데이터
 
     int                   m_Round{ 1 };                  // 현재 라운드
+    int                   m_PlayerCount{};               // 현재 접속한 플레이어 수
 
     const float           m_MonsterGenTime{ 480.0f };    // 몬스터가 생성되기 위해 도달해야 하는 시간
     float                 m_CurrentMonsterGenTime{};     // 현재 몬스터의 생성시간
@@ -59,7 +60,8 @@ public:
     void InitServer();                                                  // 윈속 초기화 및 서버 생성
     void InitEvent();                                                   // 이벤트 객체 생성
     void BuildObject();                                                 // 맵을 생성하고, 게임 내 모든 객체의 가로/세로 값 초기화
-    void InitGame();                                                    // 게임 내 모든 객체의 게임 정보 값 초기화
+    void InitGameScene();                                               // 게임 씬 객체 초기화
+    void InitWaitingScene();                                            // 대기실 씬 객체 초기화
 
     void ProcessGameData();                                             // 송수신 데이터를 처리하는 함수
     void WaitingLoop();                                                 // 대기실 게임 루프
