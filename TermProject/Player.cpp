@@ -117,7 +117,6 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 		if (m_Hp <= 0.0f)
 		{
 			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
-
 			BitmapRect.m_Left = BitmapRect.m_Width * FrameIndex;
 		}
 
@@ -136,14 +135,12 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 			POSITION Position{ GetPosition() };
 
 			Position.m_Y -= 0.4f * BitmapRect.m_Height;
-			BitmapRect = CFileManager::GetInstance()->GetRect("HP_1");
 
+			BitmapRect = CFileManager::GetInstance()->GetRect("HP_1");
 			DrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
 			BitmapRect = CFileManager::GetInstance()->GetRect("HP_2");
-
 			float CurrentWidth{ BitmapRect.m_Width * (m_Hp / m_MaxHp) };
-
 			FixedDrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, CurrentWidth, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 		}
 
