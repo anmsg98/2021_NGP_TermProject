@@ -135,7 +135,6 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 			POSITION Position{ GetPosition() };
 
 			Position.m_Y -= 0.4f * BitmapRect.m_Height;
-
 			BitmapRect = CFileManager::GetInstance()->GetRect("HP_1");
 			DrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
@@ -146,9 +145,10 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 
 		if (m_IsReady)
 		{
-			BitmapRect = CFileManager::GetInstance()->GetRect("BUTTON_READY");
 			POSITION Position{ GetPosition() };
-			Position.m_Y += 0.8f * BitmapRect.m_Height;
+
+			BitmapRect = CFileManager::GetInstance()->GetRect("BUTTON_READY");
+			Position.m_Y += BitmapRect.m_Height;
 			DrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 		}
 
