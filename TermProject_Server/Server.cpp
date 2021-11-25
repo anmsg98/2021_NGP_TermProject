@@ -142,9 +142,16 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     {
         Server->err_display("send()");
     }
-    
+  
+    LARGE_INTEGER StartTime{}, EndTime{};
+    LARGE_INTEGER Frequency{};
+
+    QueryPerformanceFrequency(&Frequency);
+
     while (true)
     {
+        QueryPerformanceCounter(&StartTime);
+
         ReturnValue = send(Player->GetSocket(), (char*)Server->m_GameData, sizeof(GameData), 0);
 
         if (ReturnValue == SOCKET_ERROR)
@@ -167,6 +174,15 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
 
         SetEvent(Server->m_SyncHandles[ID]);
         WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
+        QueryPerformanceCounter(&EndTime);
+
+        if (SERVER_LOCK_FPS > 0.0f)
+        {
+            while ((float)(EndTime.QuadPart - StartTime.QuadPart) < 1.0f / SERVER_LOCK_FPS)
+            {
+                QueryPerformanceCounter(&EndTime);
+            }
+        }
     }
 
     cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;

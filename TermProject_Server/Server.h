@@ -5,6 +5,7 @@
 #include "Item.h"
 
 #define SERVER_PORT            9000
+#define SERVER_LOCK_FPS       60.0f
 
 class CMap;
 
