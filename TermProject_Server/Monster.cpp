@@ -20,9 +20,6 @@ void CMonster::Animate()
 				{
 					m_IsCollided = false;
 					m_CollisionDuration = 0.0f;
-
-					SetDirection(m_PrevDirection.m_X, m_PrevDirection.m_Y);
-					SetLength(sqrtf(powf((float)GetDirection().m_X, 2) + powf((float)GetDirection().m_Y, 2)));
 				}
 			}
 			else
@@ -81,24 +78,9 @@ void CMonster::SetDirection(float DirX, float DirY)
 	SetDirection(VECTOR2D(DirX, DirY));
 }
 
-VECTOR2D CMonster::GetDirection() const
+const VECTOR2D& CMonster::GetDirection() const
 {
 	return m_Direction;
-}
-
-void CMonster::SetPrevDirection(const VECTOR2D& Direction)
-{
-	m_PrevDirection = Direction;
-}
-
-void CMonster::SetPrevDirection(float DirX, float DirY)
-{
-	SetPrevDirection(VECTOR2D(DirX, DirY));
-}
-
-VECTOR2D CMonster::GetPrevDirection() const
-{
-	return m_PrevDirection;
 }
 
 bool CMonster::IsCollided() const
@@ -106,8 +88,7 @@ bool CMonster::IsCollided() const
 	return m_IsCollided;
 }
 
-void CMonster::PrepareCollision()
+void CMonster::SetCollision(bool IsCollided)
 {
-	m_IsCollided = true;
-	m_CollisionDuration = 0.0f;
+	m_IsCollided = IsCollided;
 }

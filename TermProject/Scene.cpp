@@ -33,7 +33,7 @@ void CWaitingScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, 
 	switch (message)
 	{
 	case WM_MOUSEMOVE:
-		for (int i = 0; i < 2; ++i)
+		for (int i = 0; i < MAX_BUTTON; ++i)
 		{
 			if (m_Buttons[i]->GetPosition().m_X - 0.5f * m_Buttons[i]->GetWidth() <= m_CursorPos.x && m_CursorPos.x <= m_Buttons[i]->GetPosition().m_X + 0.5f * m_Buttons[i]->GetWidth() &&
 				m_Buttons[i]->GetPosition().m_Y - 0.5f * m_Buttons[i]->GetHeight() <= m_CursorPos.y && m_CursorPos.y <= m_Buttons[i]->GetPosition().m_Y + 0.5f * m_Buttons[i]->GetHeight())
@@ -58,7 +58,7 @@ void CWaitingScene::ProcessInput()
 
 	if (GetAsyncKeyState(MK_LBUTTON) & 0x0001)
 	{
-		for (int i = 0; i < 2; ++i)
+		for (int i = 0; i < MAX_BUTTON; ++i)
 		{
 			if (m_Buttons[i]->IsActive())
 			{
@@ -176,7 +176,7 @@ void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 void CGameScene::ProcessInput()
 {
-	POSITION Position{ m_GameData->m_Players[m_ID].GetPosition() };
+	VECTOR2D Position{ m_GameData->m_Players[m_ID].GetPosition() };
 	float Speed{ 3.0f };
 
 	// 플레이어의 위치 값 조정

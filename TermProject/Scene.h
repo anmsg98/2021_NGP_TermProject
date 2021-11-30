@@ -46,6 +46,7 @@ public:
 };
 
 // ============================================== CWaitingScene ==============================================
+#define MAX_BUTTON 2
 
 class CWaitingScene : public CScene
 {
@@ -53,7 +54,7 @@ private:
 	int						m_ID{};
 	CMap*					m_Map{};
 	GameData*				m_GameData{};
-	CButton*				m_Buttons[2]{};
+	CButton*				m_Buttons[MAX_BUTTON]{};
 
 public:
 	CWaitingScene() = default;

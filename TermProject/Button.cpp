@@ -53,17 +53,17 @@ int CButton::GetType() const
 	return m_Type;
 }
 
-void CButton::SetPosition(const POSITION& Position)
+void CButton::SetPosition(const VECTOR2D& Position)
 {
 	m_Position = Position;
 }
 
 void CButton::SetPosition(float Xpos, float Ypos)
 {
-	SetPosition(POSITION(Xpos, Ypos));
+	SetPosition(VECTOR2D(Xpos, Ypos));
 }
 
-const POSITION& CButton::GetPosition() const
+const VECTOR2D& CButton::GetPosition() const
 {
 	return m_Position;
 }

@@ -132,7 +132,7 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 		if (m_Hp > 0.0f)
 		{
 			// Ã¼·Â¹Ù
-			POSITION Position{ GetPosition() };
+			VECTOR2D Position{ GetPosition() };
 
 			Position.m_Y -= 0.4f * BitmapRect.m_Height;
 			BitmapRect = CFileManager::GetInstance()->GetRect("HP_1");
@@ -145,7 +145,7 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 
 		if (m_IsReady)
 		{
-			POSITION Position{ GetPosition() };
+			VECTOR2D Position{ GetPosition() };
 
 			BitmapRect = CFileManager::GetInstance()->GetRect("BUTTON_READY");
 			Position.m_Y += BitmapRect.m_Height;
@@ -228,12 +228,12 @@ VECTOR2D CPlayer::GetDirection() const
 
 bool CPlayer::IsGetItem() const
 {
-	return m_IsGetItem;
+	return m_GetItem;
 }
 
 void CPlayer::ReinforceBullet()
 {
-	m_IsGetItem = true;
+	m_GetItem = true;
 	m_ItemDuration = 0.0f;
 
 	for (int i = 0; i < MAX_BULLET; ++i)

@@ -17,7 +17,6 @@ private:
 	float			m_Length{};
 
 	VECTOR2D		m_Direction{};
-	VECTOR2D		m_PrevDirection{};
 
 	bool			m_IsCollided{};
 	float			m_CollisionDuration{};
@@ -37,12 +36,11 @@ public:
 
 	void SetDirection(const VECTOR2D& Direction);
 	void SetDirection(float DirX, float DirY);
-	VECTOR2D GetDirection() const;
-
-	void SetPrevDirection(const VECTOR2D& PrevDirection);
-	void SetPrevDirection(float PrevDirX, float PrevDirY);
-	VECTOR2D GetPrevDirection() const;
+	const VECTOR2D& GetDirection() const;
 
 	bool IsCollided() const;
-	void PrepareCollision();
+	void SetCollision(bool IsCollided);
+
+	void SetCollisionDuration(float Duration);
+	float GetCollisionDuration() const;
 };

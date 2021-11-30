@@ -22,7 +22,7 @@ void CTower::Render(HDC hMemDC, HDC hMemDC2)
 		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2,BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
 		// Ã¼·Â¹Ù
-		POSITION Position{ GetPosition() };
+		VECTOR2D Position{ GetPosition() };
 
 		Position.m_Y -= 0.6f * BitmapRect.m_Height;
 		BitmapRect = CFileManager::GetInstance()->GetRect("HP_1");

@@ -5,7 +5,7 @@ float RandF(float Min, float Max)
 	return Min + ((float)rand() / (float)RAND_MAX) * (Max - Min);
 }
 
-void DrawRect(HDC hMemDC, const POSITION& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor)
+void DrawRect(HDC hMemDC, const VECTOR2D& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor)
 {
 	int OriginX{ (int)(Position.m_X - 0.5f * Width) };
 	int OriginY{ (int)(Position.m_Y - 0.5f * Height) };
@@ -14,7 +14,7 @@ void DrawRect(HDC hMemDC, const POSITION& Position, float Width, float Height, H
 		hMemDC2, (int)Rect.m_Left, (int)Rect.m_Top, (int)Rect.m_Width, (int)Rect.m_Height, TransparentColor);
 }
 
-void FixedDrawRect(HDC hMemDC, const POSITION& Position, float FixedWidth, float FixedHeight, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor)
+void FixedDrawRect(HDC hMemDC, const VECTOR2D& Position, float FixedWidth, float FixedHeight, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor)
 {
 	int OriginX{ (int)(Position.m_X - 0.5f * FixedWidth) };
 	int OriginY{ (int)(Position.m_Y - 0.5f * FixedHeight) };
@@ -61,4 +61,22 @@ HBITMAP GetRotatedBitmap(HDC hDC, HBITMAP hBitmap, int SourceX, int SourceY, int
 	DeleteObject(DestDC);
 
 	return hResultBitmap;
+}
+
+namespace Vector
+{
+	float Distance(const VECTOR2D& Position1, const VECTOR2D& Position2)
+	{
+		return sqrtf(powf(Position2.m_X - Position1.m_X, 2) + powf(Position2.m_Y - Position1.m_Y, 2));
+	}
+
+	float Length(const VECTOR2D& Vector)
+	{
+		return sqrtf(powf(Vector.m_X, 2) + powf(Vector.m_Y, 2));
+	}
+
+	VECTOR2D Inverse(const VECTOR2D& Vector)
+	{
+		return VECTOR2D(-Vector.m_X, -Vector.m_Y);
+	}
 }

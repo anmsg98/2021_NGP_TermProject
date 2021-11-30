@@ -10,7 +10,7 @@ private:
 
 	int					m_Type;
 
-	POSITION			m_Position{};
+	VECTOR2D			m_Position{};
 	VECTOR2D			m_Size{};
 
 public:
@@ -25,9 +25,9 @@ public:
 	void SetType(int Type);
 	int GetType() const;
 
-	void SetPosition(const POSITION& Position);
+	void SetPosition(const VECTOR2D& Position);
 	void SetPosition(float Xpos, float Ypos);
-	const POSITION& GetPosition() const;
+	const VECTOR2D& GetPosition() const;
 
 	void SetSize(const VECTOR2D& Size);
 	const VECTOR2D& GetSize() const;

@@ -58,7 +58,7 @@ private:
 	const int			m_AnimationFrame{ 5 };
 	float				m_AnimationTime{};
 
-	bool				m_IsGetItem{};
+	bool				m_GetItem{};
 	float				m_ItemDuration{};
 
 	CBullet			    m_Bullets[MAX_BULLET]{};

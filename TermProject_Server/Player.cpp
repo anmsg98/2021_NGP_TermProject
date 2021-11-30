@@ -99,14 +99,14 @@ void CPlayer::Animate()
 	{
 		if (m_Hp > 0.0f)
 		{
-			if (m_IsGetItem)
+			if (m_GetItem)
 			{
 				m_ItemDuration += 1.0f;
 
 				// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
 				if (m_ItemDuration >= 10.0f)
 				{
-					m_IsGetItem = false;
+					m_GetItem = false;
 					m_ItemDuration = 0.0f;
 
 					for (int i = 0; i < MAX_BULLET; ++i)
@@ -201,12 +201,12 @@ VECTOR2D CPlayer::GetDirection() const
 
 bool CPlayer::IsGetItem() const
 {
-	return m_IsGetItem;
+	return m_GetItem;
 }
 
 void CPlayer::ReinforceBullet()
 {
-	m_IsGetItem = true;
+	m_GetItem = true;
 	m_ItemDuration = 0.0f;
 
 	for (int i = 0; i < MAX_BULLET; ++i)

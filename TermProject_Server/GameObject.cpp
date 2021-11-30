@@ -50,17 +50,17 @@ float CGameObject::GetHp() const
 	return m_Hp;
 }
 
-void CGameObject::SetPosition(const POSITION& Position)
+void CGameObject::SetPosition(const VECTOR2D& Position)
 {
 	m_Position = Position;
 }
 
 void CGameObject::SetPosition(float Xpos, float Ypos)
 {
-	SetPosition(POSITION(Xpos, Ypos));
+	SetPosition(VECTOR2D(Xpos, Ypos));
 }
 
-const POSITION& CGameObject::GetPosition() const
+const VECTOR2D& CGameObject::GetPosition() const
 {
 	return m_Position;
 }

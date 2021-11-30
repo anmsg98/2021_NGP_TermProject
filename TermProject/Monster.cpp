@@ -24,18 +24,18 @@ void CMonster::Render(HDC hMemDC, HDC hMemDC2)
 			BitmapRect = CFileManager::GetInstance()->GetRect("MONSTER_3");
 			break;
 		}
-		
+
 		if (m_Hp <= 0.0f)
 		{
 			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
-			
+
 			BitmapRect.m_Left = BitmapRect.m_Width * FrameIndex;
 		}
 
 		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
 		// Ã¼·Â¹Ù
-		POSITION Position{ GetPosition() };
+		VECTOR2D Position{ GetPosition() };
 
 		Position.m_Y -= 0.5f * BitmapRect.m_Height;
 		BitmapRect = CFileManager::GetInstance()->GetRect("HP_1");
@@ -87,24 +87,9 @@ void CMonster::SetDirection(float DirX, float DirY)
 	SetDirection(VECTOR2D(DirX, DirY));
 }
 
-VECTOR2D CMonster::GetDirection() const
+const VECTOR2D& CMonster::GetDirection() const
 {
 	return m_Direction;
-}
-
-void CMonster::SetPrevDirection(const VECTOR2D& Direction)
-{
-	m_PrevDirection = Direction;
-}
-
-void CMonster::SetPrevDirection(float DirX, float DirY)
-{
-	SetPrevDirection(VECTOR2D(DirX, DirY));
-}
-
-VECTOR2D CMonster::GetPrevDirection() const
-{
-	return m_PrevDirection;
 }
 
 bool CMonster::IsCollided() const
@@ -112,8 +97,7 @@ bool CMonster::IsCollided() const
 	return m_IsCollided;
 }
 
-void CMonster::PrepareCollision()
+void CMonster::SetCollision(bool IsCollided)
 {
-	m_IsCollided = true;
-	m_CollisionDuration = 0.0f;
+	m_IsCollided = IsCollided;
 }
