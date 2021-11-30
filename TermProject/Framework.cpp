@@ -226,7 +226,7 @@ void CFramework::ChangeScene(int PrevState)
 
 void CFramework::Update()
 {
-	int PreState{ m_GameData->m_State };
+	int PrevState{ m_GameData->m_State };
 	int ReturnValue{};
 
 	ReturnValue = recvn(m_Socket, (char*)m_GameData, sizeof(GameData), 0);
@@ -236,7 +236,7 @@ void CFramework::Update()
 		err_display("recv()");
 	}
 
-	ChangeScene(PreState);
+	ChangeScene(PrevState);
 	ProcessInput();
 
 	ReturnValue = send(m_Socket, (char*)&m_GameData->m_Players[m_ID], sizeof(CPlayer), 0);

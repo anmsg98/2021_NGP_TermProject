@@ -11,7 +11,7 @@ enum GAME_STATE { WAITING, GAME };
 
 struct GameData
 {
-	int                 m_State;
+	int                 m_State{ WAITING };
 
 	CPlayer				m_Players[MAX_PLAYER]{};
 	CTower				m_Tower{};
