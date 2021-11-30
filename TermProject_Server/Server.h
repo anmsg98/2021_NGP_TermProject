@@ -25,13 +25,14 @@ struct GameData
 class CServer
 {
 private:
-    static int            m_RecentID;                    // 가장 최근에 플레이어에게 설정된 아이디
+    int                   m_RecentID{};                  // 가장 최근에 플레이어에게 설정된 아이디
 
     SOCKET                m_ListenSocket{};              // 클라이언트를 수용하기 위한 대기 소켓
     SOCKADDR_IN           m_SocketAddress{};             // 서버의 소켓 주소 구조체
 
     HANDLE                m_MainSyncHandle{};            // 주스레드의 동기화를 위한 핸들
     HANDLE                m_SyncHandles[MAX_PLAYER]{};   // 각 스레드함수의 동기화를 위한 핸들
+    HANDLE                m_ControlHandle{};             // 스레드 간의 속도차로 인해 생기는 문제를 해결하기 위한 핸들
 
     CMap*                 m_Map{};
     GameData*             m_GameData{};                  // 게임 데이터

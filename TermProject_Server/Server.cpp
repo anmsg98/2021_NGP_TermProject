@@ -3,8 +3,6 @@
 #include "Map.h"
 #include "FileManager.h"
 
-int CServer::m_RecentID;
-
 CServer::CServer()
 {
     CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
@@ -132,7 +130,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     CServer* Server{ (CServer*)Arg };
 
     // 아이디로부터 가장 최근에 접속한 클라이언트의 플레이어 데이터를 가져온다.
-    CPlayer* Player{ &Server->m_GameData->m_Players[m_RecentID] };
+    CPlayer* Player{ &Server->m_GameData->m_Players[Server->m_RecentID] };
     int ID{ Player->GetID() };
 
     // 최초로 클라이언트에게 초기화된 플레이어의 아이디를 보낸다.
@@ -150,6 +148,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
 
     while (true)
     {
+        WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
         QueryPerformanceCounter(&StartTime);
 
         ReturnValue = send(Player->GetSocket(), (char*)Server->m_GameData, sizeof(GameData), 0);
@@ -172,17 +171,18 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
             break;
         }
 
-        SetEvent(Server->m_SyncHandles[ID]);
-        WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
         QueryPerformanceCounter(&EndTime);
 
         if (SERVER_LOCK_FPS > 0.0f)
         {
-            while ((float)(EndTime.QuadPart - StartTime.QuadPart) < 1.0f / SERVER_LOCK_FPS)
+            while ((float)(EndTime.QuadPart - StartTime.QuadPart) / Frequency.QuadPart < 1.0f / SERVER_LOCK_FPS)
             {
                 QueryPerformanceCounter(&EndTime);
             }
         }
+
+        SetEvent(Server->m_SyncHandles[ID]);
+        WaitForSingleObject(Server->m_ControlHandle, INFINITE);
     }
 
     cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;
@@ -246,7 +246,8 @@ void CServer::InitServer()
 
 void CServer::InitEvent()
 {
-    m_MainSyncHandle = CreateEvent(NULL, TRUE, FALSE, NULL);
+    m_MainSyncHandle = CreateEvent(NULL, TRUE, TRUE, NULL);
+    m_ControlHandle = CreateEvent(NULL, TRUE, FALSE, NULL);
 
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
@@ -356,6 +357,7 @@ void CServer::ProcessGameData()
 {
     while (true)
     {
+        //WaitForMultipleObjects(1, m_SyncHandles, TRUE, INFINITE);
         for (int i = 0; i < MAX_PLAYER; ++i)
         {
             if (m_GameData->m_Players[i].GetSocket())
@@ -363,6 +365,9 @@ void CServer::ProcessGameData()
                 WaitForSingleObject(m_SyncHandles[i], INFINITE);
             }
         }
+
+        ResetEvent(m_MainSyncHandle);
+        SetEvent(m_ControlHandle);
 
         switch (m_GameData->m_State)
         {
@@ -373,9 +378,9 @@ void CServer::ProcessGameData()
             GameLoop();
             break;
         }
-        
+       
+        ResetEvent(m_ControlHandle);
         SetEvent(m_MainSyncHandle);
-        ResetEvent(m_MainSyncHandle);
     }
 }
 
