@@ -312,8 +312,8 @@ void CServer::InitGameScene()
 {
     // 타워를 초기화한다.
     m_GameData->m_Tower.SetActive(true);
-    m_GameData->m_Tower.SetMaxHp(5000.0f);
-    m_GameData->m_Tower.SetHp(5000.0f);
+    m_GameData->m_Tower.SetMaxHp(999999.0f);
+    m_GameData->m_Tower.SetHp(999999.0f);
     m_GameData->m_Tower.SetPosition(0.5f * m_Map->GetRect().right, 0.5f * m_Map->GetRect().bottom);
 
     // 모든 플레이어를 초기화한다.
@@ -396,6 +396,7 @@ void CServer::GameLoop()
 {
     UpdateRound();
 
+    SetMonstersTarget();
     Animate();
 
     CheckPlayerByMonsterCollision();
@@ -478,10 +479,10 @@ bool CServer::DestroyPlayer(int ID)
 bool CServer::CheckAllPlayerReady()
 {
     // 플레이어가 한명이하일 때는 시작하지 않는다.
-    if (m_PlayerCount <= 1)
-    {
-        return false;
-    }
+    //if (m_PlayerCount <= 1)
+    //{
+    //    return false;
+    //}
 
     int ReadyCount{};
 
@@ -583,8 +584,8 @@ void CServer::CreateMonster()
 
                 m_GameData->m_Monsters[i].SetActive(true);
                 m_GameData->m_Monsters[i].SetType(Type);
-                m_GameData->m_Monsters[i].SetMaxHp(1.0f * Type * m_Round);
-                m_GameData->m_Monsters[i].SetHp(1.0f * Type * m_Round);
+                m_GameData->m_Monsters[i].SetMaxHp(20.0f * Type * m_Round);
+                m_GameData->m_Monsters[i].SetHp(20.0f * Type * m_Round);
 
                 Type = rand() % 4;
 
@@ -605,8 +606,10 @@ void CServer::CreateMonster()
                 }
 
                 // 맵의 중앙을 도착점으로 지정
-                m_GameData->m_Monsters[i].SetDirection((float)m_Map->GetRect().right * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_X, (float)m_Map->GetRect().bottom * 0.5f - m_GameData->m_Monsters[i].GetPosition().m_Y);
-                m_GameData->m_Monsters[i].SetLength(sqrtf(powf((float)m_GameData->m_Monsters[i].GetDirection().m_X, 2) + powf((float)m_GameData->m_Monsters[i].GetDirection().m_Y, 2)));
+                VECTOR2D TowerPosition{ m_GameData->m_Tower.GetPosition() };
+
+                m_GameData->m_Monsters[i].SetDirection(TowerPosition - m_GameData->m_Monsters[i].GetPosition());
+                m_GameData->m_Monsters[i].SetLength(Vector::Length(m_GameData->m_Monsters[i].GetDirection()));
 
                 ++GenCount;
 
@@ -651,6 +654,47 @@ void CServer::CreateItem()
     }
 }
 
+void CServer::SetMonstersTarget()
+{
+    for (int i = 0; i < MAX_MONSTER; ++i)
+    {
+        // 생존해 있고, 충돌하지 않은 몬스터에 대해서만 검사한다.
+        if (m_GameData->m_Monsters[i].IsActive() && !m_GameData->m_Monsters[i].IsCollided())
+        {
+            VECTOR2D MonsterPosition{ m_GameData->m_Monsters[i].GetPosition() };
+            bool IsTargeted{};
+
+            for (int j = 0; j < MAX_PLAYER; ++j)
+            {
+                // 서버와 연결 중이고 생존한 플레이어에 대해서만 검사한다.
+                if (m_GameData->m_Players[j].GetSocket() && m_GameData->m_Players[j].IsActive())
+                {
+                    VECTOR2D PlayerPosition{ m_GameData->m_Players[j].GetPosition() };
+                    float Dist{ Vector::Distance(MonsterPosition, PlayerPosition) };
+
+                    // 두 점사이의 거리가 300.0f이하면 플레이어를 향하도록 설정한다.
+                    if (Dist <= 300.0f)
+                    {
+                        m_GameData->m_Monsters[i].SetDirection(PlayerPosition - MonsterPosition);
+                        m_GameData->m_Monsters[i].SetLength(Vector::Length(m_GameData->m_Monsters[i].GetDirection()));
+
+                        IsTargeted = true;
+                    }
+                }
+            }
+
+            // 방향이 재설정되지 못했다면, 타워를 향하도록 설정한다.
+            if (!IsTargeted)
+            {
+                VECTOR2D TowerPosition{ m_GameData->m_Tower.GetPosition() };
+
+                m_GameData->m_Monsters[i].SetDirection(TowerPosition - MonsterPosition);
+                m_GameData->m_Monsters[i].SetLength(Vector::Length(m_GameData->m_Monsters[i].GetDirection()));
+            }
+        }
+    }
+}
+
 void CServer::CheckPlayerByMonsterCollision()
 {
     for (int i = 0; i < MAX_PLAYER; ++i)
@@ -677,8 +721,7 @@ void CServer::CheckPlayerByMonsterCollision()
                     if (IntersectRect(&CollidedRect, &PlayerRect, &MonsterRect))
                     {
                         m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() - 2.5f * m_GameData->m_Monsters[i].GetType());
-                        m_GameData->m_Monsters[j].PrepareCollision();
-                        m_GameData->m_Monsters[j].SetPrevDirection(m_GameData->m_Monsters[j].GetDirection().m_X, m_GameData->m_Monsters[j].GetDirection().m_Y);
+                        m_GameData->m_Monsters[j].SetCollision(true);
                         m_GameData->m_Monsters[j].SetDirection(-m_GameData->m_Monsters[j].GetDirection().m_X, -m_GameData->m_Monsters[j].GetDirection().m_Y);
                     }
                 }
@@ -719,11 +762,10 @@ void CServer::CheckBulletByMonsterCollision()
                             {
                                 Bullets[j].PrepareCollision();
 
-                                m_GameData->m_Monsters[k].PrepareCollision();
-                                m_GameData->m_Monsters[k].SetHp(m_GameData->m_Monsters[k].GetHp() - Bullets[j].GetAttackPower());
-                                m_GameData->m_Monsters[k].SetPrevDirection(m_GameData->m_Monsters[k].GetDirection().m_X, m_GameData->m_Monsters[k].GetDirection().m_Y);
+                                m_GameData->m_Monsters[k].SetCollision(true);
                                 m_GameData->m_Monsters[k].SetDirection(Bullets[j].GetDirection().m_X, Bullets[j].GetDirection().m_Y);
                                 m_GameData->m_Monsters[k].SetLength(Bullets[j].GetLength());
+                                m_GameData->m_Monsters[k].SetHp(m_GameData->m_Monsters[k].GetHp() - Bullets[j].GetAttackPower());
 
                                 if (m_GameData->m_Monsters[k].GetHp() <= 0.0f)
                                 {
@@ -760,9 +802,8 @@ void CServer::CheckTowerByMonsterCollision()
                 if (IntersectRect(&CollidedRect, &TowerRect, &MonsterRect))
                 {
                     m_GameData->m_Tower.SetHp(m_GameData->m_Tower.GetHp() - 10.0f * m_GameData->m_Monsters[i].GetType());
-                    m_GameData->m_Monsters[i].PrepareCollision();
-                    m_GameData->m_Monsters[i].SetPrevDirection(m_GameData->m_Monsters[i].GetDirection().m_X, m_GameData->m_Monsters[i].GetDirection().m_Y);
-                    m_GameData->m_Monsters[i].SetDirection(-m_GameData->m_Monsters[i].GetDirection().m_X, -m_GameData->m_Monsters[i].GetDirection().m_Y);
+                    m_GameData->m_Monsters[i].SetCollision(true);
+                    m_GameData->m_Monsters[i].SetDirection(Vector::Inverse(m_GameData->m_Monsters[i].GetDirection()));
                 }
             }
         }

@@ -34,13 +34,13 @@ private:
     HANDLE                m_SyncHandles[MAX_PLAYER]{};   // 각 스레드함수의 동기화를 위한 핸들
     HANDLE                m_ControlHandle{};             // 스레드 간의 속도차로 인해 생기는 문제를 해결하기 위한 핸들
 
-    CMap*                 m_Map{};
+    CMap*                 m_Map{};                       // 게임 맵
     GameData*             m_GameData{};                  // 게임 데이터
 
     int                   m_Round{ 1 };                  // 현재 라운드
     int                   m_PlayerCount{};               // 현재 접속한 플레이어 수
 
-    const float           m_MonsterGenTime{ 480.0f };    // 몬스터가 생성되기 위해 도달해야 하는 시간
+    const float           m_MonsterGenTime{ 300.0f };    // 몬스터가 생성되기 위해 도달해야 하는 시간
     float                 m_CurrentMonsterGenTime{};     // 현재 몬스터의 생성시간
     int                   m_TotalMonsterCount{};         // 총 몬스터의 수
     int                   m_CurrentMonsterCount{};       // 현재 필드위에 존재하는 몬스터의 수
@@ -81,6 +81,7 @@ public:
     void CreateMonster();                                               // 일정 주기로 몬스터를 생성하는 함수
     void CreateItem();                                                  // 일정 주기로 아이템을 생성하는 함수
 
+    void SetMonstersTarget();                                           // 몬스터 객체의 타겟을 설정하여 방향을 결정하는 함수
     void Animate();                                                     // 게임 내 모든 객체의 움직임을 처리하는 함수
 
     void CheckPlayerByMonsterCollision();                               // 플레이어와 몬스터 간 충돌 검사 및 후처리
