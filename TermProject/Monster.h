@@ -11,12 +11,11 @@ public:
 private:
 	int				m_Type{};
 
+	float			m_Length{};
+	VECTOR2D		m_Direction{};
+
 	const int		m_AnimationFrame{ 5 };
 	float			m_AnimationTime{};
-
-	float			m_Length{};
-
-	VECTOR2D		m_Direction{};
 
 	bool			m_IsCollided{};
 	float			m_CollisionDuration{};
@@ -40,7 +39,4 @@ public:
 
 	bool IsCollided() const;
 	void SetCollision(bool IsCollided);
-
-	void SetCollisionDuration(float Duration);
-	float GetCollisionDuration() const;
 };
