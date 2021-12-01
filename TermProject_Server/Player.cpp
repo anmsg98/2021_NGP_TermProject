@@ -104,7 +104,7 @@ void CPlayer::Animate()
 				m_ItemDuration += 1.0f;
 
 				// 아이템의 지속시간이 넘어가면 원래대로 되돌린다.
-				if (m_ItemDuration >= 10.0f)
+				if (m_ItemDuration >= 480.0f)
 				{
 					m_GetItem = false;
 					m_ItemDuration = 0.0f;
