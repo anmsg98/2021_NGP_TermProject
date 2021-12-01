@@ -6,7 +6,7 @@
 #include "Resource.h"
 
 // 거의 사용되지 않는 내용을 Windows 헤더에서 제외합니다.
-#define WIN32_LEAN_AND_MEAN      
+#define WIN32_LEAN_AND_MEAN
 
 // Windows 헤더 파일
 #include <winsock2.h>
@@ -28,6 +28,11 @@
 #include <ctime>
 
 using namespace std;
+
+// FMOD 사운드 헤더 파일입니다.
+#include "fmod.hpp"
+
+using namespace FMOD;
 
 #define CLIENT_WIDTH	      800
 #define CLIENT_HEIGHT		  600

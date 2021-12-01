@@ -27,7 +27,11 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 		else
 		{
 			BitmapRect = CFileManager::GetInstance()->GetRect("BULLET");
-			BitmapRect.m_Left += BitmapRect.m_Width * (int)(m_AttackPower / 30.0f);
+			
+			if (m_AttackPower > 10.0f)
+			{
+				BitmapRect.m_Left += BitmapRect.m_Width;
+			}
 
 			DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 		}
@@ -258,6 +262,8 @@ void CPlayer::FireBullet(const POINT& CursorPos)
 			m_Bullets[m_BulletIndex].SetLength(sqrtf(powf(m_Bullets[m_BulletIndex].GetDirection().m_X, 2) + powf(m_Bullets[m_BulletIndex].GetDirection().m_Y, 2)));
 			m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirection().m_X / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
 											     GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().m_Y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
+	
+			CSoundManager::GetInstance()->Play(CSoundManager::BULLET_SOUND, 0.5f);
 		}
 	}
 

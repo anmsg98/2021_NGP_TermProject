@@ -38,6 +38,11 @@ void CWaitingScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, 
 			if (m_Buttons[i]->GetPosition().m_X - 0.5f * m_Buttons[i]->GetWidth() <= m_CursorPos.x && m_CursorPos.x <= m_Buttons[i]->GetPosition().m_X + 0.5f * m_Buttons[i]->GetWidth() &&
 				m_Buttons[i]->GetPosition().m_Y - 0.5f * m_Buttons[i]->GetHeight() <= m_CursorPos.y && m_CursorPos.y <= m_Buttons[i]->GetPosition().m_Y + 0.5f * m_Buttons[i]->GetHeight())
 			{
+				if (!m_Buttons[i]->IsActive())
+				{
+					CSoundManager::GetInstance()->Play(CSoundManager::BUTTON_SOUND, 0.6f);
+				}
+
 				m_Buttons[i]->SetActive(true);
 			}
 			else
@@ -51,11 +56,6 @@ void CWaitingScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, 
 
 void CWaitingScene::ProcessInput()
 {
-	if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
-	{
-		PostQuitMessage(0);
-	}
-
 	if (GetAsyncKeyState(MK_LBUTTON) & 0x0001)
 	{
 		for (int i = 0; i < MAX_BUTTON; ++i)

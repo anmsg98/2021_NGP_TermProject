@@ -36,6 +36,10 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 	m_WaitingScene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
 
 	m_Scenes.push(m_WaitingScene);
+
+	// 사운드 관리자의 인스턴스를 생성하고 타이틀 배경음악을 재생시킨다.
+	CSoundManager::GetInstance()->Init();
+	CSoundManager::GetInstance()->Play(CSoundManager::TITLE_BACKGROUND_SOUND, 0.5f);
 }
 
 void CFramework::OnDestroy()
@@ -192,7 +196,7 @@ void CFramework::ProcessInput()
 
 void CFramework::PrepareRender()
 {
-	InvalidateRect(m_hWnd, &m_ClientRect, false);
+	InvalidateRect(m_hWnd, &m_ClientRect, false);	
 	UpdateWindow(m_hWnd);
 }
 
@@ -215,10 +219,14 @@ void CFramework::ChangeScene(int PrevState)
 	{
 		if (PrevState == WAITING && m_GameData->m_State == GAME)
 		{
+			CSoundManager::GetInstance()->Stop(CSoundManager::TITLE_BACKGROUND_SOUND);
+			CSoundManager::GetInstance()->Play(CSoundManager::GAME_BACKGROUND_SOUND, 0.5f);
 			m_Scenes.push(m_GameScene);
 		}
 		else if (PrevState == GAME && m_GameData->m_State == WAITING)
 		{
+			CSoundManager::GetInstance()->Stop(CSoundManager::GAME_BACKGROUND_SOUND);
+			CSoundManager::GetInstance()->Play(CSoundManager::TITLE_BACKGROUND_SOUND, 0.5f);
 			m_Scenes.pop();
 		}
 	}

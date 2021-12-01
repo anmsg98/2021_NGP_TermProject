@@ -1,5 +1,6 @@
 #pragma once
 #include "FileManager.h"
+#include "SoundManager.h"
 
 class CGameObject
 {
