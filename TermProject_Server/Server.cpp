@@ -362,7 +362,7 @@ void CServer::ProcessGameData()
         {
             if (m_GameData->m_Players[i].GetSocket())
             {
-                WaitForSingleObject(m_SyncHandles[i], INFINITE);
+                WaitForSingleObject(m_SyncHandles[i], 50);
             }
         }
 
@@ -630,7 +630,7 @@ void CServer::CreateMonster()
 
 void CServer::CreateItem()
 {
-    m_CurrentItemGenTime += 0.01f;
+    m_CurrentItemGenTime += 1.0f;
 
     if (m_CurrentItemGenTime >= m_ItemGenTime)
     {
@@ -643,8 +643,8 @@ void CServer::CreateItem()
 
                 m_GameData->m_Items[i].SetActive(true);
                 m_GameData->m_Items[i].SetType(Type);
-                m_GameData->m_Items[i].SetMaxHp(60.0f);
-                m_GameData->m_Items[i].SetHp(60.0f);
+                m_GameData->m_Items[i].SetMaxHp(900.0f);
+                m_GameData->m_Items[i].SetHp(900.0f);
                 m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
 
                 break;
@@ -672,8 +672,8 @@ void CServer::SetMonstersTarget()
                     VECTOR2D PlayerPosition{ m_GameData->m_Players[j].GetPosition() };
                     float Dist{ Vector::Distance(MonsterPosition, PlayerPosition) };
 
-                    // 두 점사이의 거리가 300.0f이하면 플레이어를 향하도록 설정한다.
-                    if (Dist <= 300.0f)
+                    // 두 점사이의 거리가 200.0f이하면 플레이어를 향하도록 설정한다.
+                    if (Dist <= 200.0f)
                     {
                         m_GameData->m_Monsters[i].SetDirection(PlayerPosition - MonsterPosition);
                         m_GameData->m_Monsters[i].SetLength(Vector::Length(m_GameData->m_Monsters[i].GetDirection()));
