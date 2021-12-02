@@ -30,9 +30,8 @@ private:
     SOCKET                m_ListenSocket{};              // 클라이언트를 수용하기 위한 대기 소켓
     SOCKADDR_IN           m_SocketAddress{};             // 서버의 소켓 주소 구조체
 
-    HANDLE                m_MainSyncHandle{};            // 주스레드의 동기화를 위한 핸들
+    HANDLE                m_MainSyncHandles[2]{};        // 주스레드의 동기화를 위한 핸들(대칭구조를 갖는다.)
     HANDLE                m_SyncHandles[MAX_PLAYER]{};   // 각 스레드함수의 동기화를 위한 핸들
-    HANDLE                m_ControlHandle{};             // 스레드 간의 속도차로 인해 생기는 문제를 해결하기 위한 핸들
 
     CMap*                 m_Map{};                       // 게임 맵
     GameData*             m_GameData{};                  // 게임 데이터

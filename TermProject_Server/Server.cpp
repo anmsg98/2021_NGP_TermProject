@@ -3,6 +3,9 @@
 #include "Map.h"
 #include "FileManager.h"
 
+LARGE_INTEGER StartTime{}, EndTime{};
+LARGE_INTEGER Frequency{};
+
 CServer::CServer()
 {
     CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
@@ -141,15 +144,9 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
         Server->err_display("send()");
     }
   
-    LARGE_INTEGER StartTime{}, EndTime{};
-    LARGE_INTEGER Frequency{};
-
-    QueryPerformanceFrequency(&Frequency);
-
     while (true)
     {
-        WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
-        QueryPerformanceCounter(&StartTime);
+        WaitForSingleObject(Server->m_MainSyncHandles[0], INFINITE);
 
         ReturnValue = send(Player->GetSocket(), (char*)Server->m_GameData, sizeof(GameData), 0);
 
@@ -171,18 +168,8 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
             break;
         }
 
-        QueryPerformanceCounter(&EndTime);
-
-        if (SERVER_LOCK_FPS > 0.0f)
-        {
-            while ((float)(EndTime.QuadPart - StartTime.QuadPart) / Frequency.QuadPart < 1.0f / SERVER_LOCK_FPS)
-            {
-                QueryPerformanceCounter(&EndTime);
-            }
-        }
-
         SetEvent(Server->m_SyncHandles[ID]);
-        WaitForSingleObject(Server->m_ControlHandle, INFINITE);
+        WaitForSingleObject(Server->m_MainSyncHandles[1], INFINITE);
     }
 
     cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;
@@ -242,12 +229,16 @@ void CServer::InitServer()
     {
         CloseHandle(hThread);
     }
+
+
+
+    QueryPerformanceFrequency(&Frequency);
 }
 
 void CServer::InitEvent()
 {
-    m_MainSyncHandle = CreateEvent(NULL, TRUE, TRUE, NULL);
-    m_ControlHandle = CreateEvent(NULL, TRUE, FALSE, NULL);
+    m_MainSyncHandles[0] = CreateEvent(NULL, TRUE, TRUE, NULL);
+    m_MainSyncHandles[1] = CreateEvent(NULL, TRUE, FALSE, NULL);
 
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
@@ -357,17 +348,30 @@ void CServer::ProcessGameData()
 {
     while (true)
     {
-        //WaitForMultipleObjects(1, m_SyncHandles, TRUE, INFINITE);
+        QueryPerformanceCounter(&StartTime);
+
         for (int i = 0; i < MAX_PLAYER; ++i)
         {
             if (m_GameData->m_Players[i].GetSocket())
             {
-                WaitForSingleObject(m_SyncHandles[i], 50);
+                WaitForSingleObject(m_SyncHandles[i], INFINITE);
             }
         }
 
-        ResetEvent(m_MainSyncHandle);
-        SetEvent(m_ControlHandle);
+        QueryPerformanceCounter(&EndTime);
+
+        if (SERVER_LOCK_FPS > 0.0f)
+        {
+            while ((float)(EndTime.QuadPart - StartTime.QuadPart) / Frequency.QuadPart < 1.0f / SERVER_LOCK_FPS)
+            {
+                QueryPerformanceCounter(&EndTime);
+            }
+        }
+
+        cout << "FPS : " << (float)(EndTime.QuadPart - StartTime.QuadPart) / Frequency.QuadPart << endl;
+
+        ResetEvent(m_MainSyncHandles[0]);
+        SetEvent(m_MainSyncHandles[1]);
 
         switch (m_GameData->m_State)
         {
@@ -379,8 +383,8 @@ void CServer::ProcessGameData()
             break;
         }
        
-        ResetEvent(m_ControlHandle);
-        SetEvent(m_MainSyncHandle);
+        ResetEvent(m_MainSyncHandles[1]);
+        SetEvent(m_MainSyncHandles[0]);
     }
 }
 
@@ -550,14 +554,14 @@ void CServer::UpdateRound()
 
     if (m_TotalMonsterCount == 30 && m_CurrentMonsterCount == 0)
     {
-        cout << "==== " << m_Round << " ROUND CLEAR ====" << endl;
+        //cout << "==== " << m_Round << " ROUND CLEAR ====" << endl;
 
         ++m_Round;
         m_TotalMonsterCount = 0;
     }
     else
     {
-        cout << "\r현재 몬스터 수 / 총 몬스터 수 : " << m_CurrentMonsterCount << " / " << m_TotalMonsterCount;
+        //cout << "\r현재 몬스터 수 / 총 몬스터 수 : " << m_CurrentMonsterCount << " / " << m_TotalMonsterCount;
     }
 }
 
