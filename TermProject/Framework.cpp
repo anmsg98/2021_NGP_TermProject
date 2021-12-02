@@ -29,17 +29,14 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 	CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
 
 	// 씬을 생성한다.
-	m_GameScene = new CGameScene{};
-	m_GameScene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
+	CScene* Scene{ new CWaitingScene{} };
 
-	m_WaitingScene = new CWaitingScene{};
-	m_WaitingScene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
-
-	m_Scenes.push(m_WaitingScene);
+	Scene->OnCreate(hInstance, hWnd, m_ID, m_GameData);
+	m_Scenes.push(Scene);
 
 	// 사운드 관리자의 인스턴스를 생성하고 타이틀 배경음악을 재생시킨다.
 	CSoundManager::GetInstance()->Init();
-	CSoundManager::GetInstance()->Play(CSoundManager::TITLE_BACKGROUND_SOUND, 0.5f);
+	CSoundManager::GetInstance()->Play(CSoundManager::WAITING_BACKGROUND_SOUND, 0.5f);
 }
 
 void CFramework::OnDestroy()
@@ -217,17 +214,23 @@ void CFramework::ChangeScene(int PrevState)
 {
 	if (PrevState != m_GameData->m_State)
 	{
-		if (PrevState == WAITING && m_GameData->m_State == GAME)
+		if (PrevState == WAITING && m_GameData->m_State == INGAME)
 		{
-			CSoundManager::GetInstance()->Stop(CSoundManager::TITLE_BACKGROUND_SOUND);
+			CScene* Scene{ new CGameScene{} };
+
+			Scene->OnCreate(m_hInstance, m_hWnd, m_ID, m_GameData);
+			m_Scenes.push(Scene);
+
+			CSoundManager::GetInstance()->Stop(CSoundManager::WAITING_BACKGROUND_SOUND);
 			CSoundManager::GetInstance()->Play(CSoundManager::GAME_BACKGROUND_SOUND, 0.5f);
-			m_Scenes.push(m_GameScene);
 		}
-		else if (PrevState == GAME && m_GameData->m_State == WAITING)
+		else if (PrevState == INGAME && m_GameData->m_State == WAITING)
 		{
-			CSoundManager::GetInstance()->Stop(CSoundManager::GAME_BACKGROUND_SOUND);
-			CSoundManager::GetInstance()->Play(CSoundManager::TITLE_BACKGROUND_SOUND, 0.5f);
+			m_Scenes.top()->OnDestroy();
 			m_Scenes.pop();
+
+			CSoundManager::GetInstance()->Stop(CSoundManager::GAME_BACKGROUND_SOUND);
+			CSoundManager::GetInstance()->Play(CSoundManager::WAITING_BACKGROUND_SOUND, 0.5f);
 		}
 	}
 }
@@ -246,6 +249,7 @@ void CFramework::Update()
 
 	ChangeScene(PrevState);
 	ProcessInput();
+	PrepareRender();
 
 	ReturnValue = send(m_Socket, (char*)&m_GameData->m_Players[m_ID], sizeof(CPlayer), 0);
 
@@ -253,6 +257,4 @@ void CFramework::Update()
 	{
 		err_display("send()");
 	}
-
-	PrepareRender();
 }
