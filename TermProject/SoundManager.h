@@ -1,15 +1,18 @@
 #pragma once
-#define MAX_SOUND 4
+#define MAX_SOUND 7
 
 class CSoundManager
 {
 public:
 	enum
 	{
-		TITLE_BACKGROUND_SOUND,
+		WAITING_BACKGROUND_SOUND,
 		GAME_BACKGROUND_SOUND,
 		BUTTON_SOUND,
-		BULLET_SOUND
+		BULLET_SOUND,
+		MONSTER_DEAD_SOUND,
+		EXPLOSION_SOUND,
+		ITEM_DROP_SOUND
 	};
 
 private:
