@@ -148,7 +148,6 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
 
     while (true)
     {
-        WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
         QueryPerformanceCounter(&StartTime);
 
         ReturnValue = send(Player->GetSocket(), (char*)Server->m_GameData, sizeof(GameData), 0);
@@ -181,8 +180,9 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
             }
         }
 
-        SetEvent(Server->m_SyncHandles[ID]);
         WaitForSingleObject(Server->m_ControlHandle, INFINITE);
+        SetEvent(Server->m_SyncHandles[ID]);
+        WaitForSingleObject(Server->m_MainSyncHandle, INFINITE);
     }
 
     cout << "[클라이언트 종료] " << "IP : " << inet_ntoa(Player->GetSocketAddress().sin_addr) << ", 포트번호 : " << ntohs(Player->GetSocketAddress().sin_port) << endl;
@@ -246,7 +246,7 @@ void CServer::InitServer()
 
 void CServer::InitEvent()
 {
-    m_MainSyncHandle = CreateEvent(NULL, TRUE, TRUE, NULL);
+    m_MainSyncHandle = CreateEvent(NULL, TRUE, FALSE, NULL);
     m_ControlHandle = CreateEvent(NULL, TRUE, FALSE, NULL);
 
     for (int i = 0; i < MAX_PLAYER; ++i)
@@ -357,17 +357,15 @@ void CServer::ProcessGameData()
 {
     while (true)
     {
-        //WaitForMultipleObjects(1, m_SyncHandles, TRUE, INFINITE);
+        SetEvent(m_ControlHandle);
         for (int i = 0; i < MAX_PLAYER; ++i)
         {
             if (m_GameData->m_Players[i].GetSocket())
             {
-                WaitForSingleObject(m_SyncHandles[i], INFINITE);
+                WaitForSingleObject(m_SyncHandles[i], 20);
             }
         }
-
-        ResetEvent(m_MainSyncHandle);
-        SetEvent(m_ControlHandle);
+        ResetEvent(m_ControlHandle);
 
         switch (m_GameData->m_State)
         {
@@ -378,9 +376,10 @@ void CServer::ProcessGameData()
             GameLoop();
             break;
         }
-       
-        ResetEvent(m_ControlHandle);
+        //Sleep(1);
+               
         SetEvent(m_MainSyncHandle);
+        ResetEvent(m_MainSyncHandle);
     }
 }
 
@@ -630,7 +629,7 @@ void CServer::CreateMonster()
 
 void CServer::CreateItem()
 {
-    m_CurrentItemGenTime += 0.01f;
+    m_CurrentItemGenTime += 1.0f;
 
     if (m_CurrentItemGenTime >= m_ItemGenTime)
     {
@@ -647,6 +646,7 @@ void CServer::CreateItem()
                 m_GameData->m_Items[i].SetHp(60.0f);
                 m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
 
+                cout << "아이템 생성 " << m_GameData->m_Items[i].GetPosition().m_X << " , " << m_GameData->m_Items[i].GetPosition().m_Y<< endl;
                 break;
             }
         }
