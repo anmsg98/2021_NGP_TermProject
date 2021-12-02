@@ -1,8 +1,6 @@
 #pragma once
 #include "GameObject.h"
 
-#define MAX_ITEM 5
-
 class CItem : public CGameObject
 {
 public:

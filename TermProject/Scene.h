@@ -7,7 +7,7 @@
 class CMap;
 class CButton;
 
-enum GAME_STATE { WAITING, GAME };
+enum GAME_STATE { WAITING, INGAME };
 
 struct GameData
 {

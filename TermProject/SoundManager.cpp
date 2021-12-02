@@ -40,10 +40,13 @@ void CSoundManager::Init()
 	}
 
 	// 추가할 사운드 파일
-	m_Result = m_System->createSound("Sound/Waiting_BGM.mp3", FMOD_LOOP_NORMAL, 0, &m_Sound[TITLE_BACKGROUND_SOUND]);
+	m_Result = m_System->createSound("Sound/Waiting_BGM.mp3", FMOD_LOOP_NORMAL, 0, &m_Sound[WAITING_BACKGROUND_SOUND]);
 	m_Result = m_System->createSound("Sound/InGame_BGM.mp3", FMOD_LOOP_NORMAL, 0, &m_Sound[GAME_BACKGROUND_SOUND]);
 	m_Result = m_System->createSound("Sound/Button.wav", FMOD_LOOP_OFF, 0, &m_Sound[BUTTON_SOUND]);
 	m_Result = m_System->createSound("Sound/Bullet.wav", FMOD_LOOP_OFF, 0, &m_Sound[BULLET_SOUND]);
+	m_Result = m_System->createSound("Sound/MonkeyCry.wav", FMOD_LOOP_OFF, 0, &m_Sound[MONSTER_DEAD_SOUND]);
+	m_Result = m_System->createSound("Sound/Explosion.wav", FMOD_LOOP_OFF, 0, &m_Sound[EXPLOSION_SOUND]);
+	m_Result = m_System->createSound("Sound/ItemDrop.wav", FMOD_LOOP_OFF, 0, &m_Sound[ITEM_DROP_SOUND]);
 
 	if (m_Result != FMOD_OK)
 	{

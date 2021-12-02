@@ -1,8 +1,6 @@
 #pragma once
 #include "GameObject.h"
 
-#define MAX_MONSTER 30
-
 class CMonster : public CGameObject
 {
 public:

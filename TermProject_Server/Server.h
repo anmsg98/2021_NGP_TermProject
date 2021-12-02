@@ -4,12 +4,10 @@
 #include "Monster.h"
 #include "Item.h"
 
-#define SERVER_PORT            9000
-#define SERVER_LOCK_FPS       60.0f
-
+class CTimer;
 class CMap;
 
-enum GAME_STATE { WAITING, GAME };
+enum GAME_STATE { WAITING, INGAME };
 enum MONSTER_GEN_LOCATION { TOP, BOTTOM, LEFT, RIGHT };
 
 struct GameData
@@ -33,11 +31,13 @@ private:
     HANDLE                m_MainSyncHandles[2]{};        // 주스레드의 동기화를 위한 핸들(대칭구조를 갖는다.)
     HANDLE                m_SyncHandles[MAX_PLAYER]{};   // 각 스레드함수의 동기화를 위한 핸들
 
+    CTimer*               m_Timer{};                     // 패킷 송수신 속도를 제어하기 위한 타이머
+
     CMap*                 m_Map{};                       // 게임 맵
     GameData*             m_GameData{};                  // 게임 데이터
 
     int                   m_Round{ 1 };                  // 현재 라운드
-    int                   m_PlayerCount{};               // 현재 접속한 플레이어 수
+    int                   m_CurrentPlayerCount{};        // 현재 접속한 플레이어 수
 
     const float           m_MonsterGenTime{ 300.0f };    // 몬스터가 생성되기 위해 도달해야 하는 시간
     float                 m_CurrentMonsterGenTime{};     // 현재 몬스터의 생성시간
@@ -83,6 +83,7 @@ public:
     void SetMonstersTarget();                                           // 몬스터 객체의 타겟을 설정하여 방향을 결정하는 함수
     void Animate();                                                     // 게임 내 모든 객체의 움직임을 처리하는 함수
 
+    void CheckCollision();                                              // 게임 내의 모든 충돌 검사 및 후처리
     void CheckPlayerByMonsterCollision();                               // 플레이어와 몬스터 간 충돌 검사 및 후처리
     void CheckBulletByMonsterCollision();                               // 플레이어의 총알과 몬스터 간 충돌 검사 및 후처리
     void CheckTowerByMonsterCollision();                                // 타워와 몬스터 간 충돌 검사 및 후처리

@@ -1,5 +1,4 @@
 #pragma once
-#pragma comment (lib, "Msimg32.lib")
 #pragma comment(lib, "ws2_32")
 
 #include "targetver.h"
@@ -18,23 +17,27 @@
 
 // C++ 런타임 헤더 파일입니다.
 #include <iostream>
-#include <fstream>
-#include <stack>
-#include <unordered_map>
-#include <vector>
-#include <string>
 #include <cmath>
 #include <ctime>
 
 using namespace std;
 
-#define CLIENT_WIDTH	      800
-#define CLIENT_HEIGHT		  600
+// 서버 정보
+#define SERVER_PORT            9000
+#define SERVER_LOCK_FPS       60.0f
 
-#define PI				3.141592f
+// 게임 내 객체 수 정보
+#define MAX_PLAYER				  4
+#define MAX_BULLET				  5
+#define MAX_MONSTER			     30
+#define MAX_ITEM				  5
 
-// 텍스트로 현재 HP 출력
-#define DEBUG_HP
+// 콘솔창에 디버그 정보 출력
+#define DEBUG_PRINT_FPS
+//#define DEBUG_PRINT_MONSTER_GEN_POS
+//#define DEBUG_PRINT_ITEM_GEN_POS
+//#define DEBUG_PRINT_ROUND
+//#define DEBUG_PRINT_WAVE
 
 struct VECTOR2D
 {
@@ -74,10 +77,6 @@ struct USER_RECT
 };
 
 float RandF(float Min, float Max);
-
-void DrawRect(HDC hMemDC, const VECTOR2D& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);
-void FixedDrawRect(HDC hMemDC, const VECTOR2D& Position, float FixedWidth, float FixedHeight, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);
-HBITMAP GetRotatedBitmap(HDC hDC, HBITMAP hBitmap, int SourceX, int SourceY, int DestWidth, int DestHeight, float Angle, COLORREF TransparentColor);
 
 namespace Vector
 {

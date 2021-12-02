@@ -22,10 +22,8 @@
 #include <fstream>
 #include <stack>
 #include <unordered_map>
-#include <vector>
 #include <string>
 #include <cmath>
-#include <ctime>
 
 using namespace std;
 
@@ -34,13 +32,24 @@ using namespace std;
 
 using namespace FMOD;
 
-#define CLIENT_WIDTH	      800
-#define CLIENT_HEIGHT		  600
+// 클라이언트 정보
+#define CLIENT_WIDTH	         800
+#define CLIENT_HEIGHT		     600
 
-#define PI				3.141592f
+// 서버 정보
+#define SERVER_IP		 "127.0.0.1"
+#define SERVER_PORT			    9000
+
+// 게임 내 객체 수 정보
+#define MAX_PLAYER				  4
+#define MAX_BULLET				  5
+#define MAX_MONSTER			     30
+#define MAX_ITEM				  5
+
+#define PI				  3.141592f
 
 // 텍스트로 현재 HP 출력
-//#define DEBUG_HP
+//#define DEBUG_PRINT_HP
 
 struct VECTOR2D
 {
@@ -78,8 +87,6 @@ struct USER_RECT
 	int m_Width{};
 	int m_Height{};
 };
-
-float RandF(float Min, float Max);
 
 void DrawRect(HDC hMemDC, const VECTOR2D& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);
 void FixedDrawRect(HDC hMemDC, const VECTOR2D& Position, float FixedWidth, float FixedHeight, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor);

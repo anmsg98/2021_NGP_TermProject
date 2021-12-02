@@ -1,9 +1,6 @@
 #pragma once
 #include "GameObject.h"
 
-#define MAX_PLAYER  4
-#define MAX_BULLET  5
-
 // ============================================== CBullet ==============================================
 
 class CBullet : public CGameObject
@@ -16,7 +13,7 @@ private:
 	float				m_Length{};
 	VECTOR2D			m_Direction{};
 
-	const int			m_AnimationFrame{ 16 };
+	const int			m_AnimationFrame{ 14 };
 	float				m_AnimationTime{};
 
 public:

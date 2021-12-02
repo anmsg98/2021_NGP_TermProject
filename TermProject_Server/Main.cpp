@@ -3,6 +3,8 @@
 
 int main()
 {
+	srand((unsigned int)time(NULL));
+
 	CServer Server{};
 
 	Server.InitServer();

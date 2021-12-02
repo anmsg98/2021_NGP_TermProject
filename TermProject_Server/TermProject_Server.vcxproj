@@ -139,7 +139,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -148,10 +147,10 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Tower.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FileManager.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Map.h" />
@@ -160,6 +159,7 @@
     <ClInclude Include="Server.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="Tower.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

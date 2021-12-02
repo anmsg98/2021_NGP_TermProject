@@ -1,10 +1,5 @@
 #include "stdafx.h"
 
-float RandF(float Min, float Max)
-{
-	return Min + ((float)rand() / (float)RAND_MAX) * (Max - Min);
-}
-
 void DrawRect(HDC hMemDC, const VECTOR2D& Position, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor)
 {
 	int OriginX{ (int)(Position.m_X - 0.5f * Width) };

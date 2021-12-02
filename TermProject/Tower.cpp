@@ -35,7 +35,7 @@ void CTower::Render(HDC hMemDC, HDC hMemDC2)
 
 		FixedDrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, CurrentWidth, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
-#ifdef DEBUG_HP
+#ifdef DEBUG_PRINT_HP
 		TCHAR HpText[32]{};
 
 		sprintf(HpText, "%.f", m_Hp);

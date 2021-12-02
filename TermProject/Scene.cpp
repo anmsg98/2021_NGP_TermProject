@@ -92,7 +92,10 @@ void CWaitingScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* D
 
 void CWaitingScene::OnDestroy()
 {
-
+	if (m_Map)
+	{
+		delete m_Map;
+	}
 }
 
 void CWaitingScene::BuildObject(int ID, GameData* Data)
@@ -233,7 +236,10 @@ void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data
 
 void CGameScene::OnDestroy()
 {
-
+	if (m_Map)
+	{
+		delete m_Map;
+	}
 }
 
 void CGameScene::BuildObject(int ID, GameData* Data)
