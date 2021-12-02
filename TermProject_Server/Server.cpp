@@ -881,15 +881,15 @@ void CServer::CheckPlayerByItemCollision()
                         if (m_GameData->m_Items[j].GetType() == CItem::ATTACK_POWER_UP)
                         {
                             m_GameData->m_Players[i].ReinforceBullet();
-                            m_GameData->m_Items[i].SetSound(true);
                         }
                         else if (m_GameData->m_Items[j].GetType() == CItem::HP_UP)
                         {
                             m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() + 30.0f);
-                            m_GameData->m_Items[i].SetSound(true);
                         }
 
                         m_GameData->m_Items[j].SetActive(false);
+                        m_GameData->m_Items[j].SetSound(true);
+                        break;
                     }
                 }
             }
