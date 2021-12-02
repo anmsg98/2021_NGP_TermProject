@@ -1,28 +1,29 @@
 #include "stdafx.h"
 #include "Server.h"
+#include "Timer.h"
 #include "Map.h"
-#include "FileManager.h"
-
-LARGE_INTEGER StartTime{}, EndTime{};
-LARGE_INTEGER Frequency{};
 
 CServer::CServer()
 {
-    CFileManager::GetInstance()->LoadRectFromFile("Image/SpriteCoord.txt");
-
+    m_Timer = new CTimer{};
     m_GameData = new GameData{};
 }
 
 CServer::~CServer()
 {
-    if (m_Map)
+    if (m_Timer)
     {
-        delete m_Map;
+        delete m_Timer;
     }
 
     if (m_GameData)
     {
         delete m_GameData;
+    }
+
+    if (m_Map)
+    {
+        delete m_Map;
     }
 
     closesocket(m_ListenSocket);
@@ -104,9 +105,10 @@ DWORD WINAPI CServer::AcceptClient(LPVOID Arg)
             break;
         }
 
-        // CreatePlayer() 함수가 false를 반환한 경우, 최대인원이 접속한 것이므로 continue를 통해 게임시작 전까지 accept() 대기 상태로 만든다.
+        // CreatePlayer() 함수가 false를 반환한 경우, 인게임 상태이거나 최대인원이 접속한 것이므로, continue를 통해 게임시작 전까지 accept() 대기 상태로 만든다.
         if (!Server->CreatePlayer(ClientSocket, ClientAddress))
         {
+            closesocket(ClientSocket);
             continue;
         }
 
@@ -229,10 +231,6 @@ void CServer::InitServer()
     {
         CloseHandle(hThread);
     }
-
-
-
-    QueryPerformanceFrequency(&Frequency);
 }
 
 void CServer::InitEvent()
@@ -288,10 +286,23 @@ void CServer::InitWaitingScene()
         if (m_GameData->m_Players[i].GetSocket())
         {
             m_GameData->m_Players[i].SetActive(true);
-            m_GameData->m_Players[i].SetReady(false);
-            m_GameData->m_Players[i].SetHp(0.0f);
-            m_GameData->m_Players[i].SetDirection(0.0f, 90.0f);
-            m_GameData->m_Players[i].SetPosition(0.5f * m_GameData->m_Players[i].GetWidth() + 135.0f + 157.0f * i, 0.5f * m_GameData->m_Players[i].GetHeight() + 178.0f);
+        }
+        else
+        {
+            m_GameData->m_Players[i].SetActive(false);
+        }
+
+        m_GameData->m_Players[i].SetReady(false);
+        m_GameData->m_Players[i].SetMaxHp(100.0f);
+        m_GameData->m_Players[i].SetHp(0.0f);
+        m_GameData->m_Players[i].SetDirection(0.0f, 90.0f);
+        m_GameData->m_Players[i].SetPosition(0.5f * m_GameData->m_Players[i].GetWidth() + 135.0f + 157.0f * i, 0.5f * m_GameData->m_Players[i].GetHeight() + 178.0f);
+        
+        CBullet* Bullets{ m_GameData->m_Players[i].GetBullets() };
+
+        for (int j = 0; j < MAX_BULLET; ++j)
+        {
+            Bullets[i].SetActive(false);
         }
     }
 
@@ -313,27 +324,39 @@ void CServer::InitGameScene()
         if (m_GameData->m_Players[i].GetSocket())
         {
             m_GameData->m_Players[i].SetActive(true);
-            m_GameData->m_Players[i].SetReady(false);
-            m_GameData->m_Players[i].SetMaxHp(100.0f);
-            m_GameData->m_Players[i].SetHp(100.0f);
-            m_GameData->m_Players[i].SetDirection(0.0f, 0.0f);
-            m_GameData->m_Players[i].SetPosition(0.5f * m_Map->GetRect().right - 250.0f + (i % 2 * 500.0f), 0.5f * m_Map->GetRect().bottom - 250.0f + (i / 2 * 500.0f));
+        }
+        else
+        {
+            m_GameData->m_Players[i].SetActive(false);
+        }
+
+        m_GameData->m_Players[i].SetReady(false);
+        m_GameData->m_Players[i].SetMaxHp(100.0f);
+        m_GameData->m_Players[i].SetHp(100.0f);
+        m_GameData->m_Players[i].SetDirection(0.0f, 90.0f);
+        m_GameData->m_Players[i].SetPosition(0.5f * m_Map->GetRect().right - 250.0f + (i % 2 * 500.0f), 0.5f * m_Map->GetRect().bottom - 250.0f + (i / 2 * 500.0f));
+
+        CBullet* Bullets{ m_GameData->m_Players[i].GetBullets() };
+
+        for (int j = 0; j < MAX_BULLET; ++j)
+        {
+            Bullets[i].SetActive(false);
         }
     }
-
+    
     // 모든 몬스터를 초기화한다.
     for (int i = 0; i < MAX_MONSTER; ++i)
     {
         m_GameData->m_Monsters[i].SetActive(false);
     }
 
-    // 아이템을 초기화한다.
+    // 모든 아이템을 초기화한다.
     for (int i = 0; i < MAX_ITEM; ++i)
     {
         m_GameData->m_Items[i].SetActive(false);
     }
 
-    // 라운드 초기화
+    // 라운드를 초기화한다.
     m_Round = 1;
     m_CurrentMonsterGenTime = 0.0f;
     m_TotalMonsterCount = 0;
@@ -341,25 +364,25 @@ void CServer::InitGameScene()
     m_CurrentItemGenTime = 0.0f;
 
     // 게임 상태 변경
-    m_GameData->m_State = GAME;
+    m_GameData->m_State = INGAME;
 }
 
 void CServer::ProcessGameData()
 {
     while (true)
     {
-        QueryPerformanceCounter(&StartTime);
+        m_Timer->Start();
 
-        if (SERVER_LOCK_FPS > 0.0f)
+        for (int i = 0; i < MAX_PLAYER; ++i)
         {
-            while ((float)(EndTime.QuadPart - StartTime.QuadPart) / Frequency.QuadPart < 1.0f / SERVER_LOCK_FPS)
+            if (m_GameData->m_Players[i].GetSocket())
             {
-                QueryPerformanceCounter(&EndTime);
+                WaitForSingleObject(m_SyncHandles[i], INFINITE);
             }
         }
-        QueryPerformanceCounter(&EndTime);
 
-        cout << "FPS : " << (float)(EndTime.QuadPart - StartTime.QuadPart) / Frequency.QuadPart << endl;
+        m_Timer->End();
+        m_Timer->Wait(SERVER_LOCK_FPS);
 
         ResetEvent(m_MainSyncHandles[0]);
         SetEvent(m_MainSyncHandles[1]);
@@ -369,7 +392,7 @@ void CServer::ProcessGameData()
         case GAME_STATE::WAITING:
             WaitingLoop();
             break;
-        case GAME_STATE::GAME:
+        case GAME_STATE::INGAME:
             GameLoop();
             break;
         }
@@ -390,14 +413,8 @@ void CServer::WaitingLoop()
 void CServer::GameLoop()
 {
     UpdateRound();
-
-    SetMonstersTarget();
     Animate();
-
-    CheckPlayerByMonsterCollision();
-    CheckBulletByMonsterCollision();
-    CheckTowerByMonsterCollision();
-    CheckPlayerByItemCollision();
+    CheckCollision();
 
     if (CheckGameOver())
     {
@@ -422,6 +439,12 @@ int CServer::GetValidID() const
 
 bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
 {
+    // 인게임 상태인 경우에는 클라이언트의 접속을 수용하지 않는다.
+    if (m_GameData->m_State == INGAME)
+    {
+        return false;
+    }
+
     int ValidID{ GetValidID() };
 
     // GetValidID() 함수가 -1을 반환한 경우에는 최대 인원이 접속한 경우이므로, 게임 시작전까지는 accept() 함수에서 대기하도록 한다.
@@ -443,7 +466,7 @@ bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
     m_RecentID = ValidID;
 
     // 클라이언트 접속하면 현재 접속중인 플레이어의 수를 1증가시킨다.
-    ++m_PlayerCount;
+    ++m_CurrentPlayerCount;
 
     return true;
 }
@@ -459,8 +482,9 @@ bool CServer::DestroyPlayer(int ID)
             m_GameData->m_Players[i].SetActive(false);
             
             // 클라이언트 종료되면 현재 접속중인 플레이어의 수를 1감소시킨다.
-            --m_PlayerCount;
+            --m_CurrentPlayerCount;
             
+            // 해당 핸들로인해 무한 동기화가 발생하지 않도록 신호상태로 변경한다.
             SetEvent(m_SyncHandles[i]);
 
             return true;
@@ -473,11 +497,11 @@ bool CServer::DestroyPlayer(int ID)
 
 bool CServer::CheckAllPlayerReady()
 {
-    // 플레이어가 한명이하일 때는 시작하지 않는다.
-    //if (m_PlayerCount <= 1)
-    //{
-    //    return false;
-    //}
+    // 플레이어가 없는 경우에는 시작하지 않는다.
+    if (m_CurrentPlayerCount <= 0)
+    {
+        return false;
+    }
 
     int ReadyCount{};
 
@@ -489,7 +513,7 @@ bool CServer::CheckAllPlayerReady()
         }        
     }
 
-    if (ReadyCount == m_PlayerCount)
+    if (ReadyCount == m_CurrentPlayerCount)
     {
         return true;
     }
@@ -518,41 +542,26 @@ bool CServer::CheckGameOver()
     return true;
 }
 
-void CServer::Animate()
-{
-    m_GameData->m_Tower.Animate();
-
-    for (int i = 0; i < MAX_MONSTER; ++i)
-    {
-        m_GameData->m_Monsters[i].Animate();
-    }
-
-    for (int i = 0; i < MAX_ITEM; ++i)
-    {
-        m_GameData->m_Items[i].Animate();
-    }
-
-    for (int i = 0; i < MAX_PLAYER; ++i)
-    {
-        m_GameData->m_Players[i].Animate();
-    }
-}
-
 void CServer::UpdateRound()
 {
     CreateMonster();
+    SetMonstersTarget();
     CreateItem();
 
     if (m_TotalMonsterCount == 30 && m_CurrentMonsterCount == 0)
     {
-        //cout << "==== " << m_Round << " ROUND CLEAR ====" << endl;
-
         ++m_Round;
         m_TotalMonsterCount = 0;
+
+#ifdef DEBUG_PRINT_ROUND
+        cout << "==== " << m_Round << " ROUND CLEAR ====" << endl;
+#endif
     }
     else
     {
-        //cout << "\r현재 몬스터 수 / 총 몬스터 수 : " << m_CurrentMonsterCount << " / " << m_TotalMonsterCount;
+#ifdef DEBUG_PRINT_ROUND
+        cout << "\r현재 몬스터 수 / 총 몬스터 수 : " << m_CurrentMonsterCount << " / " << m_TotalMonsterCount;
+#endif
     }
 }
 
@@ -606,6 +615,10 @@ void CServer::CreateMonster()
                 m_GameData->m_Monsters[i].SetDirection(TowerPosition - m_GameData->m_Monsters[i].GetPosition());
                 m_GameData->m_Monsters[i].SetLength(Vector::Length(m_GameData->m_Monsters[i].GetDirection()));
 
+#ifdef DEBUG_PRINT_MONSTER_GEN_POS
+                cout << "[몬스터 생성] " << "(" << m_GameData->m_Monsters[i].GetPosition().m_X << ", " << m_GameData->m_Monsters[i].GetPosition().m_Y << ")" << endl;
+#endif
+
                 ++GenCount;
 
                 if (GenCount == 10)
@@ -619,7 +632,9 @@ void CServer::CreateMonster()
         m_TotalMonsterCount += GenCount;
         m_CurrentMonsterCount += GenCount;
 
-        cout << "<<<<< WAVE " << m_TotalMonsterCount / GenCount << " START! >>>>>" << endl;
+#ifdef DEBUG_PRINT_WAVE
+        cout << "===== WAVE " << m_TotalMonsterCount / GenCount << " START! =====" << endl;
+#endif
     }
 }
 
@@ -642,10 +657,13 @@ void CServer::CreateItem()
                 m_GameData->m_Items[i].SetHp(900.0f);
                 m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
 
-                cout << "아이템 생성 " << m_GameData->m_Items[i].GetPosition().m_X << " , " << m_GameData->m_Items[i].GetPosition().m_Y<< endl;
+#ifdef DEBUG_PRINT_ITEM_GEN_POS
+                cout << "[아이템 생성] " << "(" << m_GameData->m_Items[i].GetPosition().m_X << ", " << m_GameData->m_Items[i].GetPosition().m_Y << ")" << endl;
+#endif
                 break;
             }
         }
+
         m_CurrentItemGenTime = 0.0f;
     }
 }
@@ -689,6 +707,34 @@ void CServer::SetMonstersTarget()
             }
         }
     }
+}
+
+void CServer::Animate()
+{
+    m_GameData->m_Tower.Animate();
+
+    for (int i = 0; i < MAX_MONSTER; ++i)
+    {
+        m_GameData->m_Monsters[i].Animate();
+    }
+
+    for (int i = 0; i < MAX_ITEM; ++i)
+    {
+        m_GameData->m_Items[i].Animate();
+    }
+
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        m_GameData->m_Players[i].Animate();
+    }
+}
+
+void CServer::CheckCollision()
+{
+    CheckPlayerByMonsterCollision();
+    CheckBulletByMonsterCollision();
+    CheckTowerByMonsterCollision();
+    CheckPlayerByItemCollision();
 }
 
 void CServer::CheckPlayerByMonsterCollision()
@@ -765,8 +811,10 @@ void CServer::CheckBulletByMonsterCollision()
 
                                 if (m_GameData->m_Monsters[k].GetHp() <= 0.0f)
                                 {
+                                    m_GameData->m_Monsters[k].SetSound(true);
                                     --m_CurrentMonsterCount;
                                 }
+                                break;
                             }
                         }
                     }
@@ -833,10 +881,12 @@ void CServer::CheckPlayerByItemCollision()
                         if (m_GameData->m_Items[j].GetType() == CItem::ATTACK_POWER_UP)
                         {
                             m_GameData->m_Players[i].ReinforceBullet();
+                            m_GameData->m_Items[i].SetSound(true);
                         }
                         else if (m_GameData->m_Items[j].GetType() == CItem::HP_UP)
                         {
                             m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() + 30.0f);
+                            m_GameData->m_Items[i].SetSound(true);
                         }
 
                         m_GameData->m_Items[j].SetActive(false);
