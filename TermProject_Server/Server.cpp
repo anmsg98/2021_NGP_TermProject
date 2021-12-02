@@ -350,16 +350,6 @@ void CServer::ProcessGameData()
     {
         QueryPerformanceCounter(&StartTime);
 
-        for (int i = 0; i < MAX_PLAYER; ++i)
-        {
-            if (m_GameData->m_Players[i].GetSocket())
-            {
-                WaitForSingleObject(m_SyncHandles[i], INFINITE);
-            }
-        }
-
-        QueryPerformanceCounter(&EndTime);
-
         if (SERVER_LOCK_FPS > 0.0f)
         {
             while ((float)(EndTime.QuadPart - StartTime.QuadPart) / Frequency.QuadPart < 1.0f / SERVER_LOCK_FPS)
@@ -367,6 +357,7 @@ void CServer::ProcessGameData()
                 QueryPerformanceCounter(&EndTime);
             }
         }
+        QueryPerformanceCounter(&EndTime);
 
         cout << "FPS : " << (float)(EndTime.QuadPart - StartTime.QuadPart) / Frequency.QuadPart << endl;
 
@@ -382,7 +373,7 @@ void CServer::ProcessGameData()
             GameLoop();
             break;
         }
-       
+
         ResetEvent(m_MainSyncHandles[1]);
         SetEvent(m_MainSyncHandles[0]);
     }
@@ -651,6 +642,7 @@ void CServer::CreateItem()
                 m_GameData->m_Items[i].SetHp(900.0f);
                 m_GameData->m_Items[i].SetPosition(RandF((float)m_Map->GetRect().left + 100.0f, (float)m_Map->GetRect().right - 100.0f), RandF((float)m_Map->GetRect().top + 100.0f, (float)m_Map->GetRect().bottom - 100.0f));
 
+                cout << "아이템 생성 " << m_GameData->m_Items[i].GetPosition().m_X << " , " << m_GameData->m_Items[i].GetPosition().m_Y<< endl;
                 break;
             }
         }
