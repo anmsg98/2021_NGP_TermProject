@@ -44,6 +44,7 @@ bool CBullet::IsCollided() const
 void CBullet::PrepareCollision()
 {
 	m_IsCollided = true;
+	m_Sounded = true;
 	m_AnimationTime = 0.0f;
 }
 

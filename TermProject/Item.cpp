@@ -23,6 +23,12 @@ void CItem::Render(HDC hMemDC, HDC hMemDC2)
 		}
 
 		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+		
+		if (m_Sounded)
+		{
+			CSoundManager::GetInstance()->Play(CSoundManager::ITEM_DROP_SOUND, 0.5f);
+			m_Sounded = false;
+		}
 	}
 }
 

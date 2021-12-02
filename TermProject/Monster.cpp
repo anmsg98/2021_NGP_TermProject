@@ -27,6 +27,12 @@ void CMonster::Render(HDC hMemDC, HDC hMemDC2)
 
 		if (m_Hp <= 0.0f)
 		{
+			if (m_Sounded)
+			{
+				CSoundManager::GetInstance()->Play(CSoundManager::MONSTER_DEAD_SOUND, 0.4f);
+				m_Sounded = false;
+			}
+
 			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
 
 			BitmapRect.m_Left = BitmapRect.m_Width * FrameIndex;
@@ -48,7 +54,7 @@ void CMonster::Render(HDC hMemDC, HDC hMemDC2)
 
 		FixedDrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, CurrentWidth, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 
-#ifdef DEBUG_HP
+#ifdef DEBUG_PRINT_HP
 		TCHAR HpText[32]{};
 
 		sprintf(HpText, "%.f", m_Hp);

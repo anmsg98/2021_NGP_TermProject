@@ -94,3 +94,13 @@ float CGameObject::GetHeight() const
 {
 	return m_Size.m_Y;
 }
+
+void CGameObject::SetSound(bool Sounded)
+{
+	m_Sounded = Sounded;
+}
+
+bool CGameObject::GetSound() const
+{
+	return m_Sounded;
+}

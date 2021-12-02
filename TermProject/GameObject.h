@@ -13,6 +13,8 @@ protected:
 	VECTOR2D			m_Position{};
 	VECTOR2D			m_Size{};
 
+	bool				m_Sounded{};
+
 public:
 	CGameObject() = default;
 	~CGameObject() = default;
@@ -41,4 +43,7 @@ public:
 
 	void SetHeight(float Height);
 	float GetHeight() const;
+
+	void SetSound(bool Sounded);
+	bool GetSound() const;
 };
