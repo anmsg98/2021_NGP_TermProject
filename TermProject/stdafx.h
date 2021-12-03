@@ -41,6 +41,7 @@ using namespace FMOD;
 #define SERVER_PORT			    9000
 
 // 게임 내 객체 수 정보
+#define MAX_BUTTON                2
 #define MAX_PLAYER				  4
 #define MAX_BULLET				  5
 #define MAX_MONSTER			     30
