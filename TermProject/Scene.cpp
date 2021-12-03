@@ -88,6 +88,8 @@ void CWaitingScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* D
 {
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject(ID, Data);
+
+	m_hFont = CreateFont(20, 0, 0, 0, 0, 0, 0, 0, HANGUL_CHARSET, 0, 0, 0, 0, "맑은 고딕");
 }
 
 void CWaitingScene::OnDestroy()
@@ -96,6 +98,8 @@ void CWaitingScene::OnDestroy()
 	{
 		delete m_Map;
 	}
+
+	DeleteObject(m_hFont);
 }
 
 void CWaitingScene::BuildObject(int ID, GameData* Data)
@@ -123,6 +127,26 @@ void CWaitingScene::BuildObject(int ID, GameData* Data)
 	m_Buttons[1]->SetPosition(0.5f * m_Buttons[1]->GetWidth() + 250.0f, 0.5f * m_Buttons[1]->GetHeight() + 410.0f);
 }
 
+void CWaitingScene::DrawSceneText(HDC hMemDC)
+{
+	SetBkMode(hMemDC, TRANSPARENT);
+	SetTextColor(hMemDC, RGB(255, 255, 255));
+
+	m_hOldFont = (HFONT)SelectObject(hMemDC, m_hFont);
+
+	for (int i = 0; i < MAX_PLAYER; ++i)
+	{
+		if (m_GameData->m_Players[i].IsActive())
+		{
+			TextOut(hMemDC, (int)(m_GameData->m_Players[i].GetPosition().m_X - 0.5f * m_GameData->m_Players[i].GetSize().m_X),
+				            (int)(m_GameData->m_Players[i].GetPosition().m_Y - 0.75f * m_GameData->m_Players[i].GetSize().m_Y),
+				            inet_ntoa(m_GameData->m_Players[i].GetSocketAddress().sin_addr), lstrlen(inet_ntoa(m_GameData->m_Players[i].GetSocketAddress().sin_addr)));
+		}
+	}
+
+	SelectObject(hMemDC, m_hOldFont);
+}
+
 void CWaitingScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 {
 	m_hBitmap = CreateCompatibleBitmap(hDC, m_Map->GetRect().right, m_Map->GetRect().bottom);
@@ -135,15 +159,19 @@ void CWaitingScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 	SelectObject(hMemDC2, hOldBitmap);
 
 	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SPRITE_SHEET"));
-	m_Buttons[0]->Render(hMemDC, hMemDC2);
-	m_Buttons[1]->Render(hMemDC, hMemDC2);
-
+	
+	for (int i = 0; i < MAX_BUTTON; ++i)
+	{
+		m_Buttons[i]->Render(hMemDC, hMemDC2);
+	}
+	
 	for (int i = 0; i < MAX_PLAYER; ++i)
 	{
 		SelectObject(hMemDC2, hOldBitmap);
 		m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
 	}
 
+	DrawSceneText(hMemDC);
 	BitBlt(hDC, 0, 0, m_ClientRect.right, m_ClientRect.bottom, hMemDC, 0, 0, SRCCOPY);
 	SelectObject(hMemDC, m_hOldBitmap);
 	DeleteObject(m_hBitmap);
@@ -232,6 +260,8 @@ void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data
 {
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject(ID, Data);
+
+	m_hFont = CreateFont(50, 0, 0, 0, 0, 0, 0, 0, HANGUL_CHARSET, 0, 0, 0, 0, "맑은 고딕");
 }
 
 void CGameScene::OnDestroy()
@@ -240,6 +270,8 @@ void CGameScene::OnDestroy()
 	{
 		delete m_Map;
 	}
+
+	DeleteObject(m_hFont);
 }
 
 void CGameScene::BuildObject(int ID, GameData* Data)
@@ -252,6 +284,23 @@ void CGameScene::BuildObject(int ID, GameData* Data)
 
 	m_Map = new CMap{};
 	m_Map->SetRect(MapRect);
+}
+
+void CGameScene::DrawSceneText(HDC hMemDC)
+{
+	SetBkMode(hMemDC, TRANSPARENT);
+	SetTextColor(hMemDC, RGB(255, 255, 255));
+
+	m_hOldFont = (HFONT)SelectObject(hMemDC, m_hFont);
+
+	if (m_GameData->m_Players[m_ID].IsActive())
+	{
+		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.25f * CLIENT_WIDTH),
+						(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 0.03f * CLIENT_HEIGHT),
+						TEXT("테스트용 텍스트입니다."), lstrlen("테스트용 텍스트입니다."));
+	}
+
+	SelectObject(hMemDC, m_hOldFont);
 }
 
 void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
@@ -268,14 +317,14 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 	hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SPRITE_SHEET"));
 	m_GameData->m_Tower.Render(hMemDC, hMemDC2);
 
-	for (int i = 0; i < MAX_MONSTER; ++i)
-	{
-		m_GameData->m_Monsters[i].Render(hMemDC, hMemDC2);
-	}
-
 	for (int i = 0; i < MAX_ITEM; ++i)
 	{
 		m_GameData->m_Items[i].Render(hMemDC, hMemDC2);
+	}
+
+	for (int i = 0; i < MAX_MONSTER; ++i)
+	{
+		m_GameData->m_Monsters[i].Render(hMemDC, hMemDC2);
 	}
 
 	for (int i = 0; i < MAX_PLAYER; ++i)
@@ -283,6 +332,8 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 		SelectObject(hMemDC2, hOldBitmap);
 		m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
 	}
+
+	DrawSceneText(hMemDC);
 
 	POINT PlayerCameraPos{ m_GameData->m_Players[m_ID].GetCameraStartPosition() };
 

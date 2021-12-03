@@ -23,11 +23,13 @@ class CScene
 {
 protected:
 	POINT				m_CursorPos{};
-
 	RECT				m_ClientRect{};
 
 	HBITMAP				m_hBitmap{};
 	HBITMAP				m_hOldBitmap{};
+
+	HFONT				m_hFont{};
+	HFONT				m_hOldFont{};
 
 public:
 	CScene() = default;
@@ -41,12 +43,12 @@ public:
 	virtual void OnDestroy() = 0;
 
 	virtual void BuildObject(int ID, GameData* Data) = 0;
-
+	
+	virtual void DrawSceneText(HDC hMemDC) = 0;
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2) = 0;
 };
 
 // ============================================== CWaitingScene ==============================================
-#define MAX_BUTTON 2
 
 class CWaitingScene : public CScene
 {
@@ -69,6 +71,7 @@ public:
 
 	virtual void BuildObject(int ID, GameData* Data);
 
+	virtual void DrawSceneText(HDC hMemDC);
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2);
 };
 
@@ -95,5 +98,6 @@ public:
 
 	virtual void BuildObject(int ID, GameData* Data);
 
+	virtual void DrawSceneText(HDC hMemDC);
 	virtual void Render(HDC hDC, HDC hMemDC, HDC hMemDC2);
 };
