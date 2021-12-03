@@ -12,6 +12,13 @@ void CItem::Animate()
 			m_IsActive = false;
 		}
 	}
+	else
+	{
+		if (m_Sounded)
+		{
+			m_Sounded = false;
+		}
+	}
 }
 
 void CItem::Render(HDC hMemDC, HDC hMemDC2)

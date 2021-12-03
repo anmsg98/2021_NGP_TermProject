@@ -39,6 +39,11 @@ void CMonster::Animate()
 				m_AnimationTime = 0.0f;
 				m_CollisionDuration = 0.0f;
 			}
+
+			if (m_Sounded)
+			{
+				m_Sounded = false;
+			}
 		}
 	}
 }

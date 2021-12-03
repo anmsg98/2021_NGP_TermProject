@@ -16,12 +16,6 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 
 		if (m_IsCollided)
 		{
-			if (m_Sounded)
-			{
-				CSoundManager::GetInstance()->Play(CSoundManager::EXPLOSION_SOUND, 0.5f);
-				m_Sounded = false;
-			}
-
 			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
 
 			BitmapRect = CFileManager::GetInstance()->GetRect("EXPLOSION");
@@ -29,6 +23,11 @@ void CBullet::Render(HDC hMemDC, HDC hMemDC2)
 			BitmapRect.m_Top = BitmapRect.m_Top + BitmapRect.m_Height * (FrameIndex / 4);
 
 			DrawRect(hMemDC, GetPosition(), (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+		
+			if (m_Sounded)
+			{
+				CSoundManager::GetInstance()->Play(CSoundManager::EXPLOSION_SOUND, 0.35f);
+			}
 		}
 		else
 		{
@@ -127,6 +126,7 @@ void CPlayer::Render(HDC hMemDC, HDC hMemDC2)
 		if (m_Hp <= 0.0f)
 		{
 			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
+
 			BitmapRect.m_Left = BitmapRect.m_Width * FrameIndex;
 		}
 
@@ -265,11 +265,11 @@ void CPlayer::FireBullet(const POINT& CursorPos)
 		{
 			m_Bullets[m_BulletIndex].SetActive(true);
 			m_Bullets[m_BulletIndex].SetDirection(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
-			m_Bullets[m_BulletIndex].SetLength(sqrtf(powf(m_Bullets[m_BulletIndex].GetDirection().m_X, 2) + powf(m_Bullets[m_BulletIndex].GetDirection().m_Y, 2)));
+			m_Bullets[m_BulletIndex].SetLength(Vector::Length(m_Bullets[m_BulletIndex].GetDirection()));
 			m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirection().m_X / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
-											     GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().m_Y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
+												 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().m_Y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
 	
-			CSoundManager::GetInstance()->Play(CSoundManager::BULLET_SOUND, 0.5f);
+			CSoundManager::GetInstance()->Play(CSoundManager::BULLET_SOUND, 0.4f);
 		}
 	}
 

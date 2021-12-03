@@ -9,13 +9,18 @@ void CBullet::Animate()
 	{
 		if (m_IsCollided)
 		{
-			m_AnimationTime += 0.25f;
+			m_AnimationTime += 0.35f;
 
 			if (m_AnimationTime >= m_AnimationFrame)
 			{
 				m_IsActive = false;
 				m_IsCollided = false;
 				m_AnimationTime = 0.0f;
+			}
+
+			if (m_Sounded)
+			{
+				m_Sounded = false;
 			}
 		}
 		else
@@ -89,7 +94,7 @@ CPlayer::CPlayer()
 {
 	for (int i = 0; i < MAX_BULLET; ++i)
 	{
-		m_Bullets[i].SetWidth(20.0f);
+		m_Bullets[i].SetWidth(15.0f);
 		m_Bullets[i].SetHeight(15.0f);
 	}
 }
@@ -223,42 +228,10 @@ CBullet* CPlayer::GetBullets()
 
 void CPlayer::FireBullet(const POINT& CursorPos)
 {
-	if (m_Bullets)
-	{
-		m_Bullets[m_BulletIndex].SetActive(true);
-		m_Bullets[m_BulletIndex].SetDirection(CursorPos.x + GetCameraStartPosition().x - GetPosition().m_X, CursorPos.y + GetCameraStartPosition().y - GetPosition().m_Y);
-		m_Bullets[m_BulletIndex].SetLength(sqrtf(powf(m_Bullets[m_BulletIndex].GetDirection().m_X, 2) + powf(m_Bullets[m_BulletIndex].GetDirection().m_Y, 2)));
-		m_Bullets[m_BulletIndex].SetPosition(GetPosition().m_X + (m_Bullets[m_BulletIndex].GetDirection().m_X / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetWidth(),
-											 GetPosition().m_Y + (m_Bullets[m_BulletIndex].GetDirection().m_Y / m_Bullets[m_BulletIndex].GetLength()) * 0.5f * GetHeight());
-	}
 
-	m_BulletIndex = (m_BulletIndex + 1) % MAX_BULLET;
 }
 
 void CPlayer::UpdateCamera(const RECT& ClientRect, const RECT& MapRect)
 {
-	if (m_IsActive)
-	{
-		// 맵의 구석으로 가면 더이상 움직이지 않는다.
-		m_CameraStartPosition.x = (int)(m_Position.m_X - (0.5f * ClientRect.right));
-		m_CameraStartPosition.y = (int)(m_Position.m_Y - (0.5f * ClientRect.bottom));
 
-		if (m_CameraStartPosition.x < 0)
-		{
-			m_CameraStartPosition.x = 0;
-		}
-		else if (m_CameraStartPosition.x > MapRect.right - ClientRect.right)
-		{
-			m_CameraStartPosition.x = MapRect.right - ClientRect.right;
-		}
-
-		if (m_CameraStartPosition.y < 0)
-		{
-			m_CameraStartPosition.y = 0;
-		}
-		else if (m_CameraStartPosition.y > MapRect.bottom - ClientRect.bottom)
-		{
-			m_CameraStartPosition.y = MapRect.bottom - ClientRect.bottom;
-		}
-	}
 }

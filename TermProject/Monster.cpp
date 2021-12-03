@@ -27,15 +27,14 @@ void CMonster::Render(HDC hMemDC, HDC hMemDC2)
 
 		if (m_Hp <= 0.0f)
 		{
-			if (m_Sounded)
-			{
-				CSoundManager::GetInstance()->Play(CSoundManager::MONSTER_DEAD_SOUND, 0.4f);
-				m_Sounded = false;
-			}
-
 			int FrameIndex{ (int)m_AnimationTime % m_AnimationFrame };
 
 			BitmapRect.m_Left = BitmapRect.m_Width * FrameIndex;
+
+			if (m_Sounded)
+			{
+				CSoundManager::GetInstance()->Play(CSoundManager::MONSTER_DEAD_SOUND, 0.4f);
+			}
 		}
 
 		DrawRect(hMemDC, GetPosition(), GetWidth(), GetHeight(), hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
