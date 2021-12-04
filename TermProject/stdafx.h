@@ -1,4 +1,10 @@
 ﻿#pragma once
+#define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
+// 콘솔창 출력
+//#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+
 #pragma comment (lib, "Msimg32.lib")
 #pragma comment(lib, "ws2_32")
 

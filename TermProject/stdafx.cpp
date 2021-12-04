@@ -6,7 +6,7 @@ void DrawRect(HDC hMemDC, const VECTOR2D& Position, float Width, float Height, H
 	int OriginY{ (int)(Position.m_Y - 0.5f * Height) };
 
 	TransparentBlt(hMemDC, OriginX, OriginY, (int)Width, (int)Height,
-		hMemDC2, (int)Rect.m_Left, (int)Rect.m_Top, (int)Rect.m_Width, (int)Rect.m_Height, TransparentColor);
+				   hMemDC2, (int)Rect.m_Left, (int)Rect.m_Top, (int)Rect.m_Width, (int)Rect.m_Height, TransparentColor);
 }
 
 void FixedDrawRect(HDC hMemDC, const VECTOR2D& Position, float FixedWidth, float FixedHeight, float Width, float Height, HDC hMemDC2, const USER_RECT& Rect, COLORREF TransparentColor)
@@ -15,7 +15,7 @@ void FixedDrawRect(HDC hMemDC, const VECTOR2D& Position, float FixedWidth, float
 	int OriginY{ (int)(Position.m_Y - 0.5f * FixedHeight) };
 
 	TransparentBlt(hMemDC, OriginX, OriginY, (int)Width, (int)Height,
-		hMemDC2, (int)Rect.m_Left, (int)Rect.m_Top, (int)Rect.m_Width, (int)Rect.m_Height, TransparentColor);
+				   hMemDC2, (int)Rect.m_Left, (int)Rect.m_Top, (int)Rect.m_Width, (int)Rect.m_Height, TransparentColor);
 }
 
 HBITMAP GetRotatedBitmap(HDC hDC, HBITMAP hBitmap, int SourceX, int SourceY, int DestWidth, int DestHeight, float Angle, COLORREF TransparentColor)
