@@ -5,9 +5,10 @@
 #define MAX_LOADSTRING 100
 
 // 전역 변수:
-HINSTANCE               hInst;                                // 현재 인스턴스입니다.
-WCHAR                   szTitle[MAX_LOADSTRING];              // 제목 표시줄 텍스트입니다.
-WCHAR                   szWindowClass[MAX_LOADSTRING];        // 기본 창 클래스 이름입니다.
+HINSTANCE               hInst;                             // 현재 인스턴스입니다.
+
+TCHAR                   szTitle[MAX_LOADSTRING];           // 제목 표시줄 텍스트입니다.
+TCHAR                   szWindowClass[MAX_LOADSTRING];     // 기본 창 클래스 이름입니다.
 
 CFramework              Framework;
 
@@ -28,8 +29,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // TODO: 여기에 코드를 입력합니다.
 
     // 전역 문자열을 초기화합니다.
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_TERMPROJECT, szWindowClass, MAX_LOADSTRING);
+    LoadStringA(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    LoadStringA(hInstance, IDC_TERMPROJECT, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
     // 애플리케이션 초기화를 수행합니다:
@@ -77,7 +78,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
-    WNDCLASSEXW wcex;
+    WNDCLASSEXA wcex;
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
@@ -93,7 +94,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    return RegisterClassExW(&wcex);
+    return RegisterClassExA(&wcex);
 }
 
 //
@@ -111,8 +112,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
    RECT ClientRect{ 0, 0, CLIENT_WIDTH, CLIENT_HEIGHT };
-   HWND hWnd = CreateWindowW(szWindowClass,
-                             szTitle,
+   HWND hWnd = CreateWindowA(szWindowClass,
+                             TEXT("Monkey Defense"),
                              WS_OVERLAPPEDWINDOW,
                              CW_USEDEFAULT,
                              CW_USEDEFAULT,
