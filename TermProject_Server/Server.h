@@ -13,6 +13,12 @@ enum MONSTER_GEN_LOCATION { TOP, BOTTOM, LEFT, RIGHT };
 struct GameData
 {
     int                   m_State{ WAITING };
+    bool                  m_GameOver{};
+
+    int                   m_Round{ 1 };
+    int                   m_ScheduledGenTime{};          // 몬스터의 생성까지 남은시간
+    int                   m_TotalMonsterCount{};         // 이번 라운드에 생성된 총 몬스터의 수
+    int                   m_CurrentMonsterCount{};       // 현재 필드위에 존재하는 몬스터의 수
 
     CPlayer               m_Players[MAX_PLAYER]{};
     CTower                m_Tower{};
@@ -36,16 +42,16 @@ private:
     CMap*                 m_Map{};                       // 게임 맵
     GameData*             m_GameData{};                  // 게임 데이터
 
-    int                   m_Round{ 1 };                  // 현재 라운드
-    int                   m_CurrentPlayerCount{};        // 현재 접속한 플레이어 수
+    int                   m_PlayerCount{};               // 현재 접속한 플레이어 수
 
-    const float           m_MonsterGenTime{ 300.0f };    // 몬스터가 생성되기 위해 도달해야 하는 시간
+    const float           m_MonsterGenTime{ 600.0f };    // 몬스터가 생성되기 위해 도달해야 하는 시간
     float                 m_CurrentMonsterGenTime{};     // 현재 몬스터의 생성시간
-    int                   m_TotalMonsterCount{};         // 총 몬스터의 수
-    int                   m_CurrentMonsterCount{};       // 현재 필드위에 존재하는 몬스터의 수
 
     const float           m_ItemGenTime{ 600.0f };       // 아이템이 생성되기 위해 도달해야 하는 시간
     float                 m_CurrentItemGenTime{};        // 현재 아이템의 생성시간
+
+    const float           m_ResultTime{ 600.0f };        // 결과창이 출력되는 총 시간
+    float                 m_CurrentResultTime{};         // 현재 결과창의 출력시간
 
 public:
     CServer();
@@ -74,7 +80,7 @@ public:
     bool DestroyPlayer(int ID);                                         // 수용한 클라이언트의 플레이어 제거
 
     bool CheckAllPlayerReady();                                         // 모든 플레이어가 준비 상태인지 확인하는 함수
-    bool CheckGameOver();                                               // 게임 오버 상태인지 확인하는 함수
+    void CheckGameOver();                                               // 게임 오버 상태인지 확인하는 함수
 
     void UpdateRound();                                                 // 라운드를 갱신하는 함수
     void CreateMonster();                                               // 일정 주기로 몬스터를 생성하는 함수

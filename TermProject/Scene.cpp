@@ -89,7 +89,7 @@ void CWaitingScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* D
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject(ID, Data);
 
-	m_hFont = CreateFont(20, 0, 0, 0, 0, 0, 0, 0, HANGUL_CHARSET, 0, 0, 0, 0, "맑은 고딕");
+	m_hFont = CreateFont(12, 0, 0, 0, 0, FALSE, FALSE, FALSE, HANGUL_CHARSET, 0, 0, 0, 0, "휴먼둥근헤드라인");
 }
 
 void CWaitingScene::OnDestroy()
@@ -139,11 +139,17 @@ void CWaitingScene::DrawSceneText(HDC hMemDC)
 		if (m_GameData->m_Players[i].IsActive())
 		{
 			TextOut(hMemDC, (int)(m_GameData->m_Players[i].GetPosition().m_X - 0.5f * m_GameData->m_Players[i].GetSize().m_X),
-				            (int)(m_GameData->m_Players[i].GetPosition().m_Y - 0.75f * m_GameData->m_Players[i].GetSize().m_Y),
-				            inet_ntoa(m_GameData->m_Players[i].GetSocketAddress().sin_addr), lstrlen(inet_ntoa(m_GameData->m_Players[i].GetSocketAddress().sin_addr)));
+							(int)(m_GameData->m_Players[i].GetPosition().m_Y - 0.7f * m_GameData->m_Players[i].GetSize().m_Y),
+							inet_ntoa(m_GameData->m_Players[i].GetSocketAddress().sin_addr), lstrlen(inet_ntoa(m_GameData->m_Players[i].GetSocketAddress().sin_addr)));
 		}
 	}
 
+	SetTextColor(hMemDC, RGB(255, 255, 0));
+
+	TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetPosition().m_X - 10.0f),
+					(int)(m_GameData->m_Players[m_ID].GetPosition().m_Y - m_GameData->m_Players[m_ID].GetSize().m_Y),
+					TEXT("MY"), lstrlen(TEXT("MY")));
+	
 	SelectObject(hMemDC, m_hOldFont);
 }
 
@@ -207,53 +213,56 @@ void CGameScene::ProcessMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 void CGameScene::ProcessInput()
 {
-	VECTOR2D Position{ m_GameData->m_Players[m_ID].GetPosition() };
-	float Speed{ 3.0f };
-
-	// 플레이어의 위치 값 조정
-	if (GetAsyncKeyState('W') & 0x8000)
+	if (m_GameData->m_Players[m_ID].IsActive())
 	{
-		if (Position.m_Y > m_Map->GetRect().top + 0.5f * m_GameData->m_Players[m_ID].GetHeight())
+		VECTOR2D Position{ m_GameData->m_Players[m_ID].GetPosition() };
+		float Speed{ 3.0f };
+
+		// 플레이어의 위치 값 조정
+		if (GetAsyncKeyState('W') & 0x8000)
 		{
-			Position.m_Y -= Speed;
+			if (Position.m_Y > m_Map->GetRect().top + 0.5f * m_GameData->m_Players[m_ID].GetHeight())
+			{
+				Position.m_Y -= Speed;
+			}
 		}
-	}
 
-	if (GetAsyncKeyState('S') & 0x8000)
-	{
-		if (Position.m_Y < m_Map->GetRect().bottom - 0.5f * m_GameData->m_Players[m_ID].GetHeight())
+		if (GetAsyncKeyState('S') & 0x8000)
 		{
-			Position.m_Y += Speed;
+			if (Position.m_Y < m_Map->GetRect().bottom - 0.5f * m_GameData->m_Players[m_ID].GetHeight())
+			{
+				Position.m_Y += Speed;
+			}
 		}
-	}
 
-	if (GetAsyncKeyState('A') & 0x8000)
-	{
-		if (Position.m_X > m_Map->GetRect().left + 0.5f * m_GameData->m_Players[m_ID].GetWidth())
+		if (GetAsyncKeyState('A') & 0x8000)
 		{
-			Position.m_X -= Speed;
+			if (Position.m_X > m_Map->GetRect().left + 0.5f * m_GameData->m_Players[m_ID].GetWidth())
+			{
+				Position.m_X -= Speed;
+			}
 		}
-	}
 
-	if (GetAsyncKeyState('D') & 0x8000)
-	{
-		if (Position.m_X < m_Map->GetRect().right - 0.5f * m_GameData->m_Players[m_ID].GetWidth())
+		if (GetAsyncKeyState('D') & 0x8000)
 		{
-			Position.m_X += Speed;
+			if (Position.m_X < m_Map->GetRect().right - 0.5f * m_GameData->m_Players[m_ID].GetWidth())
+			{
+				Position.m_X += Speed;
+			}
 		}
-	}
 
-	// 플레이어의 총알 발사 처리
-	if (GetAsyncKeyState(MK_LBUTTON) & 0x0001)
-	{
-		m_GameData->m_Players[m_ID].FireBullet(m_CursorPos);
-	}
+		// 플레이어의 총알 발사 처리
+		if (GetAsyncKeyState(MK_LBUTTON) & 0x0001)
+		{
+			m_GameData->m_Players[m_ID].FireBullet(m_CursorPos);
+		}
 
-	// 플레이어의 위치, 방향, 카메라 등 갱신
-	m_GameData->m_Players[m_ID].SetPosition(Position);
-	m_GameData->m_Players[m_ID].SetDirection(m_CursorPos.x + m_GameData->m_Players[m_ID].GetCameraStartPosition().x - m_GameData->m_Players[m_ID].GetPosition().m_X,
-											 m_CursorPos.y + m_GameData->m_Players[m_ID].GetCameraStartPosition().y - m_GameData->m_Players[m_ID].GetPosition().m_Y);
-	m_GameData->m_Players[m_ID].UpdateCamera(m_ClientRect, m_Map->GetRect());
+		// 플레이어의 위치, 방향, 카메라 등 갱신
+		m_GameData->m_Players[m_ID].SetPosition(Position);
+		m_GameData->m_Players[m_ID].SetDirection(m_CursorPos.x + m_GameData->m_Players[m_ID].GetCameraStartPosition().x - m_GameData->m_Players[m_ID].GetPosition().m_X,
+												 m_CursorPos.y + m_GameData->m_Players[m_ID].GetCameraStartPosition().y - m_GameData->m_Players[m_ID].GetPosition().m_Y);
+		m_GameData->m_Players[m_ID].UpdateCamera(m_ClientRect, m_Map->GetRect());
+	}
 }
 
 void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data)
@@ -261,7 +270,7 @@ void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject(ID, Data);
 
-	m_hFont = CreateFont(50, 0, 0, 0, 0, 0, 0, 0, HANGUL_CHARSET, 0, 0, 0, 0, "맑은 고딕");
+	m_hFont = CreateFont(15, 0, 0, 0, 0, FALSE, FALSE, FALSE, HANGUL_CHARSET, 0, 0, 0, 0, "휴먼둥근헤드라인");
 }
 
 void CGameScene::OnDestroy()
@@ -293,11 +302,44 @@ void CGameScene::DrawSceneText(HDC hMemDC)
 
 	m_hOldFont = (HFONT)SelectObject(hMemDC, m_hFont);
 
-	if (m_GameData->m_Players[m_ID].IsActive())
+	TCHAR Text[64]{};
+
+	if (m_GameData->m_GameOver)
 	{
-		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.25f * CLIENT_WIDTH),
-						(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 0.03f * CLIENT_HEIGHT),
-						TEXT("테스트용 텍스트입니다."), lstrlen("테스트용 텍스트입니다."));
+		sprintf(Text, "버틴 라운드 : %d", m_GameData->m_Round);
+		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.5f * CLIENT_WIDTH - 100.0f),
+						(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 0.5f * CLIENT_HEIGHT + 60.0f),
+						Text, lstrlen(Text));
+
+		sprintf(Text, "처치한 적 : %d", m_GameData->m_Players[m_ID].GetKillCount());
+		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.5f * CLIENT_WIDTH - 100.0f),
+						(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 0.5f * CLIENT_HEIGHT + 90.0f),
+						Text, lstrlen(Text));
+
+		sprintf(Text, "적에게 가한 피해량 : %d", m_GameData->m_Players[m_ID].GetDamageDealt());
+		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.5f * CLIENT_WIDTH - 100.0f),
+						(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 0.5f * CLIENT_HEIGHT + 120.0f),
+						Text, lstrlen(Text));
+	}
+	else
+	{
+		sprintf(Text, "라운드 : %d", m_GameData->m_Round);
+		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.5f * CLIENT_WIDTH - 50.0f),
+						(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 10.0f),
+						Text, lstrlen(Text));
+
+		sprintf(Text, "남은 몬스터 수 / 전체 몬스터 수 : %d / %d", m_GameData->m_CurrentMonsterCount, m_GameData->m_TotalMonsterCount);
+		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.5f * CLIENT_WIDTH - 160.0f),
+						(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 30.0f),
+						Text, lstrlen(Text));
+
+		if (m_GameData->m_TotalMonsterCount < MAX_MONSTER)
+		{
+			sprintf(Text, "다음 웨이브까지 남은 시간 : %d", m_GameData->m_ScheduledGenTime);
+			TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.5f * CLIENT_WIDTH - 120.0f),
+							(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 70.0f),
+							Text, lstrlen(Text));
+		}
 	}
 
 	SelectObject(hMemDC, m_hOldFont);
@@ -333,6 +375,13 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 		m_GameData->m_Players[i].Render(hMemDC, hMemDC2);
 	}
 
+	if (m_GameData->m_GameOver)
+	{
+		hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SPRITE_SHEET"));
+		DrawResultUI(hMemDC, hMemDC2);
+		SelectObject(hMemDC2, hOldBitmap);
+	}
+
 	DrawSceneText(hMemDC);
 
 	POINT PlayerCameraPos{ m_GameData->m_Players[m_ID].GetCameraStartPosition() };
@@ -340,4 +389,20 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 	BitBlt(hDC, 0, 0, m_ClientRect.right, m_ClientRect.bottom, hMemDC, PlayerCameraPos.x, PlayerCameraPos.y, SRCCOPY);
 	SelectObject(hMemDC, m_hOldBitmap);
 	DeleteObject(m_hBitmap);
+}
+
+void CGameScene::DrawResultUI(HDC hMemDC, HDC hMemDC2)
+{
+	USER_RECT BitmapRect{};
+	
+	BitmapRect = CFileManager::GetInstance()->GetRect("RESULT");
+	
+	VECTOR2D Position{ (float)m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.5f * CLIENT_WIDTH, (float)m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 0.5f * CLIENT_HEIGHT };
+	DrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
+
+	BitmapRect = CFileManager::GetInstance()->GetRect("RANK");
+	BitmapRect.m_Left += BitmapRect.m_Width * m_GameData->m_Players[m_ID].CalculateRank();
+
+	Position.m_Y -= 60.0f;
+	DrawRect(hMemDC, Position, (float)BitmapRect.m_Width, (float)BitmapRect.m_Height, hMemDC2, BitmapRect, CFileManager::GetInstance()->GetTransparentColor());
 }
