@@ -135,7 +135,8 @@ void CFramework::ConnectServer()
 
 	if (!GetPlayerID())
 	{
-		cout << "플레이어 아이디를 수신하지 못했습니다." << endl;
+		MessageBox(m_hWnd, TEXT("현재 정원이 꽉찼거나, 전투중이어서 게임에 접속할 수 없습니다."), TEXT("MONKEY DEFENSE"), MB_ICONSTOP | MB_OK);
+		PostQuitMessage(0);
 	}
 }
 
@@ -147,6 +148,10 @@ bool CFramework::GetPlayerID()
 	{
 		err_display("recv()");
 
+		return false;
+	}
+	else if (m_ID == -1)
+	{
 		return false;
 	}
 
