@@ -303,3 +303,60 @@ void CPlayer::UpdateCamera(const RECT& ClientRect, const RECT& MapRect)
 		}
 	}
 }
+
+void CPlayer::IncreaseKillCount()
+{
+	++m_KillCount;
+}
+
+void CPlayer::ResetKillCount()
+{
+	m_KillCount = 0;
+}
+
+int CPlayer::GetKillCount() const
+{
+	return m_KillCount;
+}
+
+void CPlayer::IncreaseDamageDealt(int Damage)
+{
+	m_DamageDealt += Damage;
+}
+
+void CPlayer::ResetDamageDealt()
+{
+	m_DamageDealt = 0;
+}
+
+int CPlayer::GetDamageDealt() const
+{
+	return m_DamageDealt;
+}
+
+int CPlayer::CalculateRank() const
+{
+	int Rank{ 100 * m_KillCount + 10 * m_DamageDealt };
+
+	// 리턴 값은 비트맵 위치에 곱해지는 값이다.
+	if (Rank < 500)
+	{
+		return 4;
+	}
+	else if (Rank < 1000)
+	{
+		return 3;
+	}
+	else if (Rank < 3000)
+	{
+		return 2;
+	}
+	else if (Rank < 7000)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}

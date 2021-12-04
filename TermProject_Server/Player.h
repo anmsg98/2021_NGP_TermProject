@@ -61,6 +61,9 @@ private:
 	CBullet			    m_Bullets[MAX_BULLET]{};
 	int					m_BulletIndex{};
 
+	int					m_KillCount{};
+	int					m_DamageDealt{};
+
 public:
 	CPlayer();
 	~CPlayer() = default;
@@ -93,4 +96,14 @@ public:
 	void FireBullet(const POINT& CursorPos);
 
 	void UpdateCamera(const RECT& ClientRect, const RECT& MapRect);
+
+	void IncreaseKillCount();
+	void ResetKillCount();
+	int GetKillCount() const;
+
+	void IncreaseDamageDealt(int Damage);
+	void ResetDamageDealt();
+	int GetDamageDealt() const;
+
+	int CalculateRank() const;
 };
