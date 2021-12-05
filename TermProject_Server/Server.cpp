@@ -748,6 +748,8 @@ void CServer::SetMonstersTarget()
 
 void CServer::Animate()
 {
+    m_GameData->m_FrameRate = m_Timer->GetFrameRate();
+
     m_GameData->m_Tower.Animate();
 
     for (int i = 0; i < MAX_MONSTER; ++i)

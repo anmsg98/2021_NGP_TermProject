@@ -6,6 +6,7 @@ private:
 	LARGE_INTEGER		m_StartTime{};
 	LARGE_INTEGER		m_EndTime{};
 	LARGE_INTEGER		m_Second{};
+	int					m_FrameRate{};
 
 public:
 	CTimer();
@@ -15,4 +16,6 @@ public:
 	void End();
 
 	void Wait(float LockFPS);
+
+	int GetFrameRate();
 };

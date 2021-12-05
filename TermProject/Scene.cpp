@@ -323,6 +323,11 @@ void CGameScene::DrawSceneText(HDC hMemDC)
 	}
 	else
 	{
+		sprintf(Text, "FPS : %d", m_GameData->m_FrameRate);
+		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.08f * CLIENT_WIDTH - 50.0f),
+			(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 10.0f),
+			Text, lstrlen(Text));
+
 		sprintf(Text, "¶ó¿îµå : %d", m_GameData->m_Round);
 		TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 0.5f * CLIENT_WIDTH - 50.0f),
 						(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 10.0f),

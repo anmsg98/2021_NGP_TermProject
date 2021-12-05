@@ -27,6 +27,12 @@ void CTimer::Wait(float LockFPS)
 	}
 
 #ifdef DEBUG_PRINT_FPS
-	cout << "FPS : " << (int)(1.0f / ((float)(m_EndTime.QuadPart - m_StartTime.QuadPart) / m_Second.QuadPart) + 0.5f) << endl;
+	m_FrameRate = (int)(1.0f / ((float)(m_EndTime.QuadPart - m_StartTime.QuadPart) / m_Second.QuadPart) + 0.5f);
+	cout << "FPS : " << m_FrameRate << endl;
 #endif
+}
+
+int CTimer::GetFrameRate()
+{
+	return m_FrameRate;
 }
