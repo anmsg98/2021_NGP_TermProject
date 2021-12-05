@@ -6,6 +6,7 @@ private:
 	LARGE_INTEGER		m_StartTime{};
 	LARGE_INTEGER		m_EndTime{};
 	LARGE_INTEGER		m_Second{};
+
 	int					m_FrameRate{};
 
 public:
@@ -17,5 +18,5 @@ public:
 
 	void Wait(float LockFPS);
 
-	int GetFrameRate();
+	int GetFrameRate() const;
 };

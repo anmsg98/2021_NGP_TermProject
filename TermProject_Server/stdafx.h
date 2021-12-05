@@ -34,7 +34,7 @@ using namespace std;
 #define MAX_ITEM				  5
 
 // 콘솔창에 디버그 정보 출력
-#define DEBUG_PRINT_FPS
+//#define DEBUG_PRINT_FPS
 //#define DEBUG_PRINT_MONSTER_GEN_POS
 //#define DEBUG_PRINT_ITEM_GEN_POS
 //#define DEBUG_PRINT_ROUND

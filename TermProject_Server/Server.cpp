@@ -392,6 +392,7 @@ void CServer::ProcessGameData()
 
         m_Timer->End();
         m_Timer->Wait(SERVER_LOCK_FPS);
+        m_GameData->m_FrameRate = m_Timer->GetFrameRate();
 
         ResetEvent(m_MainSyncHandles[0]);
         SetEvent(m_MainSyncHandles[1]);
@@ -748,8 +749,6 @@ void CServer::SetMonstersTarget()
 
 void CServer::Animate()
 {
-    m_GameData->m_FrameRate = m_Timer->GetFrameRate();
-
     m_GameData->m_Tower.Animate();
 
     for (int i = 0; i < MAX_MONSTER; ++i)
