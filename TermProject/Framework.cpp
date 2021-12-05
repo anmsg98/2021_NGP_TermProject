@@ -254,7 +254,6 @@ void CFramework::Update()
 
 	ChangeScene(PrevState);
 	ProcessInput();
-	PrepareRender();
 
 	ReturnValue = send(m_Socket, (char*)&m_GameData->m_Players[m_ID], sizeof(CPlayer), 0);
 
@@ -262,4 +261,6 @@ void CFramework::Update()
 	{
 		err_display("send()");
 	}
+
+	PrepareRender();
 }
