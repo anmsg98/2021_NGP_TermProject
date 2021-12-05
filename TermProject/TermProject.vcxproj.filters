@@ -135,9 +135,12 @@
     <Image Include="Image\Background_InGame.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="Image\Icon.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Image\Blue.cur">
+    <None Include="Image\Crosshair.cur">
       <Filter>리소스 파일</Filter>
     </None>
   </ItemGroup>

@@ -184,12 +184,13 @@
   <ItemGroup>
     <Image Include="Image\Background_InGame.bmp" />
     <Image Include="Image\Background_Waiting.bmp" />
+    <Image Include="Image\Icon.ico" />
     <Image Include="Image\SpriteSheet.bmp" />
     <Image Include="small.ico" />
     <Image Include="TermProject.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Image\Blue.cur" />
+    <None Include="Image\Crosshair.cur" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

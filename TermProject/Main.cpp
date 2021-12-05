@@ -1,7 +1,6 @@
 ﻿#include "stdafx.h"
 #include "Main.h"
 #include "Framework.h"
-#include "resource.h"
 
 #define MAX_LOADSTRING 100
 
@@ -88,12 +87,12 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TERMPROJECT));
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON));
     wcex.hCursor        = LoadCursor(hInstance, MAKEINTRESOURCE(IDC_CURSOR));
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName   = nullptr; //MAKEINTRESOURCEW(IDC_TERMPROJECT);
     wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_ICON));
 
     return RegisterClassExA(&wcex);
 }
