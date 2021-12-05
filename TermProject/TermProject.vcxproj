@@ -188,6 +188,9 @@
     <Image Include="small.ico" />
     <Image Include="TermProject.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Image\Blue.cur" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
