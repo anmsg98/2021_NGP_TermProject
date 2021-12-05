@@ -112,9 +112,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
    RECT ClientRect{ 0, 0, CLIENT_WIDTH, CLIENT_HEIGHT };
+   DWORD Style{ WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX };
    HWND hWnd = CreateWindowA(szWindowClass,
                              TEXT("Monkey Defense"),
-                             WS_OVERLAPPEDWINDOW,
+                             Style,
                              CW_USEDEFAULT,
                              CW_USEDEFAULT,
                              ClientRect.right - ClientRect.left,
