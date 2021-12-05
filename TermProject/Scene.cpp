@@ -89,7 +89,7 @@ void CWaitingScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* D
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject(ID, Data);
 
-	m_hFont = CreateFont(12, 0, 0, 0, 0, FALSE, FALSE, FALSE, HANGUL_CHARSET, 0, 0, 0, 0, "ÈÞ¸ÕµÕ±ÙÇìµå¶óÀÎ");
+	m_hFont = CreateFont(10, 0, 0, 0, 0, FALSE, FALSE, FALSE, HANGUL_CHARSET, 0, 0, 0, 0, "ÈÞ¸ÕµÕ±ÙÇìµå¶óÀÎ");
 }
 
 void CWaitingScene::OnDestroy()
@@ -138,18 +138,18 @@ void CWaitingScene::DrawSceneText(HDC hMemDC)
 	{
 		if (m_GameData->m_Players[i].IsActive())
 		{
-			TextOut(hMemDC, (int)(m_GameData->m_Players[i].GetPosition().m_X - 0.5f * m_GameData->m_Players[i].GetSize().m_X),
-							(int)(m_GameData->m_Players[i].GetPosition().m_Y - 0.7f * m_GameData->m_Players[i].GetSize().m_Y),
+			TextOut(hMemDC, (int)(m_GameData->m_Players[i].GetPosition().m_X - 50.0f),
+							(int)(m_GameData->m_Players[i].GetPosition().m_Y - 63.0f),
 							inet_ntoa(m_GameData->m_Players[i].GetSocketAddress().sin_addr), lstrlen(inet_ntoa(m_GameData->m_Players[i].GetSocketAddress().sin_addr)));
 		}
 	}
 
 	SetTextColor(hMemDC, RGB(255, 255, 0));
 
-	TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetPosition().m_X - 10.0f),
-					(int)(m_GameData->m_Players[m_ID].GetPosition().m_Y - m_GameData->m_Players[m_ID].GetSize().m_Y),
-					TEXT("MY"), lstrlen(TEXT("MY")));
-	
+	TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetPosition().m_X - 45.0f),
+					(int)(m_GameData->m_Players[m_ID].GetPosition().m_Y - 85.0f),
+					TEXT("MY CHARACTER"), lstrlen(TEXT("MY CHARACTER")));
+
 	SelectObject(hMemDC, m_hOldFont);
 }
 
