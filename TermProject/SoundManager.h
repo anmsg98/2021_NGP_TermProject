@@ -1,5 +1,5 @@
 #pragma once
-#define MAX_SOUND 7
+#define MAX_SOUND 8
 
 class CSoundManager
 {
@@ -12,7 +12,8 @@ public:
 		BULLET_SOUND,
 		MONSTER_DEAD_SOUND,
 		EXPLOSION_SOUND,
-		ITEM_DROP_SOUND
+		ITEM_DROP_SOUND,
+		RESULT_SOUND
 	};
 
 private:

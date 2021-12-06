@@ -6,6 +6,8 @@ class CScene;
 class CFramework
 {
 private:
+	TCHAR						m_Title[64]{};
+
 	bool						m_IsActive{};
 
 	RECT						m_ClientRect{};
@@ -33,6 +35,7 @@ public:
 	void OnCreate(const HINSTANCE& hInstance, const HWND& hWnd);
 	void OnDestroy();
 
+	void SetWindowTitle();
 	void SetActive(bool IsActive);
 
 	// 소켓 관련 오류함수

@@ -4,6 +4,8 @@
 
 CFramework::CFramework()
 {
+	_tcscpy_s(m_Title, _T("Monkey Defense ("));
+
 	m_GameData = new GameData{};
 }
 
@@ -42,6 +44,13 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 void CFramework::OnDestroy()
 {
 
+}
+
+void CFramework::SetWindowTitle()
+{
+	_itot_s(m_GameData->m_FrameRate, m_Title + 16, 47, 10);
+	_tcscat_s(m_Title, 47, TEXT(" FPS)"));
+	SetWindowText(m_hWnd, m_Title);
 }
 
 void CFramework::SetActive(bool IsActive)
@@ -263,4 +272,5 @@ void CFramework::Update()
 	}
 
 	PrepareRender();
+	SetWindowTitle();
 }

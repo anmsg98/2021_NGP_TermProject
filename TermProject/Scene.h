@@ -11,14 +11,15 @@ enum GAME_STATE { WAITING, INGAME };
 
 struct GameData
 {
+	int                   m_FrameRate{};
+
 	int                   m_State{ WAITING };
 	bool                  m_GameOver{};
 
 	int                   m_Round{ 1 };
 	int                   m_ScheduledGenTime{};          // 몬스터의 생성까지 남은시간
-	int                   m_TotalMonsterCount{};         // 총 몬스터의 수
+	int                   m_TotalMonsterCount{};         // 이번 라운드에 생성된 총 몬스터의 수
 	int                   m_CurrentMonsterCount{};       // 현재 필드위에 존재하는 몬스터의 수
-	int				      m_FrameRate{};
 
 	CPlayer               m_Players[MAX_PLAYER]{};
 	CTower                m_Tower{};
@@ -90,6 +91,8 @@ private:
 	int						m_ID{};
 	CMap*					m_Map{};
 	GameData*				m_GameData{};
+
+	bool					m_Sounded{};
 
 public:
 	CGameScene() = default;

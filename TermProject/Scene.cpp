@@ -304,11 +304,6 @@ void CGameScene::DrawSceneText(HDC hMemDC)
 
 	TCHAR Text[64]{};
 
-	sprintf(Text, "FPS : %d", m_GameData->m_FrameRate);
-	TextOut(hMemDC, (int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().x + 10.0f),
-					(int)(m_GameData->m_Players[m_ID].GetCameraStartPosition().y + 10.0f),
-					Text, lstrlen(Text));
-
 	if (m_GameData->m_GameOver)
 	{
 		sprintf(Text, "버틴 라운드 : %d", m_GameData->m_Round);
@@ -382,6 +377,13 @@ void CGameScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 
 	if (m_GameData->m_GameOver)
 	{
+		if (!m_Sounded)
+		{
+			CSoundManager::GetInstance()->Stop(CSoundManager::GAME_BACKGROUND_SOUND);
+			CSoundManager::GetInstance()->Play(CSoundManager::RESULT_SOUND, 0.6f);
+			m_Sounded = true;
+		}
+
 		hOldBitmap = (HBITMAP)SelectObject(hMemDC2, CFileManager::GetInstance()->GetBitmap("SPRITE_SHEET"));
 		DrawResultUI(hMemDC, hMemDC2);
 		SelectObject(hMemDC2, hOldBitmap);

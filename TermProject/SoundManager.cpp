@@ -47,6 +47,7 @@ void CSoundManager::Init()
 	m_Result = m_System->createSound("Sound/MonkeyCry.wav", FMOD_LOOP_OFF, 0, &m_Sound[MONSTER_DEAD_SOUND]);
 	m_Result = m_System->createSound("Sound/Explosion.wav", FMOD_LOOP_OFF, 0, &m_Sound[EXPLOSION_SOUND]);
 	m_Result = m_System->createSound("Sound/ItemDrop.wav", FMOD_LOOP_OFF, 0, &m_Sound[ITEM_DROP_SOUND]);
+	m_Result = m_System->createSound("Sound/Result.mp3", FMOD_LOOP_OFF, 0, &m_Sound[RESULT_SOUND]);
 
 	if (m_Result != FMOD_OK)
 	{
