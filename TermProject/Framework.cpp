@@ -43,7 +43,11 @@ void CFramework::OnCreate(const HINSTANCE& hInstance, const HWND& hWnd)
 
 void CFramework::OnDestroy()
 {
-
+	while (!m_Scenes.empty())
+	{
+		m_Scenes.top()->OnDestroy();
+		m_Scenes.pop();
+	}
 }
 
 void CFramework::SetWindowTitle()
@@ -242,7 +246,7 @@ void CFramework::ChangeScene(int PrevState)
 		{
 			m_Scenes.top()->OnDestroy();
 			m_Scenes.pop();
-
+			
 			CSoundManager::GetInstance()->Stop(CSoundManager::GAME_BACKGROUND_SOUND);
 			CSoundManager::GetInstance()->Play(CSoundManager::WAITING_BACKGROUND_SOUND, 0.5f);
 		}
