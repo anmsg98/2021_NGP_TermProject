@@ -505,14 +505,14 @@ bool CServer::DestroyPlayer(int ID)
 
 bool CServer::CheckAllPlayerReady()
 {
-    // 플레이어가 없는 경우에는 시작하지 않는다.
-    if (m_PlayerCount <= 0)
+    // 최소 2명의 플레이어가 접속해야 하므로, 이보다 작으면 false를 반환한다.
+    if (m_PlayerCount <= 1)
     {
         return false;
     }
 
     int ReadyCount{};
-
+            
     for (int i = 0; i < MAX_PLAYER; ++i)
     {
         if (m_GameData->m_Players[i].GetSocket() && m_GameData->m_Players[i].IsReady())
@@ -644,12 +644,6 @@ void CServer::CreateMonster()
                     m_GameData->m_Monsters[i].SetPosition((float)m_Map->GetRect().right - 30.0f, RandF((float)m_Map->GetRect().top + 30.0f, (float)m_Map->GetRect().bottom - 30.0f));
                     break;
                 }
-
-                // 맵의 중앙을 도착점으로 지정
-                VECTOR2D TowerPosition{ m_GameData->m_Tower.GetPosition() };
-
-                m_GameData->m_Monsters[i].SetDirection(TowerPosition - m_GameData->m_Monsters[i].GetPosition());
-                m_GameData->m_Monsters[i].SetLength(Vector::Length(m_GameData->m_Monsters[i].GetDirection()));
 
 #ifdef DEBUG_PRINT_MONSTER_GEN_POS
                 cout << "[몬스터 생성] " << "(" << m_GameData->m_Monsters[i].GetPosition().m_X << ", " << m_GameData->m_Monsters[i].GetPosition().m_Y << ")" << endl;
