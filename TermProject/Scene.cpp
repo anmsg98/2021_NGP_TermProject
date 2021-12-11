@@ -7,10 +7,7 @@
 
 CWaitingScene::~CWaitingScene()
 {
-	if (m_Map)
-	{
-		delete m_Map;
-	}
+
 }
 
 void CWaitingScene::ProcessKeyboardMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -187,10 +184,7 @@ void CWaitingScene::Render(HDC hDC, HDC hMemDC, HDC hMemDC2)
 
 CGameScene::~CGameScene()
 {
-	if (m_Map)
-	{
-		delete m_Map;
-	}
+
 }
 
 void CGameScene::ProcessKeyboardMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -270,6 +264,7 @@ void CGameScene::OnCreate(HINSTANCE hInstance, HWND hWnd, int ID, GameData* Data
 	GetClientRect(hWnd, &m_ClientRect);
 	BuildObject(ID, Data);
 
+	m_GameData->m_Players[m_ID].UpdateCamera(m_ClientRect, m_Map->GetRect());
 	m_hFont = CreateFont(15, 0, 0, 0, 0, FALSE, FALSE, FALSE, HANGUL_CHARSET, 0, 0, 0, 0, "»ﬁ∏’µ’±Ÿ«ÏµÂ∂Û¿Œ");
 }
 
