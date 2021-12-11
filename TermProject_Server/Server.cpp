@@ -341,7 +341,7 @@ void CServer::InitGameScene()
         m_GameData->m_Players[i].SetHp(100.0f);
         m_GameData->m_Players[i].SetDirection(0.0f, 90.0f);
         m_GameData->m_Players[i].SetPosition(0.5f * m_Map->GetRect().right - 250.0f + (i % 2 * 500.0f), 0.5f * m_Map->GetRect().bottom - 250.0f + (i / 2 * 500.0f));
-        m_GameData->m_Players[i].ResetKillCount();
+        m_GameData->m_Players[i].ResetKillCount();  
         m_GameData->m_Players[i].ResetDamageDealt();
 
         CBullet* Bullets{ m_GameData->m_Players[i].GetBullets() };
@@ -624,8 +624,8 @@ void CServer::CreateMonster()
 
                 m_GameData->m_Monsters[i].SetActive(true);
                 m_GameData->m_Monsters[i].SetType(Type);
-                m_GameData->m_Monsters[i].SetMaxHp(5.0f * Type * m_GameData->m_Round);
-                m_GameData->m_Monsters[i].SetHp(5.0f * Type * m_GameData->m_Round);
+                m_GameData->m_Monsters[i].SetMaxHp(2.0f * Type * m_GameData->m_Round);
+                m_GameData->m_Monsters[i].SetHp(2.0f * Type * m_GameData->m_Round);
 
                 Type = rand() % 4;
 
@@ -794,7 +794,7 @@ void CServer::CheckPlayerByMonsterCollision()
 
                     if (IntersectRect(&CollidedRect, &PlayerRect, &MonsterRect))
                     {
-                        m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() - 2.5f * m_GameData->m_Monsters[i].GetType());
+                        m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() - 3.0f * m_GameData->m_Monsters[i].GetType());
                         m_GameData->m_Monsters[j].SetCollision(true);
                         m_GameData->m_Monsters[j].SetDirection(-m_GameData->m_Monsters[j].GetDirection().m_X, -m_GameData->m_Monsters[j].GetDirection().m_Y);
                     }
@@ -887,7 +887,7 @@ void CServer::CheckTowerByMonsterCollision()
 
                 if (IntersectRect(&CollidedRect, &TowerRect, &MonsterRect))
                 {
-                    m_GameData->m_Tower.SetHp(m_GameData->m_Tower.GetHp() - 10.0f * m_GameData->m_Monsters[i].GetType());
+                    m_GameData->m_Tower.SetHp(m_GameData->m_Tower.GetHp() - 3.0f * m_GameData->m_Monsters[i].GetType());
                     m_GameData->m_Monsters[i].SetCollision(true);
                     m_GameData->m_Monsters[i].SetDirection(Vector::Inverse(m_GameData->m_Monsters[i].GetDirection()));
                 }
@@ -922,7 +922,7 @@ void CServer::CheckPlayerByItemCollision()
                     {
                         if (m_GameData->m_Items[j].GetType() == CItem::ATTACK_POWER_UP)
                         {
-                            m_GameData->m_Players[i].ReinforceBullet();
+                            m_GameData->m_Players[i].ReinforceBullet(20.0f + 2.0f * m_GameData->m_Round);
                         }
                         else if (m_GameData->m_Items[j].GetType() == CItem::HP_UP)
                         {

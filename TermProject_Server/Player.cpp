@@ -210,14 +210,14 @@ bool CPlayer::IsGetItem() const
 	return m_GetItem;
 }
 
-void CPlayer::ReinforceBullet()
+void CPlayer::ReinforceBullet(float Increment)
 {
 	m_GetItem = true;
 	m_ItemDuration = 0.0f;
 
 	for (int i = 0; i < MAX_BULLET; ++i)
 	{
-		m_Bullets[i].SetAttackPower(30.0f);
+		m_Bullets[i].SetAttackPower(m_Bullets[i].GetAttackPower() + Increment);
 	}
 }
 
@@ -268,29 +268,27 @@ int CPlayer::GetDamageDealt() const
 
 int CPlayer::CalculateRank() const
 {
-	int Rank{ 100 * m_KillCount + 10 * m_DamageDealt };
+	int Rank{ 100 * m_KillCount + m_DamageDealt };
 
 	// 리턴 값은 비트맵 위치에 곱해지는 값이다.
-	if (Rank < 500)
+	if (Rank < 1000)
 	{
 		return 4;
 	}
-	else if (Rank < 1000)
+	else if (Rank < 3000)
 	{
 		return 3;
 	}
-	else if (Rank < 3000)
+	else if (Rank < 7000)
 	{
 		return 2;
 	}
-	else if (Rank < 7000)
+	else if (Rank < 10000)
 	{
 		return 1;
 	}
-	else if (Rank < 10000)
+	else
 	{
 		return 0;
 	}
-
-	return 4;
 }

@@ -90,7 +90,7 @@ public:
 	VECTOR2D GetDirection() const;
 
 	bool IsGetItem() const;
-	void ReinforceBullet();
+	void ReinforceBullet(float Increment);
 
 	CBullet* GetBullets();
 	void FireBullet(const POINT& CursorPos);
