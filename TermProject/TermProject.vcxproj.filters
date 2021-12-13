@@ -60,17 +60,17 @@
     <ClInclude Include="Monster.h">
       <Filter>헤더 파일\Object</Filter>
     </ClInclude>
-    <ClInclude Include="Button.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Tower.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="FileManager.h">
       <Filter>헤더 파일\Manager</Filter>
     </ClInclude>
     <ClInclude Include="SoundManager.h">
       <Filter>헤더 파일\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Tower.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>헤더 파일\Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
