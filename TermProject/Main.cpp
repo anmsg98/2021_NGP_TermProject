@@ -187,7 +187,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         Framework.Render();
         break;
     case WM_DESTROY:
-        Framework.OnDestroy();
         PostQuitMessage(0);
         break;
     default:

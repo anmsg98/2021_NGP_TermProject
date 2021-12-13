@@ -308,7 +308,7 @@ void CServer::InitWaitingScene()
 
         for (int j = 0; j < MAX_BULLET; ++j)
         {
-            Bullets[i].SetActive(false);
+            Bullets[j].SetActive(false);
         }
     }
 
@@ -348,7 +348,7 @@ void CServer::InitGameScene()
 
         for (int j = 0; j < MAX_BULLET; ++j)
         {
-            Bullets[i].SetActive(false);
+            Bullets[j].SetActive(false);
         }
     }
     
@@ -794,9 +794,9 @@ void CServer::CheckPlayerByMonsterCollision()
 
                     if (IntersectRect(&CollidedRect, &PlayerRect, &MonsterRect))
                     {
-                        m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() - 3.0f * m_GameData->m_Monsters[i].GetType());
+                        m_GameData->m_Players[i].SetHp(m_GameData->m_Players[i].GetHp() - 3.0f * m_GameData->m_Monsters[j].GetType());
                         m_GameData->m_Monsters[j].SetCollision(true);
-                        m_GameData->m_Monsters[j].SetDirection(-m_GameData->m_Monsters[j].GetDirection().m_X, -m_GameData->m_Monsters[j].GetDirection().m_Y);
+                        m_GameData->m_Monsters[j].SetDirection(Vector::Inverse(m_GameData->m_Monsters[j].GetDirection()));
                     }
                 }
             }
